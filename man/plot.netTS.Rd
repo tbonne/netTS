@@ -14,13 +14,7 @@ This function will plot the output of the netTS function
 }
 \examples{
 
-#not run
-<<<<<<< HEAD
-library(netTS)
-ts.out<-netWin(event.data=df)
-=======
-ts.out<-netTS(event.data=df)
->>>>>>> origin/master
+ts.out<-netWin(event.data=baboonAssociations)
 plot.netTS(ts.out)
 
 }

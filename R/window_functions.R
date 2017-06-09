@@ -134,7 +134,6 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet){
 #' @export
 #' @examples
 #'
-#' #not run
 #' ts.out<-netWin(event.data=baboonAssociations)
 #' plot.netTS(ts.out)
 #'
@@ -199,7 +198,6 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
 #' @export
 #' @examples
 #'
-#' #not run
 #' ts.out<-netWin(event.data=baboonAssociations)
 #' plot.netTS(ts.out)
 #'
