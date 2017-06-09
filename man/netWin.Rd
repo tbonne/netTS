@@ -31,8 +31,12 @@ A time column is required.
 \examples{
 
 #not run
+<<<<<<< HEAD
 library(netTS)
 ts.out<-netWin(event.data=df)
+=======
+ts.out<-netTS(event.data=df)
+>>>>>>> origin/master
 plot.netTS(ts.out)
 
 }
