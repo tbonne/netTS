@@ -30,7 +30,7 @@ A time column is required.
 }
 \examples{
 
-ts.out<-netWin(event.data=baboonAssociations)
+ts.out<-netWin(event.data=df)
 plot.netTS(ts.out)
 
 }
