@@ -207,8 +207,8 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
 plot.netTS<-function(df){
 
   fig<-ggplot(df, aes(x=df[,8], y=df[,1]))+ geom_line()+
-    geom_ribbon(aes(ymin = df[,2], ymax = df[,4], fill="bootstrap"),alpha=0.4) +
-    geom_ribbon(aes(ymin = df[,5], ymax = df[,7], fill="permutation"),alpha=0.4) +
+    geom_ribbon(aes(ymin = df[,2], ymax = df[,4], fill="bootstrap"),alpha=0.2) +
+    geom_ribbon(aes(ymin = df[,5], ymax = df[,7], fill="permutation"),alpha=0.2) +
     geom_point(color="blue") +
     labs(x= "Days since start", y=names(df)[1])+
     scale_colour_manual(name="Shading", values=c(bootstrap="red", permutation="blue"))
