@@ -45,10 +45,13 @@ create.window <- function(df.total, start, end){
 #' This function will generate bootstrapped estimates for each network
 #' @param dataSub dataframe containing events
 #' @param nb number of bootstraps
-#' @param type the measure to use for the bootstrap. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)
+#' @param type the measure to use for the bootstrap. Currently available are: between (i.e., mean betweenness centrality),
+#'  close (i.e., mean closenes), eigen (i.e., eigen vector centrality), and cc (i.e., clustering coeficient). See the igraph package
+#'  for details on each measure.
 #' @param directedNet wheter the network is directed or not.
+#' @param previousNet A second network to compare disimilariy (e.g., for cosine similariy).
 #'
-estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet){
+estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet,previousNet=NULL){
 
   # Variables used during bootstrap
   bootstrap.number <- nb
@@ -67,12 +70,13 @@ estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet){
     Boot.Network <- create.a.network(Boot.List)
 
     #calculate and store the network measure calculated from the bootstrapped sample
-    if(type=='betweennes')boot.values[length(boot.values)+1] <- mean(igraph::betweenness(Boot.Network,directed = directedNet))
+    if(type=='between')boot.values[length(boot.values)+1] <- mean(igraph::betweenness(Boot.Network,directed = directedNet))
     if(type=='eigen')boot.values[length(boot.values)+1] <- mean(igraph::eigen_centrality(Boot.Network,directed = directedNet))
-    if(type=='closeness')boot.values[length(boot.values)+1] <- mean(igraph::closeness(Boot.Network,directed = directedNet))
+    if(type=='close')boot.values[length(boot.values)+1] <- mean(igraph::closeness(Boot.Network,directed = directedNet))
     if(type=='cc')boot.values[length(boot.values)+1] <- igraph::transitivity(Boot.Network)
     if(type=='degree')boot.values[length(boot.values)+1] <- mean(igraph::degree(Boot.Network))
     if(type=='strength')boot.values[length(boot.values)+1] <- mean(igraph::strength(Boot.Network))
+    if(type=='cosine')boot.values[length(boot.values)+1] <- cosine_between_graphs(Boot.Network,previousNet)
   }
 
   return (quantile(boot.values, probs = c(0.0275,0.5,0.975)))
@@ -86,10 +90,13 @@ estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet){
 #' This function will generate edge permutations for each network
 #' @param graphW Network (igraph)
 #' @param np number of permutations
-#' @param type the measure to use for permutation. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)
+#' @param type the measure to use for permutation. Currently available are: between (i.e., mean betweenness centrality),
+#'  close (i.e., mean closenes), eigen (i.e., eigen vector centrality), and cc (i.e., clustering coeficient). See the igraph package
+#'  for details on each measure.
 #' @param directedNet wheter the network is directed or not.
+#' @param previousNet A second network to compare disimilariy (e.g., for cosine similariy).
 #'
-estimate.random.range.perm <- function(graphW,np, type, directedNet){
+estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=NULL){
 
   #Parameters needed
   permutation.number <- np
@@ -107,12 +114,13 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet){
     igraph::E(Permute.Network)$weight <- sample(weights)
 
     # Calculate the metric
-    if(type=="betweennes")permutation.values[length(permutation.values)+1] <- mean(igraph::betweenness(Permute.Network,directed = directedNet))
+    if(type=="between")permutation.values[length(permutation.values)+1] <- mean(igraph::betweenness(Permute.Network,directed = directedNet))
     if(type=="eigen")permutation.values[length(permutation.values)+1] <- mean(igraph::eigen_centrality(Permute.Network,directed = directedNet))
-    if(type=="closeness")permutation.values[length(permutation.values)+1] <- mean(igraph::closeness(Permute.Network,directed = directedNet))
+    if(type=="close")permutation.values[length(permutation.values)+1] <- mean(igraph::closeness(Permute.Network,directed = directedNet))
     if(type=="cc")permutation.values[length(permutation.values)+1] <- igraph::transitivity(Permute.Network)
     if(type=="degree")permutation.values[length(permutation.values)+1] <- mean(igraph::degree(Permute.Network))
     if(type=="strength")permutation.values[length(permutation.values)+1] <- mean(igraph::strength(Permute.Network))
+    if(type=="cosine")permutation.values[length(permutation.values)+1] <- cosine_between_graphs(Permute.Network,previousNet)
   }
 
   return (quantile(permutation.values, probs = c(0.0275,0.5,0.975)))
@@ -128,13 +136,15 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet){
 #' @param nPerm number of permutation estimates to take for each measure
 #' @param windowSize size of the window in which to make network measures (should be the same scale as the time column)
 #' @param windowShift the amount to shift the moving window for each measure
-#' @param type is the type of measure to take in each window. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)
+#' @param type is the type of measure to take in each window. Currently available are: between (i.e., mean betweenness centrality),
+#'  close (i.e., mean closenes), eigen (i.e., eigen vector centrality), and cc (i.e., clustering coeficient). See the igraph package
+#'  for details on each measure.
 #' @param directedNet Whether the events are directed or no: true or false.
 #' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced)
 #' @export
 #' @examples
 #'
-#' ts.out<-netWin(event.data=df)
+#' ts.out<-netWin(event.data=df[1:100,])
 #' plot.netTS(ts.out)
 #'
 netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30){
@@ -143,6 +153,7 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
   windowStart=0
   windowEnd=windowStart+windowSize
   netValues <- data.frame()
+  gp <- NULL
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -153,29 +164,53 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
     df.window<-create.window(event.data, windowStart, windowEnd)
 
     #if there is data in this window...
-    if(nrow(df.window)>threshold){
+    if(nrow(df.window)>threshold ){
 
-      #create a network
-      g <- create.a.network(df.window)
+      #if there is no previous network, and the measure requires one
+      if(is.null(gp) & type=='cosine'){
 
-      #calculate measure
-      if(type=='betweennes')measure <- mean(igraph::betweenness(g))
-      if(type=='eigne')measure <- mean(igraph::eigen_centrality(g))
-      if(type=='closeness')measure <- mean(igraph::closeness(g))
-      if(type=='cc')measure <- igraph::transitivity(g)
-      if(type=='degree')measure <- mean(igraph::degree(g))
-      if(type=='strength')measure <- mean(igraph::strength(g))
+        gp <- create.a.network(df.window)
+        measure <- NA
+        measure.uncertainty<-c(NA,NA,NA)
+        measure.random<-c(NA,NA,NA)
 
-      #estimate uncertainty of measure (bootstrap)
-      measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet)
+      } else {
 
-      #esitmate range of random (permutation)
-      measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
+        #create a network
+        g <- create.a.network(df.window)
 
+        #calculate measure
+        if(type=='between')measure <- mean(igraph::betweenness(g))
+        if(type=='eigne')measure <- mean(igraph::eigen_centrality(g))
+        if(type=='close')measure <- mean(igraph::closeness(g))
+        if(type=='cc')measure <- igraph::transitivity(g)
+        if(type=='degree')measure <- mean(igraph::degree(g))
+        if(type=='strength')measure <- mean(igraph::strength(g))
+        if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gp)
+
+        #estimate uncertainty of measure (bootstrap)
+        if(type=='cosine'){
+          measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet, previousNet = gp)
+        } else{
+          measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet)
+        }
+
+        #esitmate range of random (permutation)
+        if(type=='cosine'){
+          measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet, previousNet=gp)
+        } else {
+          measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
+        }
+
+        #save last network
+        gp <- g
+
+      }
     } else {
       measure <- NA
       measure.uncertainty<-c(NA,NA,NA)
       measure.random<-c(NA,NA,NA)
+      gp <- NULL
     }
 
     #record each measure as we go
@@ -184,7 +219,6 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
     #move window over
     windowEnd = windowEnd + windowShift
     windowStart = windowStart + windowShift
-
   }
 
   names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","windowStart","windowEnd")
@@ -198,7 +232,7 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
 #' @export
 #' @examples
 #'
-#' ts.out<-netWin(event.data=df)
+#' ts.out<-netWin(event.data=df[1:100,])
 #' plot.netTS(ts.out)
 #'
 plot.netTS<-function(df){
@@ -212,5 +246,53 @@ plot.netTS<-function(df){
 
   fig
   return(fig)
+
+}
+
+
+#' Estimate consine similarity between graphs
+#'
+#' This function will calculate the cosine similarity between two graphs
+#' @param graph1 first graph (igraph)
+#' @param graph2 second graph (igraph)
+#' @export
+#' @examples
+#'
+#' #two random graphs
+#' library(igraph)
+#' graph1 <-random.graph.game(n=10,p=0.1)
+#' graph2 <-random.graph.game(n=10,p=0.1)
+#' cosine_between_graphs(graph1,graph2)
+#'
+#' #moving windo with cosine similarity
+#' ts.out<-netWin(event.data=df[1:100,], type='cosine')
+#' plot.netTS(ts.out)
+#'
+cosine_between_graphs <- function(graph1,graph2){
+
+  #create weighted edge list from first graph
+  g1.edges<-as.data.frame(igraph::get.edgelist(graph1, names=TRUE))
+  if(is.null(igraph::E(graph1)$weight)){
+    g1.edges$weight <- rep(1,nrow(g1.edges))
+  } else {
+    g1.edges$weight<-igraph::E(graph1)$weight
+  }
+  g1.edges$joinC <- paste(g1.edges$V1,g1.edges$V2,sep=".")
+
+  #create weighted edge list from second graph
+  g2.edges<-as.data.frame(igraph::get.edgelist(graph2, names=TRUE))
+  if(is.null(igraph::E(graph2)$weight)){
+    g2.edges$weight <- rep(1,nrow(g2.edges))
+  } else {
+    g2.edges$weight<-igraph::E(graph2)$weight
+  }
+  g2.edges$joinC <- paste(g2.edges$V1,g2.edges$V2,sep=".")
+
+  #join the weighted edge lists, setting NAs equal to 0
+  comb<-dplyr::full_join(g1.edges,g2.edges,by="joinC")
+  comb$weight.x[is.na(comb$weight.x)]<-0
+  comb$weight.y[is.na(comb$weight.y)]<-0
+
+  return(lsa::cosine(comb$weight.x,comb$weight.y))
 
 }

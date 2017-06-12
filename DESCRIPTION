@@ -11,5 +11,6 @@ LazyData: true
 Imports:
     dplyr,
     igraph,
-    ggplot2
+    ggplot2,
+    lsa
 RoxygenNote: 6.0.1
