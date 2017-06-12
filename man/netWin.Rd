@@ -18,7 +18,9 @@ netWin(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
 
 \item{windowShift}{the amount to shift the moving window for each measure}
 
-\item{type}{is the type of measure to take in each window. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)}
+\item{type}{is the type of measure to take in each window. Currently available are: between (i.e., mean betweenness centrality),
+close (i.e., mean closenes), eigen (i.e., eigen vector centrality), and cc (i.e., clustering coeficient). See the igraph package
+for details on each measure.}
 
 \item{directedNet}{Whether the events are directed or no: true or false.}
 
@@ -30,7 +32,7 @@ A time column is required.
 }
 \examples{
 
-ts.out<-netWin(event.data=df)
+ts.out<-netWin(event.data=df[1:100,])
 plot.netTS(ts.out)
 
 }

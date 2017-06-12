@@ -4,16 +4,20 @@
 \alias{estimate.uncertainty.boot}
 \title{Bootstrap estimates}
 \usage{
-estimate.uncertainty.boot(dataSub, nb, type, directedNet)
+estimate.uncertainty.boot(dataSub, nb, type, directedNet, previousNet = NULL)
 }
 \arguments{
 \item{dataSub}{dataframe containing events}
 
 \item{nb}{number of bootstraps}
 
-\item{type}{the measure to use for the bootstrap. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)}
+\item{type}{the measure to use for the bootstrap. Currently available are: between (i.e., mean betweenness centrality),
+close (i.e., mean closenes), eigen (i.e., eigen vector centrality), and cc (i.e., clustering coeficient). See the igraph package
+for details on each measure.}
 
 \item{directedNet}{wheter the network is directed or not.}
+
+\item{previousNet}{A second network to compare disimilariy (e.g., for cosine similariy).}
 }
 \description{
 This function will generate bootstrapped estimates for each network
