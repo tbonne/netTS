@@ -2,12 +2,13 @@
 #'
 #' This function will generate a network from an event dataframe
 #' @param events dataframe containing all events.
+#' @importFrom igraph graph_from_data_frame
 #'
 create.a.network<-function(events){
 
   elist<-create.an.edgeList(events)
   names(elist)<- c("from", "to", "weight")
-  gg <- igraph::graph_from_data_frame(elist, directed = TRUE, vertices = NULL)
+  gg <- graph_from_data_frame(elist, directed = TRUE, vertices = NULL)
 
   return(gg)
 }
@@ -16,6 +17,7 @@ create.a.network<-function(events){
 #'
 #' This function will generate an edge list from an events dataframe
 #' @param events dataframe containing all events
+#' @importFrom dplyr count
 #'
 create.an.edgeList<-function(events){
 
@@ -30,11 +32,13 @@ create.an.edgeList<-function(events){
 #' @param df.total dataframe containing all events
 #' @param start the starting time of the window
 #' @param end the ending time of the window
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
 #'
 create.window <- function(df.total, start, end){
 
-  df.win <- dplyr::filter(df.total, time < end &  time >= start)
-  window.sub <- dplyr::select(df.win, from, to )
+  df.win <- filter(df.total, time < end &  time >= start)
+  window.sub <- select(df.win, from, to )
 
   return (window.sub)
 }
@@ -50,6 +54,7 @@ create.window <- function(df.total, start, end){
 #'  for details on each measure.
 #' @param directedNet wheter the network is directed or not.
 #' @param previousNet A second network to compare disimilariy (e.g., for cosine similariy).
+#' @import igraph
 #'
 estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet,previousNet=NULL){
 
@@ -70,12 +75,12 @@ estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet,previousNet=
     Boot.Network <- create.a.network(Boot.List)
 
     #calculate and store the network measure calculated from the bootstrapped sample
-    if(type=='between')boot.values[length(boot.values)+1] <- mean(igraph::betweenness(Boot.Network,directed = directedNet))
-    if(type=='eigen')boot.values[length(boot.values)+1] <- mean(igraph::eigen_centrality(Boot.Network,directed = directedNet))
-    if(type=='close')boot.values[length(boot.values)+1] <- mean(igraph::closeness(Boot.Network,directed = directedNet))
-    if(type=='cc')boot.values[length(boot.values)+1] <- igraph::transitivity(Boot.Network)
-    if(type=='degree')boot.values[length(boot.values)+1] <- mean(igraph::degree(Boot.Network))
-    if(type=='strength')boot.values[length(boot.values)+1] <- mean(igraph::strength(Boot.Network))
+    if(type=='between')boot.values[length(boot.values)+1] <- mean(betweenness(Boot.Network,directed = directedNet))
+    if(type=='eigen')boot.values[length(boot.values)+1] <- mean(eigen_centrality(Boot.Network,directed = directedNet))
+    if(type=='close')boot.values[length(boot.values)+1] <- mean(closeness(Boot.Network))
+    if(type=='cc')boot.values[length(boot.values)+1] <- transitivity(Boot.Network)
+    if(type=='degree')boot.values[length(boot.values)+1] <- mean(degree(Boot.Network))
+    if(type=='strength')boot.values[length(boot.values)+1] <- mean(strength(Boot.Network))
     if(type=='cosine')boot.values[length(boot.values)+1] <- cosine_between_graphs(Boot.Network,previousNet)
   }
 
@@ -95,14 +100,15 @@ estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet,previousNet=
 #'  for details on each measure.
 #' @param directedNet wheter the network is directed or not.
 #' @param previousNet A second network to compare disimilariy (e.g., for cosine similariy).
+#' @import igraph
 #'
 estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=NULL){
 
   #Parameters needed
   permutation.number <- np
-  number.individuals <- igraph::vcount(graphW)
-  number.edges <- igraph::ecount(graphW)
-  weights <- igraph::E(graphW)$weight
+  number.individuals <- vcount(graphW)
+  number.edges <- ecount(graphW)
+  weights <- E(graphW)$weight
 
   #store the permutation values
   permutation.values <- vector('numeric')
@@ -110,16 +116,16 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
   for (n in 1:permutation.number){
 
     #create a random graph with the same number of nodes and edges as the observed graph
-    Permute.Network <- igraph::sample_gnm(number.individuals, number.edges, directed = T,loops = F)
-    igraph::E(Permute.Network)$weight <- sample(weights)
+    Permute.Network <- sample_gnm(number.individuals, number.edges, directed = T,loops = F)
+    E(Permute.Network)$weight <- sample(weights)
 
     # Calculate the metric
-    if(type=="between")permutation.values[length(permutation.values)+1] <- mean(igraph::betweenness(Permute.Network,directed = directedNet))
-    if(type=="eigen")permutation.values[length(permutation.values)+1] <- mean(igraph::eigen_centrality(Permute.Network,directed = directedNet))
-    if(type=="close")permutation.values[length(permutation.values)+1] <- mean(igraph::closeness(Permute.Network,directed = directedNet))
-    if(type=="cc")permutation.values[length(permutation.values)+1] <- igraph::transitivity(Permute.Network)
-    if(type=="degree")permutation.values[length(permutation.values)+1] <- mean(igraph::degree(Permute.Network))
-    if(type=="strength")permutation.values[length(permutation.values)+1] <- mean(igraph::strength(Permute.Network))
+    if(type=="between")permutation.values[length(permutation.values)+1] <- mean(betweenness(Permute.Network,directed = directedNet))
+    if(type=="eigen")permutation.values[length(permutation.values)+1] <- mean(eigen_centrality(Permute.Network,directed = directedNet))
+    if(type=="close")permutation.values[length(permutation.values)+1] <- mean(closeness(Permute.Network))
+    if(type=="cc")permutation.values[length(permutation.values)+1] <- transitivity(Permute.Network)
+    if(type=="degree")permutation.values[length(permutation.values)+1] <- mean(degree(Permute.Network))
+    if(type=="strength")permutation.values[length(permutation.values)+1] <- mean(strength(Permute.Network))
     if(type=="cosine")permutation.values[length(permutation.values)+1] <- cosine_between_graphs(Permute.Network,previousNet)
   }
 
@@ -127,11 +133,10 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 
 }
 
-#' netWin function
+#' graphTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
-#' A time column is required.
-#' @param event.data dataframe containing events between individuals/objects
+#' @param event.data dataframe containing events between individuals/objects. This dataframe should have a 'to' and a 'from' column, as well as 'time' column representing the time between the start of observations and the events.
 #' @param nBoot number of bootstrap estimates to take for each measure
 #' @param nPerm number of permutation estimates to take for each measure
 #' @param windowSize size of the window in which to make network measures (should be the same scale as the time column)
@@ -142,12 +147,13 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' @param directedNet Whether the events are directed or no: true or false.
 #' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced)
 #' @export
+#' @import igraph
 #' @examples
 #'
-#' ts.out<-netWin(event.data=df[1:100,])
-#' plot.netTS(ts.out)
+#' ts.out<-graphTS(event.data=df[1:100,])
+#' plot.graphTS(ts.out)
 #'
-netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30){
+graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30){
 
   #intialize
   windowStart=0
@@ -163,7 +169,7 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
     #subset the data
     df.window<-create.window(event.data, windowStart, windowEnd)
 
-    #if there is data in this window...
+    #if there is enough data in this window...
     if(nrow(df.window)>threshold ){
 
       #if there is no previous network, and the measure requires one
@@ -180,12 +186,12 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
         g <- create.a.network(df.window)
 
         #calculate measure
-        if(type=='between')measure <- mean(igraph::betweenness(g))
-        if(type=='eigne')measure <- mean(igraph::eigen_centrality(g))
-        if(type=='close')measure <- mean(igraph::closeness(g))
-        if(type=='cc')measure <- igraph::transitivity(g)
-        if(type=='degree')measure <- mean(igraph::degree(g))
-        if(type=='strength')measure <- mean(igraph::strength(g))
+        if(type=='between')measure <- mean(betweenness(g))
+        if(type=='eigne')measure <- mean(eigen_centrality(g))
+        if(type=='close')measure <- mean(closeness(g))
+        if(type=='cc')measure <- transitivity(g)
+        if(type=='degree')measure <- mean(degree(g))
+        if(type=='strength')measure <- mean(strength(g))
         if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gp)
 
         #estimate uncertainty of measure (bootstrap)
@@ -228,20 +234,21 @@ netWin <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
 #' Plotting function for netTS dataframes
 #'
 #' This function will plot the output of the netTS function
-#' @param df output dataframe from the netTS function
+#' @param df.ts output dataframe from the netTS function
 #' @export
+#' @import ggplot2
 #' @examples
 #'
-#' ts.out<-netWin(event.data=df[1:100,])
-#' plot.netTS(ts.out)
+#' ts.out<-graphTS(event.data=df[1:200,])
+#' plot.graphTS(ts.out)
 #'
-plot.netTS<-function(df){
+plot.graphTS<-function(df.ts){
 
-  fig<-ggplot2::ggplot(df, aes(x=df[,8], y=df[,1]))+ geom_line()+
-    geom_ribbon(aes(ymin = df[,2], ymax = df[,4], fill="bootstrap"),alpha=0.2) +
-    geom_ribbon(aes(ymin = df[,5], ymax = df[,7], fill="permutation"),alpha=0.2) +
+  fig<-ggplot(df.ts, aes(x=df.ts[,8], y=df.ts[,1]))+ geom_line()+
+    geom_ribbon(aes(ymin = df.ts[,2], ymax = df.ts[,4], fill="bootstrap"),alpha=0.2) +
+    geom_ribbon(aes(ymin = df.ts[,5], ymax = df.ts[,7], fill="permutation"),alpha=0.2) +
     geom_point(color="blue") +
-    labs(x= "Time since start", y=names(df)[1])+
+    labs(x= "Time since start", y=names(df.ts)[1])+
     scale_colour_manual(name="Shading", values=c(bootstrap="red", permutation="blue"))+theme_minimal()
 
   fig
@@ -256,22 +263,21 @@ plot.netTS<-function(df){
 #' @param graph1 first graph (igraph)
 #' @param graph2 second graph (igraph)
 #' @export
+#' @import igraph
+#' @importFrom dplyr full_join
+#' @importFrom lsa cosine
 #' @examples
 #'
 #' #two random graphs
 #' library(igraph)
-#' graph1 <-random.graph.game(n=10,p=0.1)
-#' graph2 <-random.graph.game(n=10,p=0.1)
+#' graph1 <-erdos.renyi.game(n=10,p=0.1)
+#' graph2 <-erdos.renyi.game(n=10,p=0.1)
 #' cosine_between_graphs(graph1,graph2)
-#'
-#' #moving windo with cosine similarity
-#' ts.out<-netWin(event.data=df[1:100,], type='cosine')
-#' plot.netTS(ts.out)
 #'
 cosine_between_graphs <- function(graph1,graph2){
 
   #create weighted edge list from first graph
-  g1.edges<-as.data.frame(igraph::get.edgelist(graph1, names=TRUE))
+  g1.edges<-as.data.frame(get.edgelist(graph1, names=TRUE))
   if(is.null(igraph::E(graph1)$weight)){
     g1.edges$weight <- rep(1,nrow(g1.edges))
   } else {
@@ -280,7 +286,7 @@ cosine_between_graphs <- function(graph1,graph2){
   g1.edges$joinC <- paste(g1.edges$V1,g1.edges$V2,sep=".")
 
   #create weighted edge list from second graph
-  g2.edges<-as.data.frame(igraph::get.edgelist(graph2, names=TRUE))
+  g2.edges<-as.data.frame(get.edgelist(graph2, names=TRUE))
   if(is.null(igraph::E(graph2)$weight)){
     g2.edges$weight <- rep(1,nrow(g2.edges))
   } else {
@@ -289,10 +295,13 @@ cosine_between_graphs <- function(graph1,graph2){
   g2.edges$joinC <- paste(g2.edges$V1,g2.edges$V2,sep=".")
 
   #join the weighted edge lists, setting NAs equal to 0
-  comb<-dplyr::full_join(g1.edges,g2.edges,by="joinC")
+  comb<-full_join(g1.edges,g2.edges,by="joinC")
   comb$weight.x[is.na(comb$weight.x)]<-0
   comb$weight.y[is.na(comb$weight.y)]<-0
 
-  return(lsa::cosine(comb$weight.x,comb$weight.y))
+  return(cosine(comb$weight.x,comb$weight.y))
 
 }
+
+
+

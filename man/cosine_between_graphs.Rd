@@ -17,16 +17,9 @@ This function will calculate the cosine similarity between two graphs
 \examples{
 
 #two random graphs
-<<<<<<< HEAD
 library(igraph)
-=======
->>>>>>> f0dd017bcfa4ef02c08b3dcee5f0d9b349b0fcdc
-graph1 <-random.graph.game(n=10,p=0.1)
-graph2 <-random.graph.game(n=10,p=0.1)
+graph1 <-erdos.renyi.game(n=10,p=0.1)
+graph2 <-erdos.renyi.game(n=10,p=0.1)
 cosine_between_graphs(graph1,graph2)
-
-#moving windo with cosine similarity
-ts.out<-netWin(event.data=df[1:100,], type='cosine')
-plot.netTS(ts.out)
 
 }
