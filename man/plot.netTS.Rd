@@ -14,7 +14,7 @@ This function will plot the output of the netTS function
 }
 \examples{
 
-ts.out<-netWin(event.data=df[1:100,])
+ts.out<-netWin(event.data=df[1:200,])
 plot.netTS(ts.out)
 
 }
