@@ -7,11 +7,11 @@
 #' @importFrom reshape2 melt
 #' @examples
 #'
-#' ts.out<-nodeTS(event.data=df[1:200,])
-#' plot.nodeTS(ts.out)
+#' ts.out<-nodeTS(event.data=groomEvents[1:200,])
+#' nodeTS.plot(ts.out)
 #'
 #' @export
-plot.nodeTS <- function(df.ts){
+nodeTS.plot <- function(df.ts){
 
   df.melt<-melt(df.ts[,-ncol(df.ts)], id=c("windowStart"))
 
@@ -42,8 +42,8 @@ plot.nodeTS <- function(df.ts){
 #' cosine_between_graphs_nodes(graph1,graph2)
 #'
 #' #moving windo with cosine similarity
-#' ts.out<-nodeTS(event.data=df[1:100,], type='cosine')
-#' plot.nodeTS(ts.out)
+#' ts.out<-nodeTS(event.data=groomEvents[1:100,], type='cosine')
+#' nodeTS.plot(ts.out)
 #'
 cosine_between_graphs_nodes<- function(graph1, graph2){
 
@@ -104,8 +104,8 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' @importFrom plyr rbind.fill
 #' @examples
 #'
-#' ts.out<-nodeTS(event.data=baboonAssociations)
-#' plot.nodeTS(ts.out)
+#' ts.out<-nodeTS(event.data=groomEvents[1:200,])
+#' nodeTS.plot(ts.out)
 #'
 nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30){
 

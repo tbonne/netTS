@@ -30,7 +30,7 @@ A time column is required.
 }
 \examples{
 
-ts.out<-nodeTS(event.data=baboonAssociations)
-plot.nodeTS(ts.out)
+ts.out<-nodeTS(event.data=groomEvents[1:200,])
+nodeTS.plot(ts.out)
 
 }

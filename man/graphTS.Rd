@@ -31,7 +31,7 @@ This function will take a dataframe with events between individuals/objects, and
 }
 \examples{
 
-ts.out<-graphTS(event.data=df[1:100,])
-plot.graphTS(ts.out)
+ts.out<-graphTS(event.data=groomEvents[1:200,])
+graphTS.plot(ts.out)
 
 }

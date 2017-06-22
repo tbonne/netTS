@@ -150,8 +150,8 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' @import igraph
 #' @examples
 #'
-#' ts.out<-graphTS(event.data=df[1:100,])
-#' plot.graphTS(ts.out)
+#' ts.out<-graphTS(event.data=groomEvents[1:200,])
+#' graphTS.plot(ts.out)
 #'
 graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30){
 
@@ -239,10 +239,10 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
 #' @import ggplot2
 #' @examples
 #'
-#' ts.out<-graphTS(event.data=df[1:200,])
-#' plot.graphTS(ts.out)
+#' ts.out<-graphTS(event.data=groomEvents[1:200,])
+#' graphTS.plot(ts.out)
 #'
-plot.graphTS<-function(df.ts){
+graphTS.plot<-function(df.ts){
 
   fig<-ggplot(df.ts, aes(x=df.ts[,8], y=df.ts[,1]))+ geom_line()+
     geom_ribbon(aes(ymin = df.ts[,2], ymax = df.ts[,4], fill="bootstrap"),alpha=0.2) +
