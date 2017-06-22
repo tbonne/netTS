@@ -17,9 +17,14 @@ This function will calculate the cosine similarity between two graphs
 \examples{
 
 #two random graphs
+<<<<<<< HEAD
 library(igraph)
 graph1 <-erdos.renyi.game(n=10,p=0.1)
 graph2 <-erdos.renyi.game(n=10,p=0.1)
+=======
+graph1 <-random.graph.game(n=10,p=0.1)
+graph2 <-random.graph.game(n=10,p=0.1)
+>>>>>>> 2a4ddbbb5fda0fef52e52c81ce2e7c5dc8c6bf45
 cosine_between_graphs(graph1,graph2)
 
 }

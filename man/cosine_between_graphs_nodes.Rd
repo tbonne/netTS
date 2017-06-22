@@ -17,6 +17,7 @@ This function will calculate the cosine similarity between nodes at two time per
 \examples{
 
 #two random graphs
+<<<<<<< HEAD
 library(igraph)
 graph1 <-erdos.renyi.game(n=10,p=0.1)
 graph2 <-erdos.renyi.game(n=10,p=0.1)
@@ -24,6 +25,14 @@ cosine_between_graphs_nodes(graph1,graph2)
 
 #moving windo with cosine similarity
 ts.out<-nodeTS(event.data=df[1:100,], type='cosine')
+=======
+graph1 <-random.graph.game(n=10,p=0.1)
+graph2 <-random.graph.game(n=10,p=0.1)
+cosine_between_graphs_nodes(graph1,graph2)
+
+#moving windo with cosine similarity
+ts.out<-nodeWin(event.data=df[1:100,], type='cosine')
+>>>>>>> 2a4ddbbb5fda0fef52e52c81ce2e7c5dc8c6bf45
 plot.nodeTS(ts.out)
 
 }
