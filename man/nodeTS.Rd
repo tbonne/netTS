@@ -5,7 +5,8 @@
 \title{netWin function}
 \usage{
 nodeTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
-  windowShift = 1, type = "cc", directedNet = T, threshold = 30)
+  windowShift = 1, type = "cc", directedNet = T, threshold = 30,
+  windowStart = 0, lag = 1)
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects}
@@ -22,7 +23,11 @@ nodeTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
 
 \item{directedNet}{Whether the events are directed or no: true or false.}
 
-\item{threshold}{minimum number of events to calculate a network measure (otherwise NA is produced)}
+\item{threshold}{minimum number of events to calculate a network measure (otherwise NA is produced).}
+
+\item{windowStart}{The time of the first window. This should corespond to the first events.}
+
+\item{lag}{The lag at which to calculate cosine similarity in network structure.}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.

@@ -141,9 +141,11 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' @param nPerm number of permutation estimates to take for each measure
 #' @param windowSize size of the window in which to make network measures (should be the same scale as the time column)
 #' @param windowShift the amount to shift the moving window for each measure
+#' @param windowStart The time of the first window. This should corespond to the first events.
 #' @param type is the type of measure to take in each window. Currently available are: between (i.e., mean betweenness centrality),
 #'  close (i.e., mean closenes), eigen (i.e., eigen vector centrality), and cc (i.e., clustering coeficient). See the igraph package
 #'  for details on each measure.
+#' @param lag The lag at which to calculate cosine similarity in network structure.
 #' @param directedNet Whether the events are directed or no: true or false.
 #' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced)
 #' @export
@@ -153,12 +155,12 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' ts.out<-graphTS(event.data=groomEvents[1:200,])
 #' graphTS.plot(ts.out)
 #'
-graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0){
+graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1){
 
   #intialize
   windowEnd=windowStart+windowSize
   netValues <- data.frame()
-  gp <- NULL
+  gplist <- rep(list(NA),lag)
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -172,9 +174,10 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
     if(nrow(df.window)>threshold ){
 
       #if there is no previous network, and the measure requires one
-      if(is.null(gp) & type=='cosine'){
+      if(is.na(gplist[1]) & type=='cosine'){
 
-        gp <- create.a.network(df.window)
+        gplist[[length(gplist)+1]] <- create.a.network(df.window)
+        gplist<-gplist[-1]
         measure <- NA
         measure.uncertainty<-c(NA,NA,NA)
         measure.random<-c(NA,NA,NA)
@@ -191,31 +194,33 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
         if(type=='cc')measure <- transitivity(g)
         if(type=='degree')measure <- mean(degree(g))
         if(type=='strength')measure <- mean(strength(g))
-        if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gp)
+        if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gplist[[1]])
 
         #estimate uncertainty of measure (bootstrap)
         if(type=='cosine'){
-          measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet, previousNet = gp)
+          measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet, previousNet = gplist[[1]])
         } else{
           measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet)
         }
 
         #esitmate range of random (permutation)
         if(type=='cosine'){
-          measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet, previousNet=gp)
+          measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet, previousNet=gplist[[1]])
         } else {
           measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
         }
 
         #save last network
-        gp <- g
+        gplist[[length(gplist)+1]] <- g
+        gplist<-gplist[-1]
 
       }
     } else {
       measure <- NA
       measure.uncertainty<-c(NA,NA,NA)
       measure.random<-c(NA,NA,NA)
-      gp <- NULL
+      gplist[[length(gplist)+1]] <- NA
+      gplist<-gplist[-1]
     }
 
     #record each measure as we go

@@ -96,9 +96,11 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' @param nPerm number of permutation estimates to take for each measure
 #' @param windowSize size of the window in which to make network measures (should be the same scale as the time column)
 #' @param windowShift the amount to shift the moving window for each measure
+#' @param windowStart The time of the first window. This should corespond to the first events.
 #' @param type is the type of measure to take in each window. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)
 #' @param directedNet Whether the events are directed or no: true or false.
-#' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced)
+#' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced).
+#' @param lag The lag at which to calculate cosine similarity in network structure.
 #' @export
 #' @import igraph
 #' @importFrom plyr rbind.fill
@@ -107,12 +109,12 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
 #' nodeTS.plot(ts.out)
 #'
-nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0){
+nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1){
 
   #intialize
   windowEnd=windowStart+windowSize
   netValues <- data.frame()
-  gp <- NULL
+  gplist <- rep(list(NA),lag)
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -132,9 +134,10 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
     if(nrow(df.window)>threshold){
 
       #if there is no previous network, and the measure requires one
-      if(is.null(gp) & type=='cosine'){
+      if(is.na(gplist[1]) & type=='cosine'){
 
-        gp <- create.a.network(df.window)
+        gplist[[length(gplist)+1]] <- create.a.network(df.window)
+        gplist<-gplist[-1]
         df.measure <- as.data.frame(NA)
         measure.uncertainty<-c(NA,NA,NA)
         measure.random<-c(NA,NA,NA)
@@ -151,7 +154,7 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
         if(type=='cc')measure <- transitivity(g, type=c('local'))
         if(type=='degree')measure <- degree(g)
         if(type=='strength')measure <- strength(g)
-        if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gp)
+        if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]])
 
         #create a dataframe with the measures
         if(type=='cosine'){
@@ -172,26 +175,18 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
         #measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
 
         #save last network
-        gp <- g
+        gplist[[length(gplist)+1]] <- g
+        gplist<-gplist[-1]
 
       }
     } else {
       df.measure <- as.data.frame(NA)
       #measure.uncertainty<-c(NA,NA,NA)
       #measure.random<-c(NA,NA,NA)
-      gp=NULL
+      gp=NA
     }
 
-    #record each measure as we go
-    #netValues <- rbind(netValues,c(measure, measure.uncertainty,measure.random, windowStart,windowEnd))
-    #xd <- data.frame(x1=rnorm(100,0,1), x2=rnorm(100,2,0))
-    #x1=0
-    #x2=0
-    #data.frame(x1,x2)
-    #xdr <- data.frame(x1=0,x2=0)
-    #xdrr <- rbind.fill(list(xd,xdr))
-
-    #netValues <- rbind.fill(list(as.data.frame(netValues),data.frame(t(measure), windowStart,windowEnd)))
+    #record values
     netValues <- rbind.fill(list(as.data.frame(netValues),df.measure))
 
     #move window over
@@ -199,8 +194,6 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
     windowStart = windowStart + windowShift
 
   }
-
-  #names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","windowStart","windowEnd")
 
   return (netValues[-1,])
 }
