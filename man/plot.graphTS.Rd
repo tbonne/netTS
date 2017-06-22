@@ -14,7 +14,12 @@ This function will plot the output of the netTS function
 }
 \examples{
 
+<<<<<<< HEAD:man/plot.graphTS.Rd
 ts.out<-graphTS(event.data=df[1:200,])
 plot.graphTS(ts.out)
+=======
+ts.out<-netWin(event.data=df[1:200,])
+plot.netTS(ts.out)
+>>>>>>> 2a4ddbbb5fda0fef52e52c81ce2e7c5dc8c6bf45:man/plot.netTS.Rd
 
 }

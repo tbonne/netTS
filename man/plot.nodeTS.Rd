@@ -7,14 +7,22 @@
 \method{plot}{nodeTS}(df.ts)
 }
 \arguments{
+<<<<<<< HEAD
 \item{df.ts}{output dataframe from the nodeWin function}
+=======
+\item{df}{output dataframe from the nodeWin function}
+>>>>>>> 2a4ddbbb5fda0fef52e52c81ce2e7c5dc8c6bf45
 }
 \description{
 This function will plot the output of the nodeWin function
 }
 \examples{
 
+<<<<<<< HEAD
 ts.out<-nodeTS(event.data=df[1:200,])
+=======
+ts.out<-nodeWin(event.data=df[1:200,])
+>>>>>>> 2a4ddbbb5fda0fef52e52c81ce2e7c5dc8c6bf45
 plot.nodeTS(ts.out)
 
 }
