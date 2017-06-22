@@ -146,9 +146,9 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
         g <- create.a.network(df.window)
 
         #calculate measure
-        if(type=='betweennes')measure <- betweenness(g)
+        if(type=='between')measure <- betweenness(g)
         if(type=='eigne')measure <- eigen_centrality(g)
-        if(type=='closeness')measure <- closeness(g)
+        if(type=='close')measure <- closeness(g)
         if(type=='cc')measure <- transitivity(g, type=c('local'))
         if(type=='degree')measure <- degree(g)
         if(type=='strength')measure <- strength(g)
