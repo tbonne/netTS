@@ -107,10 +107,9 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
 #' nodeTS.plot(ts.out)
 #'
-nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30){
+nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0){
 
   #intialize
-  windowStart=0
   windowEnd=windowStart+windowSize
   netValues <- data.frame()
   gp <- NULL
