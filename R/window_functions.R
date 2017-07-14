@@ -237,14 +237,14 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
     }
 
     #record each measure as we go
-    netValues <- rbind(netValues,c(measure, measure.uncertainty,measure.random, windowStart,windowEnd))
+    netValues <- rbind(netValues,c(measure, measure.uncertainty,measure.random,nrow(df.window),windowStart,windowEnd))
 
     #move window over
     windowEnd = windowEnd + windowShift
     windowStart = windowStart + windowShift
   }
 
-  names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","windowStart","windowEnd")
+  names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd")
   return (netValues)
 }
 

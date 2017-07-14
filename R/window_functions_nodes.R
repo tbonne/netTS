@@ -187,7 +187,7 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
     }
 
     #record values
-    netValues <- rbind.fill(list(as.data.frame(netValues),df.measure))
+    netValues <- rbind.fill(list(as.data.frame(netValues),df.measure,data.frame(nEvents=nrow(df.window)) ))
 
     #move window over
     windowEnd = windowEnd + windowShift
