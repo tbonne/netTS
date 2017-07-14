@@ -161,14 +161,17 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' @param lag The lag at which to calculate cosine similarity in network structure.
 #' @param directedNet Whether the events are directed or no: true or false.
 #' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced)
+#' @param startDate Optional argument used to define the start date of events. Use dd/mm/yyyy format (e.g., startDate = '24/07/2002').
 #' @export
 #' @import igraph
+#' @importFrom lubridate dmy
+#' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-graphTS(event.data=groomEvents[1:200,])
 #' graphTS.plot(ts.out)
 #'
-graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1){
+graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1,startDate=NULL){
 
   #intialize
   windowEnd=windowStart+windowSize
@@ -236,15 +239,23 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
       gplist<-gplist[-1]
     }
 
+    #get window date range
+    windowStartDate <- NA
+    windowEndDate <- NA
+    if(is.null(startDate)==FALSE){
+      windowStartDate <- dmy(startDate) + days(windowStart)
+      windowEndDate <- dmy(startDate) + days(windowEnd)
+    }
+
     #record each measure as we go
-    netValues <- rbind(netValues,c(measure, measure.uncertainty,measure.random,nrow(df.window),windowStart,windowEnd))
+    netValues <- rbind(netValues,c(measure, measure.uncertainty,measure.random,nrow(df.window),windowStart,windowEnd,windowStartDate, windowEndDate))
 
     #move window over
     windowEnd = windowEnd + windowShift
     windowStart = windowStart + windowShift
   }
 
-  names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd")
+  names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
   return (netValues)
 }
 
@@ -252,6 +263,8 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
 #'
 #' This function will plot the output of the netTS function
 #' @param df.ts output dataframe from the netTS function
+#' @param nEvents Option to plot the number of events within each window.
+#' @param dates Option to plot the figure with dates as opposed to days since start. Note this only applies if a start date was provided to the graphTS function.
 #' @export
 #' @import ggplot2
 #' @examples
@@ -259,14 +272,39 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
 #' ts.out<-graphTS(event.data=groomEvents[1:200,])
 #' graphTS.plot(ts.out)
 #'
-graphTS.plot<-function(df.ts){
+graphTS.plot<-function(df.ts, nEvents=FALSE, dates=FALSE){
 
-  fig<-ggplot(df.ts, aes(x=df.ts$windowStart, y=df.ts[,1]))+ geom_line()+
-    geom_ribbon(aes(ymin = df.ts[,2], ymax = df.ts[,4], fill="bootstrap"),alpha=0.2) +
-    geom_ribbon(aes(ymin = df.ts[,5], ymax = df.ts[,7], fill="permutation"),alpha=0.2) +
-    geom_point(color="blue") +
-    labs(x= "Time since start", y=names(df.ts)[1])+
-    scale_colour_manual(name="Shading", values=c(bootstrap="red", permutation="blue"))+theme_minimal()
+  if(nEvents==FALSE){
+
+    if(dates==FALSE){
+
+      fig<-ggplot(df.ts, aes(x=df.ts$windowEnd, y=df.ts[,1]))+ geom_line()+
+        geom_ribbon(aes(ymin = df.ts[,2], ymax = df.ts[,4], fill="bootstrap"),alpha=0.2) +
+        geom_ribbon(aes(ymin = df.ts[,5], ymax = df.ts[,7], fill="permutation"),alpha=0.2) +
+        geom_point(color="blue") +
+        labs(x= "Time since start", y=names(df.ts)[1])+
+        scale_colour_manual(name="Shading", values=c(bootstrap="red", permutation="blue"))+theme_minimal()
+    } else {
+      fig<-ggplot(df.ts, aes(x=df.ts$windowEndDate, y=df.ts[,1]))+ geom_line()+
+        geom_ribbon(aes(ymin = df.ts[,2], ymax = df.ts[,4], fill="bootstrap"),alpha=0.2) +
+        geom_ribbon(aes(ymin = df.ts[,5], ymax = df.ts[,7], fill="permutation"),alpha=0.2) +
+        geom_point(color="blue") +
+        labs(x= "Time since start", y=names(df.ts)[1])+
+        scale_colour_manual(name="Shading", values=c(bootstrap="red", permutation="blue"))+theme_minimal()
+    }
+
+  } else {
+
+    if(dates==FALSE){
+    fig<-ggplot(df.ts, aes(x=df.ts$windowEnd, y=df.ts$nEvents))+ geom_line()+
+      geom_point(color="blue") +
+      labs(x= "Time since start", y="Number of events")+theme_minimal()
+    } else{
+      fig<-ggplot(df.ts, aes(x=df.ts$windowEndDate, y=df.ts$nEvents))+ geom_line()+
+        geom_point(color="blue") +
+        labs(x= "Time since start", y="Number of events")+theme_minimal()
+    }
+  }
 
   fig
   return(fig)

@@ -4,10 +4,14 @@
 \alias{graphTS.plot}
 \title{Plotting function for netTS dataframes}
 \usage{
-graphTS.plot(df.ts)
+graphTS.plot(df.ts, nEvents = FALSE, dates = FALSE)
 }
 \arguments{
 \item{df.ts}{output dataframe from the netTS function}
+
+\item{nEvents}{Option to plot the number of events within each window.}
+
+\item{dates}{Option to plot the figure with dates as opposed to days since start. Note this only applies if a start date was provided to the graphTS function.}
 }
 \description{
 This function will plot the output of the netTS function

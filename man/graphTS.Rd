@@ -6,7 +6,7 @@
 \usage{
 graphTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
   windowShift = 1, type = "cc", directedNet = T, threshold = 30,
-  windowStart = 0, lag = 1)
+  windowStart = 0, lag = 1, startDate = NULL)
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects. This dataframe should have a 'to' and a 'from' column, as well as 'time' column representing the time between the start of observations and the events.}
@@ -30,6 +30,8 @@ for details on each measure.}
 \item{windowStart}{The time of the first window. This should corespond to the first events.}
 
 \item{lag}{The lag at which to calculate cosine similarity in network structure.}
+
+\item{startDate}{Optional argument used to define the start date of events. Use dd/mm/yyyy format (e.g., startDate = '24/07/2002').}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.

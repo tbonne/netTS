@@ -3,6 +3,8 @@
 #'
 #' This function will plot the output of the nodeWin function
 #' @param df.ts output dataframe from the nodeWin function
+#' @param nEvents Opional argument to plot the number of events
+#' @param dates Optional argument to plot the date as opposed to the time since the first event
 #' @import ggplot2
 #' @importFrom reshape2 melt
 #' @examples
@@ -11,13 +13,54 @@
 #' nodeTS.plot(ts.out)
 #'
 #' @export
-nodeTS.plot <- function(df.ts){
+nodeTS.plot <- function(df.ts, nEvents = FALSE, dates = FALSE){
 
-  df.melt<-melt(df.ts[,-ncol(df.ts)], id=c("windowStart"))
+  if(nEvents ==FALSE){
 
-  fig<-ggplot(df.melt, aes(x=windowStart, y=value, group=variable, color=variable))+ geom_line()+
-    geom_point(color="blue") +
-    labs(x= "Time since start")
+    if(dates==FALSE){
+
+      df.melt<-melt(df.ts, id=c("windowEnd"))
+      df.melt<-df.melt[complete.cases(df.melt),]
+      df.melt<-filter(df.melt, variable != "windowStart" & variable != "windowEnd" & variable != "windowStartDate" & variable != "windowEndDate")
+
+      fig<-ggplot(df.melt, aes(x=windowEnd, y=value, group=variable, color=variable))+ geom_line()+
+        geom_point(color="blue") +
+        labs(x= "Time since start")
+
+    } else {
+
+      df.melt<-melt(df.ts, id=c("windowEndDate"))
+      df.melt<-df.melt[complete.cases(df.melt),]
+      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate")
+
+      fig<-ggplot(df.melt, aes(x=windowEndDate, y=value, group=variable, color=variable))+ geom_line()+
+        geom_point(color="blue") +
+        labs(x= "Time since start")
+    }
+
+  } else{
+
+    if(dates==FALSE){
+
+      df.melt<-melt(df.ts, id=c("windowEnd"))
+      df.melt<-df.melt[complete.cases(df.melt),]
+      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate")
+
+      fig<-ggplot(df.melt, aes(x=windowEnd, y=nEvents, group=variable, color=variable))+ geom_line()+
+        geom_point(color="blue") +
+        labs(x= "Time since start")
+
+    } else {
+
+      df.melt<-melt(df.ts[,(ncol(df.ts)-1)], id=c("windowEndDate"))
+      df.melt<-df.melt[complete.cases(df.melt),]
+      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate")
+
+      fig<-ggplot(df.melt, aes(x=windowEndDate, y=nEvents, group=variable, color=variable))+ geom_line()+
+        geom_point(color="blue") +
+        labs(x= "Time since start")
+    }
+  }
 
   fig
 
@@ -92,8 +135,6 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
 #' A time column is required.
 #' @param event.data dataframe containing events between individuals/objects
-#' @param nBoot number of bootstrap estimates to take for each measure
-#' @param nPerm number of permutation estimates to take for each measure
 #' @param windowSize size of the window in which to make network measures (should be the same scale as the time column)
 #' @param windowShift the amount to shift the moving window for each measure
 #' @param windowStart The time of the first window. This should corespond to the first events.
@@ -101,15 +142,18 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' @param directedNet Whether the events are directed or no: true or false.
 #' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced).
 #' @param lag The lag at which to calculate cosine similarity in network structure.
+#' @param startDate Optional argument to set the date of the first event.
 #' @export
 #' @import igraph
 #' @importFrom plyr rbind.fill
+#' @importFrom lubridate dmy
+#' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
 #' nodeTS.plot(ts.out)
 #'
-nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1){
+nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL){
 
   #intialize
   windowEnd=windowStart+windowSize
@@ -186,8 +230,19 @@ nodeTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1
       gp=NA
     }
 
+    #get window date range
+    windowStartDate <- NA
+    windowEndDate <- NA
+    if(is.null(startDate)==FALSE){
+      windowStartDate <- dmy(startDate) + days(windowStart)
+      windowEndDate <- dmy(startDate) + days(windowEnd)
+    }
+    df.measure$windowStartDate <- windowStartDate
+    df.measure$windowEndDate <- windowEndDate
+    df.measure$nEvents <- nrow(df.window)
+
     #record values
-    netValues <- rbind.fill(list(as.data.frame(netValues),df.measure,data.frame(nEvents=nrow(df.window)) ))
+    netValues <- rbind.fill(list(as.data.frame(netValues),df.measure ))
 
     #move window over
     windowEnd = windowEnd + windowShift

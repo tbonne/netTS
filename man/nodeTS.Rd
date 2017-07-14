@@ -4,16 +4,12 @@
 \alias{nodeTS}
 \title{netWin function}
 \usage{
-nodeTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
-  windowShift = 1, type = "cc", directedNet = T, threshold = 30,
-  windowStart = 0, lag = 1)
+nodeTS(event.data, windowSize = 30, windowShift = 1, type = "cc",
+  directedNet = T, threshold = 30, windowStart = 0, lag = 1,
+  startDate = NULL)
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects}
-
-\item{nBoot}{number of bootstrap estimates to take for each measure}
-
-\item{nPerm}{number of permutation estimates to take for each measure}
 
 \item{windowSize}{size of the window in which to make network measures (should be the same scale as the time column)}
 
@@ -28,6 +24,8 @@ nodeTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
 \item{windowStart}{The time of the first window. This should corespond to the first events.}
 
 \item{lag}{The lag at which to calculate cosine similarity in network structure.}
+
+\item{startDate}{Optional argument to set the date of the first event.}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
