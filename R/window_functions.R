@@ -60,31 +60,38 @@ estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet,previousNet=
 
   # Variables used during bootstrap
   bootstrap.number <- nb
-  sample.size <- nrow(dataSub)
 
-  #where to temporarily store bootstrapped samples from the original data
-  boot.values <- vector('numeric')
 
-  for (n in 1:bootstrap.number){
+  if(bootstrap.number>0){
+    sample.size <- nrow(dataSub)
 
-    #random sample with replacement from the observed interactions
-    random.rows <- sample(1:sample.size, sample.size, replace=T)
-    Boot.List <- dataSub[random.rows,]
+    #where to temporarily store bootstrapped samples from the original data
+    boot.values <- vector('numeric')
 
-    # Create the social network
-    Boot.Network <- create.a.network(Boot.List)
+    for (n in 1:bootstrap.number){
 
-    #calculate and store the network measure calculated from the bootstrapped sample
-    if(type=='between')boot.values[length(boot.values)+1] <- mean(betweenness(Boot.Network,directed = directedNet))
-    if(type=='eigen')boot.values[length(boot.values)+1] <- mean(eigen_centrality(Boot.Network,directed = directedNet))
-    if(type=='close')boot.values[length(boot.values)+1] <- mean(closeness(Boot.Network))
-    if(type=='cc')boot.values[length(boot.values)+1] <- transitivity(Boot.Network)
-    if(type=='degree')boot.values[length(boot.values)+1] <- mean(degree(Boot.Network))
-    if(type=='strength')boot.values[length(boot.values)+1] <- mean(strength(Boot.Network))
-    if(type=='cosine')boot.values[length(boot.values)+1] <- cosine_between_graphs(Boot.Network,previousNet)
+      #random sample with replacement from the observed interactions
+      random.rows <- sample(sample.size, replace=TRUE)
+      Boot.List <- dataSub[random.rows,]
+
+      # Create the social network
+      Boot.Network <- create.a.network(Boot.List)
+
+      #calculate and store the network measure calculated from the bootstrapped sample
+      if(type=='between')boot.values[length(boot.values)+1] <- mean(betweenness(Boot.Network,directed = directedNet))
+      if(type=='eigen')boot.values[length(boot.values)+1] <- mean(eigen_centrality(Boot.Network,directed = directedNet))
+      if(type=='close')boot.values[length(boot.values)+1] <- mean(closeness(Boot.Network))
+      if(type=='cc')boot.values[length(boot.values)+1] <- transitivity(Boot.Network)
+      if(type=='degree')boot.values[length(boot.values)+1] <- mean(degree(Boot.Network))
+      if(type=='strength')boot.values[length(boot.values)+1] <- mean(strength(Boot.Network))
+      if(type=='cosine')boot.values[length(boot.values)+1] <- cosine_between_graphs(Boot.Network,previousNet)
+    }
+
+    return (quantile(boot.values, probs = c(0.0275,0.5,0.975)))
+
+  }else{
+    return (c(NA,NA,NA))
   }
-
-  return (quantile(boot.values, probs = c(0.0275,0.5,0.975)))
 
 }
 
@@ -106,30 +113,36 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 
   #Parameters needed
   permutation.number <- np
-  number.individuals <- vcount(graphW)
-  number.edges <- ecount(graphW)
-  weights <- E(graphW)$weight
 
-  #store the permutation values
-  permutation.values <- vector('numeric')
+  if(permutation.number>0){
+    number.individuals <- vcount(graphW)
+    number.edges <- ecount(graphW)
+    weights <- E(graphW)$weight
 
-  for (n in 1:permutation.number){
+    #store the permutation values
+    permutation.values <- vector('numeric')
 
-    #create a random graph with the same number of nodes and edges as the observed graph
-    Permute.Network <- sample_gnm(number.individuals, number.edges, directed = T,loops = F)
-    E(Permute.Network)$weight <- sample(weights)
+    for (n in 1:permutation.number){
 
-    # Calculate the metric
-    if(type=="between")permutation.values[length(permutation.values)+1] <- mean(betweenness(Permute.Network,directed = directedNet))
-    if(type=="eigen")permutation.values[length(permutation.values)+1] <- mean(eigen_centrality(Permute.Network,directed = directedNet))
-    if(type=="close")permutation.values[length(permutation.values)+1] <- mean(closeness(Permute.Network))
-    if(type=="cc")permutation.values[length(permutation.values)+1] <- transitivity(Permute.Network)
-    if(type=="degree")permutation.values[length(permutation.values)+1] <- mean(degree(Permute.Network))
-    if(type=="strength")permutation.values[length(permutation.values)+1] <- mean(strength(Permute.Network))
-    if(type=="cosine")permutation.values[length(permutation.values)+1] <- cosine_between_graphs(Permute.Network,previousNet)
+      #create a random graph with the same number of nodes and edges as the observed graph
+      Permute.Network <- sample_gnm(number.individuals, number.edges, directed = T,loops = F)
+      E(Permute.Network)$weight <- sample(weights)
+
+      # Calculate the metric
+      if(type=="between")permutation.values[length(permutation.values)+1] <- mean(betweenness(Permute.Network,directed = directedNet))
+      if(type=="eigen")permutation.values[length(permutation.values)+1] <- mean(eigen_centrality(Permute.Network,directed = directedNet))
+      if(type=="close")permutation.values[length(permutation.values)+1] <- mean(closeness(Permute.Network))
+      if(type=="cc")permutation.values[length(permutation.values)+1] <- transitivity(Permute.Network)
+      if(type=="degree")permutation.values[length(permutation.values)+1] <- mean(degree(Permute.Network))
+      if(type=="strength")permutation.values[length(permutation.values)+1] <- mean(strength(Permute.Network))
+      if(type=="cosine")permutation.values[length(permutation.values)+1] <- cosine_between_graphs(Permute.Network,previousNet)
+    }
+
+    return (quantile(permutation.values, probs = c(0.0275,0.5,0.975)))
+
+  }else{
+    return (c(NA,NA,NA))
   }
-
-  return (quantile(permutation.values, probs = c(0.0275,0.5,0.975)))
 
 }
 
