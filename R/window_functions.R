@@ -338,7 +338,8 @@ cosine_between_graphs <- function(graph1,graph2){
   } else {
     g1.edges$weight<-igraph::E(graph1)$weight
   }
-  g1.edges$joinC <- paste(g1.edges$V1,g1.edges$V2,sep=".")
+  #create a join column (ordered)
+  g1.edges$joinC <- ifelse(as.character(g1.edges$V1) < as.character(g1.edges$V2), paste(g1.edges$V1, g1.edges$V2), paste(g1.edges$V2, g1.edges$V1))
 
   #create weighted edge list from second graph
   g2.edges<-as.data.frame(get.edgelist(graph2, names=TRUE))
@@ -347,7 +348,8 @@ cosine_between_graphs <- function(graph1,graph2){
   } else {
     g2.edges$weight<-igraph::E(graph2)$weight
   }
-  g2.edges$joinC <- paste(g2.edges$V1,g2.edges$V2,sep=".")
+  #create a join column (ordered)
+  g2.edges$joinC <- ifelse(as.character(g2.edges$V1) < as.character(g2.edges$V2), paste(g2.edges$V1, g2.edges$V2), paste(g2.edges$V2, g2.edges$V1))
 
   #join the weighted edge lists, setting NAs equal to 0
   comb<-full_join(g1.edges,g2.edges,by="joinC")
