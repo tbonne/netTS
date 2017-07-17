@@ -21,7 +21,7 @@ nodeTS.plot <- function(df.ts, nEvents = FALSE, dates = FALSE){
 
       df.melt<-melt(df.ts, id=c("windowEnd"))
       df.melt<-df.melt[complete.cases(df.melt),]
-      df.melt<-filter(df.melt, variable != "windowStart" & variable != "windowEnd" & variable != "windowStartDate" & variable != "windowEndDate")
+      df.melt<-filter(df.melt, variable != "windowStart" & variable != "windowEnd" & variable != "windowStartDate" & variable != "windowEndDate", variable != "nEvents")
 
       fig<-ggplot(df.melt, aes(x=windowEnd, y=value, group=variable, color=variable))+ geom_line()+
         geom_point(color="blue") +
@@ -31,7 +31,7 @@ nodeTS.plot <- function(df.ts, nEvents = FALSE, dates = FALSE){
 
       df.melt<-melt(df.ts, id=c("windowEndDate"))
       df.melt<-df.melt[complete.cases(df.melt),]
-      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate")
+      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate", variable != "nEvents")
 
       fig<-ggplot(df.melt, aes(x=windowEndDate, y=value, group=variable, color=variable))+ geom_line()+
         geom_point(color="blue") +
