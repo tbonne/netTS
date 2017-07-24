@@ -122,7 +122,7 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
     node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
   }
 
-  node.cosine[is.nan(node.cosine)]<-0
+  #node.cosine[is.nan(node.cosine)]<-0
   cos.df<-as.data.frame(t(node.cosine))
   names(cos.df)<-names.unique[-length(names.unique)]
 
