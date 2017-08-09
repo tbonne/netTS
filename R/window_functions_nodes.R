@@ -146,8 +146,8 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' @export
 #' @import igraph
 #' @importFrom plyr rbind.fill
-#' @importFrom lubridate dmy
-#' @importFrom lubridate days
+#' @import lubridate
+
 #' @examples
 #'
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
@@ -234,8 +234,8 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
     windowStartDate <- NA
     windowEndDate <- NA
     if(is.null(startDate)==FALSE){
-      windowStartDate <- dmy(startDate) + days(windowStart)
-      windowEndDate <- dmy(startDate) + days(windowEnd)
+      windowStartDate <- mdy(startDate) + days(windowStart)
+      windowEndDate <- mdy(startDate) + days(windowEnd)
     }
     df.measure$windowStartDate <- windowStartDate
     df.measure$windowEndDate <- windowEndDate
