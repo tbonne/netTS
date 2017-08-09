@@ -6,7 +6,7 @@
 \usage{
 nodeTS(event.data, windowSize = 30, windowShift = 1, type = "cc",
   directedNet = T, threshold = 30, windowStart = 0, lag = 1,
-  startDate = NULL)
+  startDate = NULL, startDateFormat = "dmy")
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects}

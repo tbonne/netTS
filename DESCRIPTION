@@ -16,5 +16,6 @@ Imports:
     lsa,
     plyr,
     reshape2,
+    moments,
     ggplot2
 RoxygenNote: 6.0.1

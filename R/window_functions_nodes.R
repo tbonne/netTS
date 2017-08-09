@@ -130,6 +130,56 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 
 }
 
+
+#' Estimate skewness of the edge weight distribution for each node in a graph
+#'
+#' This function will calculate the skewness of edge weights from nodes in a graph.
+#' @param graph1 An igraph object.
+#' @param type The type of edges to pull from the graph: 'in', 'out', or 'all'. In non-directed graphs this is ignored.
+#' @export
+#' @import igraph
+#' @import moments
+#' @examples
+#' library(igraph)
+#'
+#' #Random graph
+#' graph1 <- random.graph.game(n=10, p.or.m = 0.3)
+#' E(graph1)$weight <- c(1,2,3,4,5,6,7,7,7,7)
+#'
+#' #skewness
+#' #edge.weight.skeweness(graph1)
+#'
+edge.weight.skewness <- function(graph1, type = "all"){
+
+  if(type == "all"){
+    edge.skewness <- vector()
+    for(i in 1:vcount(graph1)){
+      inc.edges <- incident(graph1,  V(graph1)[i], mode="all")
+      edge.skewness[length(edge.skewness)+1]<-skewness(E(graph1)[inc.edges]$weight)
+    }
+
+  } else if (type == "out") {
+    edge.skewness <- vector()
+    for(i in 1:vcount(graph1)){
+      inc.edges <- incident(graph1,  V(graph1)[i], mode="out")
+      edge.skewness[length(edge.skewness)+1]<-skewness(E(graph1)[inc.edges]$weight)
+    }
+
+  } else if(type == "in"){
+    edge.skewness <- vector()
+    for(i in 1:vcount(graph1)){
+      inc.edges <- incident(graph1,  V(graph1)[i], mode="in")
+      edge.skewness[length(edge.skewness)+1]<-skewness(E(graph1)[inc.edges]$weight)
+    }
+  }
+
+
+  edge.skewness<-data.frame(t(edge.skewness))
+  colnames(edge.skewness) <- V(graph1)$name
+
+  return (edge.skewness)
+}
+
 #' netWin function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
@@ -147,13 +197,12 @@ cosine_between_graphs_nodes<- function(graph1, graph2){
 #' @import igraph
 #' @importFrom plyr rbind.fill
 #' @import lubridate
-
 #' @examples
 #'
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
 #' nodeTS.plot(ts.out)
 #'
-nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL){
+nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL,startDateFormat="dmy"){
 
   #intialize
   windowEnd=windowStart+windowSize
@@ -199,6 +248,7 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
         if(type=='degree')measure <- degree(g)
         if(type=='strength')measure <- strength(g)
         if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]])
+        if(type=='skewness')measure <- edge.weight.skewness(graph1 = g)
 
         #create a dataframe with the measures
         if(type=='cosine'){
