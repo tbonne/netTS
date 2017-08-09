@@ -173,10 +173,6 @@ edge.weight.skewness <- function(graph1, type = "all"){
     }
   }
 
-
-  edge.skewness<-data.frame(t(edge.skewness))
-  colnames(edge.skewness) <- V(graph1)$name
-
   return (edge.skewness)
 }
 
@@ -248,7 +244,7 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
         if(type=='degree')measure <- degree(g)
         if(type=='strength')measure <- strength(g)
         if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]])
-        if(type=='skewness')measure <- edge.weight.skewness(graph1 = g)
+        if(type=='skewness')measure <- edge.weight.skewness(g)
 
         #create a dataframe with the measures
         if(type=='cosine'){
