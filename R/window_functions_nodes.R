@@ -234,8 +234,8 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
     windowStartDate <- NA
     windowEndDate <- NA
     if(is.null(startDate)==FALSE){
-      windowStartDate <- dmy(startDate) + days(windowStart)
-      windowEndDate <- dmy(startDate) + days(windowEnd)
+      windowStartDate <- mdy(startDate) + days(windowStart)
+      windowEndDate <- mdy(startDate) + days(windowEnd)
     }
     df.measure$windowStartDate <- windowStartDate
     df.measure$windowEndDate <- windowEndDate
