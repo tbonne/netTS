@@ -11,8 +11,8 @@ LazyData: true
 Depends:R (>= 2.10)
 Imports:
     dplyr,
-    igraph,
     lubridate,
+    igraph,
     lsa,
     plyr,
     reshape2,

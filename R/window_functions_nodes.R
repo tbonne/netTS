@@ -1,8 +1,8 @@
 
 #' Plotting function for nodeTS dataframes
 #'
-#' This function will plot the output of the nodeWin function
-#' @param df.ts output dataframe from the nodeWin function
+#' This function will plot the output of the nodeTS function
+#' @param df.ts output dataframe from the nodeTS function
 #' @param nEvents Opional argument to plot the number of events
 #' @param dates Optional argument to plot the date as opposed to the time since the first event
 #' @import ggplot2
@@ -176,7 +176,7 @@ edge.weight.skewness <- function(graph1, type = "all"){
   return (edge.skewness)
 }
 
-#' netWin function
+#' nodeTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
 #' A time column is required.
@@ -192,13 +192,14 @@ edge.weight.skewness <- function(graph1, type = "all"){
 #' @export
 #' @import igraph
 #' @importFrom plyr rbind.fill
-#' @import lubridate
+#' @importFrom lubridate dmy
+#' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
 #' nodeTS.plot(ts.out)
 #'
-nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL,startDateFormat="dmy"){
+nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL){
 
   #intialize
   windowEnd=windowStart+windowSize

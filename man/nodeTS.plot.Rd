@@ -7,14 +7,14 @@
 nodeTS.plot(df.ts, nEvents = FALSE, dates = FALSE)
 }
 \arguments{
-\item{df.ts}{output dataframe from the nodeWin function}
+\item{df.ts}{output dataframe from the nodeTS function}
 
 \item{nEvents}{Opional argument to plot the number of events}
 
 \item{dates}{Optional argument to plot the date as opposed to the time since the first event}
 }
 \description{
-This function will plot the output of the nodeWin function
+This function will plot the output of the nodeTS function
 }
 \examples{
 
