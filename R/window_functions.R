@@ -183,7 +183,7 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' @import igraph
 #' @importFrom lubridate dmy
 #' @importFrom lubridate mdy
-#' @importFrom lubridate days
+#' @import lubridate
 #' @examples
 #'
 #' ts.out<-graphTS(event.data=groomEvents[1:200,])
