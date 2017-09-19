@@ -43,6 +43,23 @@ create.window <- function(df.total, start, end){
   return (window.sub)
 }
 
+#' Create a window with a time column
+#'
+#' This function will generate a window from a larger event dataframe, based on the time of the events. The dataframe returned will have to, from, and time as columns.
+#' @param df.total dataframe containing all events
+#' @param start the starting time of the window
+#' @param end the ending time of the window
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#'
+create.window.time <- function(df.total, start, end){
+
+  df.win <- filter(df.total, time < end &  time >= start)
+  window.sub <- select(df.win, from, to, time )
+
+  return (window.sub)
+}
+
 
 #' Bootstrap estimates
 #'
@@ -211,6 +228,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
         if(type=='degree')measure <- mean(degree(g))
         if(type=='strength')measure <- mean(strength(g))
         if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gplist[[1]])
+        if(type=='SRI')measure <- get_SRI(create.window.time(event.data, windowStart, windowEnd))
 
         #estimate uncertainty of measure (bootstrap)
         if(type=='cosine'){
@@ -243,8 +261,8 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
     windowStartDate <- NA
     windowEndDate <- NA
     if(is.null(startDate)==FALSE){
-      windowStartDate <- dmy(startDate) + days(windowStart)
-      windowEndDate <- dmy(startDate) + days(windowEnd)
+      windowStartDate <- mdy(startDate) + days(windowStart)
+      windowEndDate <- mdy(startDate) + days(windowEnd)
     }
 
     #record each measure as we go
@@ -360,5 +378,27 @@ cosine_between_graphs <- function(graph1,graph2){
 
 }
 
+
+#' Estimate SRI value for each dyad
+#'
+#' This function will calculate the SRI score for each dyad
+#' @param graph1 first graph (igraph)
+#' @param graph2 second graph (igraph)
+#' @export
+#' @import igraph
+#' @importFrom dplyr full_join
+#' @importFrom asnipe get_group_by_individual
+#' @examples
+#'
+#'
+get_SRI <- function(df.window){
+
+  #for each individual calculate SRI scores to others
+
+  unique.ids<-unique(c(df.window$to,df.window$from))
+
+
+
+}
 
 
