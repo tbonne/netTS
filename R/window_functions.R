@@ -182,6 +182,7 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' @export
 #' @import igraph
 #' @importFrom lubridate dmy
+#' @importFrom lubridate mdy
 #' @importFrom lubridate days
 #' @examples
 #'
@@ -387,14 +388,14 @@ cosine_between_graphs <- function(graph1,graph2){
 #' @export
 #' @import igraph
 #' @importFrom dplyr full_join
-#' @importFrom asnipe get_group_by_individual
+#'
 #' @examples
 #'
 #'
 get_SRI <- function(df.window){
 
   #for each individual calculate SRI scores to others
-
+  #@importFrom asnipe get_group_by_individual
   unique.ids<-unique(c(df.window$to,df.window$from))
 
 
