@@ -193,7 +193,6 @@ edge.weight.skewness <- function(graph1, type = "all"){
 #' @import igraph
 #' @importFrom plyr rbind.fill
 #' @importFrom lubridate dmy
-#' @importFrom lubridate mdy
 #' @importFrom lubridate days
 #' @examples
 #'
