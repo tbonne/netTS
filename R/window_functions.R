@@ -6,8 +6,47 @@
 #'
 create.a.network<-function(events){
 
-  elist<-create.an.edgeList(events)
+  elist<-create.an.edgeList(complete.cases(events))
   names(elist)<- c("from", "to", "weight")
+  gg <- graph_from_data_frame(elist, directed = TRUE, vertices = NULL)
+
+  return(gg)
+}
+
+#' Create a network from an edge list using the SRI.
+#'
+#' This function will generate an SRI network from an event dataframe
+#' @param events dataframe containing all events.
+#' @importFrom igraph graph_from_data_frame
+#'
+create.a.network.SRI<-function(events){
+
+  elist<-create.an.edgeList(events)
+  elist.sri <- vector()
+  for(i in 1:nrow(elist)){
+
+    Nab <- elist$n[i]
+
+    # elist.Na <- elist[elist$from==elist[i,]$from,]
+    # elist.Na <- elist.Na[elist.Na$to!=elist[i,]$to,]
+    # Na <- sum(elist.Na$n)
+    #
+    # elist.Nb <- elist[elist$from==elist[i,]$to,]
+    # elist.Nb <- elist.Nb[elist.Nb$to!=elist[i,]$from,]
+    # Nb <- sum(elist.Nb$n)
+    #
+    # elist.sri[length(elist.sri)+1] <- Nab / (Nab + Na + Nb)
+
+    Na <- elist %>% dplyr::filter(from==as.character(elist[i,]$from) ) %>% dplyr::filter(to!=as.character(elist[i,]$to) ) %>% summarise(x=sum(n))
+    Nb <- elist %>% dplyr::filter(from==as.character(elist[i,]$to) ) %>% dplyr::filter(to!=as.character(elist[i,]$from) ) %>% summarise(x=sum(n))
+    elist.sri[length(elist.sri)+1] <- Nab / (Nab + Na[[1]] + Nb[[1]])
+
+  }
+
+  elist$n <- elist.sri
+
+  names(elist)<- c("from", "to", "weight")
+  elist <- elist[complete.cases(elist),]
   gg <- graph_from_data_frame(elist, directed = TRUE, vertices = NULL)
 
   return(gg)
@@ -187,7 +226,7 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' ts.out<-graphTS(event.data=groomEvents[1:200,])
 #' graphTS.plot(ts.out)
 #'
-graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1,startDate=NULL){
+graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1,startDate=NULL, method="none"){
 
   #intialize
   windowEnd=windowStart+windowSize
@@ -208,7 +247,11 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
       #if there is no previous network, and the measure requires one
       if(is.na(gplist[1]) & type=='cosine'){
 
-        gplist[[length(gplist)+1]] <- create.a.network(df.window)
+        if(method == "none"){
+          gplist[[length(gplist)+1]] <- create.a.network(df.window)
+        } else if (method == "SRI"){
+          gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window)
+        }
         gplist<-gplist[-1]
         measure <- NA
         measure.uncertainty<-c(NA,NA,NA)
@@ -217,7 +260,12 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
       } else {
 
         #create a network
-        g <- create.a.network(df.window)
+        if(method == "none"){
+          g <- create.a.network(df.window)
+        } else if (method == "SRI"){
+          g <- create.a.network.SRI(df.window)
+        }
+
 
         #calculate measure
         if(type=='between')measure <- mean(betweenness(g))
@@ -313,9 +361,9 @@ graphTS.plot<-function(df.ts, nEvents=FALSE, dates=FALSE){
   } else {
 
     if(dates==FALSE){
-    fig<-ggplot(df.ts, aes(x=df.ts$windowEnd, y=df.ts$nEvents))+ geom_line()+
-      geom_point(color="blue") +
-      labs(x= "Time since start", y="Number of events")+theme_minimal()
+      fig<-ggplot(df.ts, aes(x=df.ts$windowEnd, y=df.ts$nEvents))+ geom_line()+
+        geom_point(color="blue") +
+        labs(x= "Time since start", y="Number of events")+theme_minimal()
     } else{
       fig<-ggplot(df.ts, aes(x=df.ts$windowEndDate, y=df.ts$nEvents))+ geom_line()+
         geom_point(color="blue") +

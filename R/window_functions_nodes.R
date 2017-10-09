@@ -189,6 +189,7 @@ edge.weight.skewness <- function(graph1, type = "all"){
 #' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced).
 #' @param lag The lag at which to calculate cosine similarity in network structure.
 #' @param startDate Optional argument to set the date of the first event.
+#' @param method Optional argument to apply an network index. Current options: none, SRI.
 #' @export
 #' @import igraph
 #' @importFrom plyr rbind.fill
@@ -199,7 +200,7 @@ edge.weight.skewness <- function(graph1, type = "all"){
 #' ts.out<-nodeTS(event.data=groomEvents[1:200,])
 #' nodeTS.plot(ts.out)
 #'
-nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL){
+nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL, method="none"){
 
   #intialize
   windowEnd=windowStart+windowSize
@@ -226,7 +227,12 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
       #if there is no previous network, and the measure requires one
       if(is.na(gplist[1]) & type=='cosine'){
 
-        gplist[[length(gplist)+1]] <- create.a.network(df.window)
+        if(method=="node"){
+          gplist[[length(gplist)+1]] <- create.a.network(df.window)
+        } else if (method == "SIR"){
+          gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window)
+        }
+
         gplist<-gplist[-1]
         df.measure <- as.data.frame(NA)
         measure.uncertainty<-c(NA,NA,NA)
@@ -235,7 +241,11 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
       } else {
 
         #create a network
-        g <- create.a.network(df.window)
+        if(method=="none"){
+          g <- create.a.network(df.window)
+        } else if (method=="SRI"){
+          g <- create.a.network.SRI(df.window)
+        }
 
         #calculate measure
         if(type=='between')measure <- betweenness(g)

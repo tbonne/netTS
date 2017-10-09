@@ -6,7 +6,7 @@
 \usage{
 graphTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
   windowShift = 1, type = "cc", directedNet = T, threshold = 30,
-  windowStart = 0, lag = 1, startDate = NULL)
+  windowStart = 0, lag = 1, startDate = NULL, method = "none")
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects. This dataframe should have a 'to' and a 'from' column, as well as 'time' column representing the time between the start of observations and the events.}

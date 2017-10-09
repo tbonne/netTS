@@ -6,7 +6,7 @@
 \usage{
 nodeTS(event.data, windowSize = 30, windowShift = 1, type = "cc",
   directedNet = T, threshold = 30, windowStart = 0, lag = 1,
-  startDate = NULL)
+  startDate = NULL, method = "none")
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects}
@@ -26,6 +26,8 @@ nodeTS(event.data, windowSize = 30, windowShift = 1, type = "cc",
 \item{lag}{The lag at which to calculate cosine similarity in network structure.}
 
 \item{startDate}{Optional argument to set the date of the first event.}
+
+\item{method}{Optional argument to apply an network index. Current options: none, SRI.}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
