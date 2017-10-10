@@ -27,20 +27,9 @@ create.a.network.SRI<-function(events){
 
     Nab <- elist$n[i]
 
-    # elist.Na <- elist[elist$from==elist[i,]$from,]
-    # elist.Na <- elist.Na[elist.Na$to!=elist[i,]$to,]
-    # Na <- sum(elist.Na$n)
-    #
-    # elist.Nb <- elist[elist$from==elist[i,]$to,]
-    # elist.Nb <- elist.Nb[elist.Nb$to!=elist[i,]$from,]
-    # Nb <- sum(elist.Nb$n)
-    #
-    # elist.sri[length(elist.sri)+1] <- Nab / (Nab + Na + Nb)
-
     Na <- elist %>% dplyr::filter(from==as.character(elist[i,]$from) ) %>% dplyr::filter(to!=as.character(elist[i,]$to) ) %>% summarise(x=sum(n))
     Nb <- elist %>% dplyr::filter(from==as.character(elist[i,]$to) ) %>% dplyr::filter(to!=as.character(elist[i,]$from) ) %>% summarise(x=sum(n))
     elist.sri[length(elist.sri)+1] <- Nab / (Nab + Na[[1]] + Nb[[1]])
-
   }
 
   elist$n <- elist.sri
