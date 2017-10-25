@@ -22,8 +22,5 @@ graph1 <-erdos.renyi.game(n=10,p=0.1)
 graph2 <-erdos.renyi.game(n=10,p=0.1)
 cosine_between_graphs_nodes(graph1,graph2)
 
-#moving windo with cosine similarity
-ts.out<-nodeTS(event.data=groomEvents[1:100,], type='cosine')
-nodeTS.plot(ts.out)
 
 }
