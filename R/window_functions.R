@@ -217,7 +217,8 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
 
   #intialize
   windowEnd=windowStart+windowSize
-  netValues <- data.frame()
+  netValues <- data.frame(t(rep(-1,12)))
+  names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
   gplist <- rep(list(NA),lag)
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
@@ -306,7 +307,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
     windowStart = windowStart + windowShift
   }
 
-  names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
+  netValues<-netValues[-1,]
   return (netValues)
 }
 
