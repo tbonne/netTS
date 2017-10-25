@@ -246,7 +246,7 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
 
         #calculate measure
         if(type=='between')measure <- betweenness(g)
-        if(type=='eigne')measure <- eigen_centrality(g)
+        if(type=='eigne')measure <- eigen_centrality(g)$vector
         if(type=='close')measure <- closeness(g)
         if(type=='cc')measure <- transitivity(g, type=c('local'))
         if(type=='degree')measure <- degree(g)

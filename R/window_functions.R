@@ -255,7 +255,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
 
         #calculate measure
         if(type=='between')measure <- mean(betweenness(g))
-        if(type=='eigen')measure <- mean(eigen_centrality(g))
+        if(type=='eigen')measure <- mean(eigen_centrality(g)$vector)
         if(type=='close')measure <- mean(closeness(g))
         if(type=='cc')measure <- transitivity(g)
         if(type=='degree')measure <- mean(degree(g))
