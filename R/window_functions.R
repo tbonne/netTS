@@ -294,8 +294,8 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
     windowStartDate <- NA
     windowEndDate <- NA
     if(is.null(startDate)==FALSE){
-      windowStartDate <- mdy(startDate) + days(windowStart)
-      windowEndDate <- mdy(startDate) + days(windowEnd)
+      windowStartDate <- ymd(startDate) + days(windowStart)
+      windowEndDate <- ymd(startDate) + days(windowEnd)
     }
 
     #record each measure as we go
