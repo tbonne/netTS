@@ -300,7 +300,9 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
     }
 
     #record each measure as we go
-    netValues <- rbind(netValues,data.frame(measure, measure.uncertainty[1],measure.uncertainty[2], measure.uncertainty[3],measure.random[1],measure.random[2],measure.random[3],nrow(df.window),windowStart,windowEnd,windowStartDate, windowEndDate))
+    instance<-data.frame(measure, measure.uncertainty[1],measure.uncertainty[2], measure.uncertainty[3],measure.random[1],measure.random[2],measure.random[3],nrow(df.window),windowStart,windowEnd,windowStartDate, windowEndDate)
+    names(instance) <- c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
+    netValues <- rbind(netValues,)
 
     #move window over
     windowEnd = windowEnd + windowShift
