@@ -6,7 +6,7 @@
 #'
 create.a.network<-function(events){
 
-  elist<-create.an.edgeList(complete.cases(events))
+  elist<-create.an.edgeList(events)
   names(elist)<- c("from", "to", "weight")
   gg <- graph_from_data_frame(elist, directed = TRUE, vertices = NULL)
 
@@ -65,8 +65,8 @@ create.an.edgeList<-function(events){
 #'
 create.window <- function(df.total, start, end){
 
-  df.win <- filter(df.total, time < end &  time >= start)
-  window.sub <- select(df.win, from, to )
+  df.win <- dplyr::filter(df.total, time < end &  time >= start)
+  window.sub <- dplyr::select(df.win, from, to )
 
   return (window.sub)
 }
@@ -82,8 +82,8 @@ create.window <- function(df.total, start, end){
 #'
 create.window.time <- function(df.total, start, end){
 
-  df.win <- filter(df.total, time < end &  time >= start)
-  window.sub <- select(df.win, from, to, time )
+  df.win <- dplyr::filter(df.total, time < end &  time >= start)
+  window.sub <- dplyr::select(df.win, from, to, time )
 
   return (window.sub)
 }
@@ -139,8 +139,6 @@ estimate.uncertainty.boot <- function(dataSub,nb, type, directedNet,previousNet=
   }
 
 }
-
-
 
 #' Permutation test
 #'
@@ -254,7 +252,6 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
         } else if (method == "SRI"){
           g <- create.a.network.SRI(df.window)
         }
-
 
         #calculate measure
         if(type=='between')measure <- mean(betweenness(g))
