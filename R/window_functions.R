@@ -220,6 +220,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
   netValues <- data.frame(t(rep(-1,12)))
   names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
   gplist <- rep(list(NA),lag)
+  netlist <- rep(list(NULL),1)
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -263,6 +264,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
         if(type=='strength')measure <- mean(strength(g))
         if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gplist[[1]])
         if(type=='SRI')measure <- get_SRI(create.window.time(event.data, windowStart, windowEnd))
+        if(type=='network')netlist[[length(netlist)+1]]<- g
 
         #estimate uncertainty of measure (bootstrap)
         if(type=='cosine'){
@@ -310,7 +312,14 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
   }
 
   netValues<-netValues[-1,]
-  return (netValues)
+  netlist <- netlist[-1]
+
+  if(type=="network"){
+    return (netlist)
+  } else {
+    return (netValues)
+  }
+
 }
 
 #' Plotting function for netTS dataframes
