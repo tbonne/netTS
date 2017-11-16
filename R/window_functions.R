@@ -213,13 +213,14 @@ estimate.random.range.perm <- function(graphW,np, type, directedNet,previousNet=
 #' ts.out<-graphTS(event.data=groomEvents[1:200,])
 #' graphTS.plot(ts.out)
 #'
-graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1,startDate=NULL, method="none"){
+graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0, lag=1,startDate=NULL, method="none"){
 
   #intialize
   windowEnd=windowStart+windowSize
   netValues <- data.frame(t(rep(-1,12)))
   names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
   gplist <- rep(list(NA),lag)
+  netlist <- rep(list(NULL),1)
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -255,6 +256,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
         }
 
         #calculate measure
+        measure <- NA
         if(type=='between')measure <- mean(betweenness(g))
         if(type=='eigen')measure <- mean(eigen_centrality(g, scale = FALSE)$vector)
         if(type=='close')measure <- mean(closeness(g))
@@ -263,6 +265,7 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
         if(type=='strength')measure <- mean(strength(g))
         if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gplist[[1]])
         if(type=='SRI')measure <- get_SRI(create.window.time(event.data, windowStart, windowEnd))
+        if(type=='network')netlist[[length(netlist)+1]]<- g
 
         #estimate uncertainty of measure (bootstrap)
         if(type=='cosine'){
@@ -310,7 +313,14 @@ graphTS <- function (event.data,nBoot=100,nPerm=100,windowSize =30,windowShift= 
   }
 
   netValues<-netValues[-1,]
-  return (netValues)
+  netlist <- netlist[-1]
+
+  if(type=="network"){
+    return (netlist)
+  } else {
+    return (netValues)
+  }
+
 }
 
 #' Plotting function for netTS dataframes
