@@ -71,6 +71,22 @@ create.window <- function(df.total, start, end){
   return (window.sub)
 }
 
+#' Create a window with a group category
+#'
+#' This function will generate a window from a larger event dataframe, based on the time of the events. This function will keep all other columns, while create.window() will only keep to and from.
+#' @param df.total dataframe containing all events
+#' @param start the starting time of the window
+#' @param end the ending time of the window
+#' @importFrom dplyr filter
+#' @importFrom dplyr select
+#'
+create.window.group <- function(df.total, start, end){
+
+  df.win <- dplyr::filter(df.total, time < end &  time >= start)
+
+  return (window.sub)
+}
+
 #' Create a window with a time column
 #'
 #' This function will generate a window from a larger event dataframe, based on the time of the events. The dataframe returned will have to, from, and time as columns.
@@ -266,6 +282,7 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
         if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gplist[[1]])
         if(type=='SRI')measure <- get_SRI(create.window.time(event.data, windowStart, windowEnd))
         if(type=='network')netlist[[length(netlist)+1]]<- g
+        if(type=='events')netlist[[length(netlist)+1]]<- create.window.group(event.data, windowStart, windowEnd)
 
         #estimate uncertainty of measure (bootstrap)
         if(type=='cosine'){
