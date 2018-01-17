@@ -250,7 +250,11 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
         if(type=='close')measure <- closeness(g)
         if(type=='cc')measure <- transitivity(g, type=c('local'))
         if(type=='degree')measure <- degree(g)
+        if(type=='degreeOUT')measure <- degree(g, mode="out")
+        if(type=='degreeIN')measure <- degree(g, mode="in")
         if(type=='strength')measure <- strength(g)
+        if(type=='strengthOUT')measure <- strength(g, mode="out")
+        if(type=='strengthIN')measure <- strength(g, mode="in")
         if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]])
         if(type=='skewness')measure <- edge.weight.skewness(g)
 
