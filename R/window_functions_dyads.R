@@ -66,8 +66,8 @@ dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",
     windowStartDate <- NA
     windowEndDate <- NA
     if(is.null(startDate)==FALSE){
-      windowStartDate <- mdy(startDate) + days(windowStart)
-      windowEndDate <- mdy(startDate) + days(windowEnd)
+      windowStartDate <- ymd(startDate) + days(windowStart)
+      windowEndDate <- ymd(startDate) + days(windowEnd)
     }
     df.measure$windowStartDate <- windowStartDate
     df.measure$windowEndDate <- windowEndDate
