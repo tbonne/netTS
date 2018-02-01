@@ -4,7 +4,7 @@
 \alias{graphTS}
 \title{graphTS function}
 \usage{
-graphTS(event.data, nBoot = 100, nPerm = 100, windowSize = 30,
+graphTS(event.data, nBoot = 0, nPerm = 0, windowSize = 30,
   windowShift = 1, type = "cc", directedNet = T, threshold = 30,
   windowStart = 0, lag = 1, startDate = NULL, method = "none")
 }
