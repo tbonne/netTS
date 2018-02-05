@@ -343,8 +343,6 @@ re.net<-function(df.int, summary=FALSE){
     if(length(split.name[[1]])==2){
       node.names[length(node.names)+1]<-split.name[[1]][1]
       node.names[length(node.names)+1]<-split.name[[1]][2]
-      print(node.names)
-      print(i)
     } else {
       print("error colnames not read properly")
     }
