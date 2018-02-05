@@ -330,10 +330,11 @@ dyadTS.plot <- function(df.ts, nEvents = FALSE, dates = FALSE){
 #' This function will take the random effect matrix from a mixed model and create networks.
 #' @param df.int Dataframe of the random effects where each row is a sample for each dyadic relationship. The column names of such a dataframe should have both individual names seperated by a "_".
 #' @param summary If summary is F (Default) then a list of networks is returned, one for each sample. If summary is T then one network is returned with mean edge weights.
+#' @param directed Whether the relationships are considered as directed or not.
 #' @export
 #' @import igraph
 #'
-re.net<-function(df.int, summary=FALSE){
+re.net<-function(df.int, summary=FALSE, directed = TRUE){
 
   #create list of node names and give them each a node number (needed for adding edges)
   col.names <- colnames(df.int)
@@ -363,7 +364,12 @@ re.net<-function(df.int, summary=FALSE){
     for (i in 1:nrow(df.int)){
 
       #create empty graph and start adding edges
-      graph.temp<-as.undirected(make_empty_graph(n=length(unique.node.names) ))
+      if(directed == FALSE) {
+        graph.temp<-as.undirected(make_empty_graph(n=length(unique.node.names) ))
+      } else {
+        graph.temp<-as.directed(make_empty_graph(n=length(unique.node.names) ))
+      }
+
 
       #take each column j
       for (j in 1:ncol(df.int)){
@@ -394,7 +400,11 @@ re.net<-function(df.int, summary=FALSE){
     #Calculate mean network
 
     #create empty graph and start adding edges
-    graph.mean<-as.undirected(make_empty_graph(n=length(unique.node.names) ))
+    if(directed == FALSE) {
+      graph.mean<-as.undirected(make_empty_graph(n=length(unique.node.names) ))
+    } else {
+      graph.mean<-as.directed(make_empty_graph(n=length(unique.node.names) ))
+    }
 
     #take each column j
     for (j in 1:5){ #ncol(df.int)
