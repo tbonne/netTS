@@ -356,6 +356,9 @@ re.net<-function(df.int, summary=FALSE){
     #create a list of graphs
     graph.list <- list()
 
+    #create progress bar
+    pb <- txtProgressBar(min = 0, max = nrow(df.int), style = 3)
+
     #for each row i
     for (i in 1:nrow(df.int)){
 
@@ -375,6 +378,9 @@ re.net<-function(df.int, summary=FALSE){
 
         #add to graph
         graph.temp <- graph.temp %>% add_edges(c(node1,node2), weight=df.int[i,j])
+
+        # update progress bar
+        setTxtProgressBar(pb, i)
       }
 
 
