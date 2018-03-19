@@ -2,13 +2,14 @@
 #'
 #' This function will generate a network from an event dataframe
 #' @param events dataframe containing all events.
+#' @param directedG Treat the network as directed or not (Default = TRUE)
 #' @importFrom igraph graph_from_data_frame
 #'
-create.a.network<-function(events){
+create.a.network<-function(events, directedG = TRUE){
 
   elist<-create.an.edgeList(events)
   names(elist)<- c("from", "to", "weight")
-  gg <- graph_from_data_frame(elist, directed = TRUE, vertices = NULL)
+  gg <- graph_from_data_frame(elist, directed = directedG, vertices = NULL)
 
   return(gg)
 }
