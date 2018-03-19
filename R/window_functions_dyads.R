@@ -29,7 +29,7 @@ dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
   #set global dataframe with proper names
-  g.global <- create.a.network(event.data)
+  g.global <- create.a.network(event.data, directedG = directedNet)
   names.edges<-paste(get.edgelist(g.global)[,1],get.edgelist(g.global)[,2],sep="_")
   netValues<- t(rep(1,length(names.edges)))
   colnames(netValues)<-names.edges
@@ -45,7 +45,7 @@ dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",
     if(nrow(df.window)>threshold){
 
       #create a network
-      g <- create.a.network(df.window)
+      g <- create.a.network(df.window, directedG = directedNet)
 
       #calculate measure
       if(type=='weight')df.measure <- dyad_weight(g)

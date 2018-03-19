@@ -4,10 +4,12 @@
 \alias{create.a.network}
 \title{Create a network from an edge list}
 \usage{
-create.a.network(events)
+create.a.network(events, directedG = TRUE)
 }
 \arguments{
 \item{events}{dataframe containing all events.}
+
+\item{directedG}{Treat the network as directed or not (Default = TRUE)}
 }
 \description{
 This function will generate a network from an event dataframe

@@ -207,7 +207,7 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
   #set global dataframe with proper names
-  g.global <- create.a.network(event.data)
+  g.global <- create.a.network(event.data, directedG = directedNet)
   netValues<- t(rep(1,vcount(g.global)))
   colnames(netValues)<-names(igraph::V(g.global))
 
@@ -225,9 +225,9 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
       if(is.na(gplist[1]) & type=='cosine'){
 
         if(method=="node"){
-          gplist[[length(gplist)+1]] <- create.a.network(df.window)
+          gplist[[length(gplist)+1]] <- create.a.network(df.window, directedG = directedNet)
         } else if (method == "SIR"){
-          gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window)
+          gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window, directedG = directedNet)
         }
 
         gplist<-gplist[-1]

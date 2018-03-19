@@ -4,12 +4,14 @@
 \alias{re.net}
 \title{re.net function}
 \usage{
-re.net(df.int, summary = FALSE)
+re.net(df.int, summary = FALSE, directed = TRUE)
 }
 \arguments{
 \item{df.int}{Dataframe of the random effects where each row is a sample for each dyadic relationship. The column names of such a dataframe should have both individual names seperated by a "_".}
 
 \item{summary}{If summary is F (Default) then a list of networks is returned, one for each sample. If summary is T then one network is returned with mean edge weights.}
+
+\item{directed}{Whether the relationships are considered as directed or not.}
 }
 \description{
 This function will take the random effect matrix from a mixed model and create networks.
