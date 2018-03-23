@@ -11,6 +11,8 @@ create.a.network<-function(events, directedG = TRUE){
   names(elist)<- c("from", "to", "weight")
   gg <- graph_from_data_frame(elist, directed = directedG, vertices = NULL)
 
+  if(is.simple(gg)==FALSE)gg<-simplify(gg, edge.attr.comb=list(weight="sum"))
+
   return(gg)
 }
 
@@ -277,6 +279,10 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
         if(type=='between')measure <- mean(betweenness(g))
         if(type=='eigen')measure <- mean(eigen_centrality(g, scale = FALSE)$vector)
         if(type=='close')measure <- mean(closeness(g))
+        if(type=='closeInv'){
+          E(g)$weight <- 1/E(g)$weight
+          measure <- mean(closeness(g))
+        }
         if(type=='cc')measure <- transitivity(g)
         if(type=='degree')measure <- mean(degree(g))
         if(type=='strength')measure <- mean(strength(g))
