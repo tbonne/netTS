@@ -86,6 +86,35 @@ dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",
 }
 
 
+
+
+#' Order events alphabetically
+#'
+#' This function will take an event dataframe and order the names alphabetically. Useful in undirected graphs to ensure all edges have the same name through time.
+#' @param event.data dataframe containing events between individuals/objects
+#'
+order_events <- function(event.data){
+
+  event.data[,1] <- as.character(event.data[,1])
+  event.data[,2] <- as.character(event.data[,2])
+
+  #fill in and order the events
+  for(i in 1:nrow(event.data)){
+
+    #get names of individuals/nodes
+    names.found <- event.data[i,1:2][1,]
+    if(as.character(names.found[1,1])>as.character(names.found[1,2]) )names.found<-names.found[,c(2,1)]
+
+    #re-order
+    event.data[i,1]<-names.found[1,1]
+    event.data[i,2]<-names.found[1,2]
+
+  }
+
+  return (event.data)
+}
+
+
 #' dyad_sum function
 #'
 #' This function will take a graph and take dyad level sum of weights.
