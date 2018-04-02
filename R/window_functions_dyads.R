@@ -20,7 +20,7 @@
 #' ts.out<-dyadTS(event.data=groomEvents[1:200,])
 #' dyadTS.plot(ts.out)
 #'
-dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",directedNet=T, threshold=30,windowStart=0, startDate=NULL){
+dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",directedNet=T, threshold=30,windowStart=0, startDate=NULL, order.events=F){
 
   #intialize
   windowEnd=windowStart+windowSize
@@ -29,6 +29,7 @@ dyadTS <- function (event.data,windowSize =30,windowShift= 1, type="proportion",
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
   #set global dataframe with proper names
+  if(order.events==TRUE)event.data <- order_events(event.data)
   g.global <- create.a.network(event.data, directedG = directedNet)
   names.edges<-paste(get.edgelist(g.global)[,1],get.edgelist(g.global)[,2],sep="_")
   netValues<- t(rep(1,length(names.edges)))
