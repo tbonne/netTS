@@ -419,6 +419,8 @@ re.net<-function(df.int, summary=FALSE, directed = TRUE){
         setTxtProgressBar(pb, i)
       }
 
+      #close progress bar
+      close(pb)
 
       #add the graph to the list of graphs
       V(graph.temp)$label <- df.names$names
