@@ -421,6 +421,7 @@ re.net<-function(df.int, summary=FALSE, directed = TRUE){
 
 
       #add the graph to the list of graphs
+      V(graph.temp)$label <- df.names$names
       graph.list[[i]] <- graph.temp
 
     }
