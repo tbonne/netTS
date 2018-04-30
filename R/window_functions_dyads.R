@@ -419,11 +419,9 @@ re.net<-function(df.int, summary=FALSE, directed = TRUE){
         setTxtProgressBar(pb, i)
       }
 
-      #close progress bar
-      close(pb)
 
       #add the graph to the list of graphs
-      V(graph.temp)$label <- df.names$names
+      V(graph.temp)$label <- as.character(df.names$names)
       graph.list[[i]] <- graph.temp
 
     }
@@ -453,6 +451,8 @@ re.net<-function(df.int, summary=FALSE, directed = TRUE){
       #add to graph
       graph.mean <- graph.mean %>% add_edges(c(node1,node2), weight=df.int[i,j])
     }
+
+    V(graph.mean)$label <- as.character(df.names$names)
 
     return(graph.mean)
   }
