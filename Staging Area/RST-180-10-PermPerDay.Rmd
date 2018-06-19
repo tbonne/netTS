@@ -78,87 +78,114 @@ create.an.edgeList<-function(edge.list){
 
 
 ## Weekly permutation code
-##git 
+
+TB: i've checked this block. We just forgot to reset the windowdata with the new permuted data so it was always using the original data... where one permutation wouldn't change the values by much. This should work now?!? 
+
+Also i broke the function in 2, it's always easier to figure out smaller functional bits than large ones.
 
 ```{r}
+#takes a dataframe with to and from columns and performs a permutation
+permute.directed.associations <- function(df.start){
+  
+  #Check for selfe loops
+  no.loops= FALSE
+  
+  #choose to or from association to permute
+  if(0.5 > runif(1)){
+    
+    while(no.loops == FALSE){
+      
+      #choose two individuals to switch
+      rows.to.switch <- sample(1:nrow(df.start),2,F)
+      
+      #record old order
+      old.order <- df.start$to
+      new.order <- df.start$to
+      
+      #update order
+      new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
+      new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
+      
+      #check to make sure there are no self loops
+      if(sum(as.character(df.start$from)==as.character(new.order) )==0){
+        
+        df.start$to <-  as.character(new.order)
+        df.j.perm<- df.start
+        no.loops=TRUE
+        
+      }
+    }
+  }  else{
+    while(no.loops == FALSE){
+      
+      #choose two individuals to switch
+      rows.to.switch <- sample(1:nrow(df.start),2,F)
+      
+      #record old order
+      old.order <- df.start$from
+      new.order <- df.start$from
+      
+      #update order
+      new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
+      new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
+      
+      #check to make sure there are no self loops
+      if(sum(as.character(new.order)==as.character(df.start$to) )==0){
+        
+        df.start$from <- as.character(new.order)
+        df.j.perm<- df.start
+        no.loops=TRUE
+        
+      }
+    }
+  }
+  
+  return(df.j.perm)
+  
+}
+
+
+#runs permutations within set time periods (e.g., weeks)
 weekly.perm <- function(windowdata, nPerm=1000){
   
-  net.list <- list(create.a.network(windowdata))
+  #vector to store the measures
+  Perm.CC <- vector()
   
-    week.unique<- unique(windowdata$Week)
+  #get the number of time periods  
+  time.periods<- unique(windowdata$Week)
+  
+  #one permutation per time period
+  for(i in 1:nPerm){
     
-    for(i in 1:nPerm){
-      df<-NULL
-      #data<- matrix(,ncol=13)
-      #Net.Perm.Frame = as.data.frame(data)
-      #colnames(Net.Perm.Frame) <- colnames(df.window)
-      for (j in 1:length(week.unique)){ 
-        df.j <- windowdata[windowdata$Week==week.unique[j],]
-        no.loops= FALSE
-        
-        #choose to or from grooming to permute
-        if(0.5 > runif(1)){
-          
-          while(no.loops == FALSE){
-            
-            #choose two individuals to switch
-            rows.to.switch <- sample(1:nrow(df.j),2,F)
-            
-            #record old order
-            old.order <- df.j$to
-            new.order <- df.j$to
-            
-            #update order
-            new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
-            new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
-            
-            #check to make sure there are no self loops
-            if(sum(as.character(df.j$from)==as.character(new.order) )==0){
-              
-              df.j$to <- new.order
-              df.j.perm<- df.j
-              no.loops=TRUE
-              
-            }
-          }
-        }  else{
-          while(no.loops == FALSE){
-            
-            #choose two individuals to switch
-            rows.to.switch <- sample(1:nrow(df.j),2,F)
-            
-            #record old order
-            old.order <- df.j$from
-            new.order <- df.j$from
-            
-            #update order
-            new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
-            new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
-            
-            #check to make sure there are no self loops
-            if(sum(as.character(new.order)==as.character(df.j$to) )==0){
-              
-              df.j$from <- new.order
-              df.j.perm<- df.j
-              no.loops=TRUE
-              
-            }
-          }
-        }
-        df<-rbind(df,df.j.perm)
-      }
-       #Create edgelist
-    Edgelist<- create.an.edgeList(df)
+    #select time period randomly
+    time.period.sample <- sample(time.periods, 1)
+    
+    #create data subsets: with the time period and without
+    df.j.without   <- windowdata[windowdata$Week!=time.period.sample,]
+    df.j.with      <- windowdata[windowdata$Week==time.period.sample,]
+    
+    #permute the data within the time period
+    df.j.with.perm <- permute.directed.associations(df.j.with)
+    
+    #bind the permuted data with the unpermuted data
+    df.all.perm<-rbind(df.j.without,df.j.with.perm)
+    
+    #Create edgelist
+    Edgelist<- create.an.edgeList(df.all.perm)
+    
     #Create graph in order to get the measure 
     Perm.network <- create.a.network(Edgelist)
     
     # Get measure
     Perm.CC[length(Perm.CC)+1]<- mean(igraph::closeness(Perm.network, mode=c("total"), weights=1/(E(Perm.network)$weight)))
-    }
-     
-    return(quantile(Perm.CC, probs = c(0.0275,0.975), na.rm=T))
-
+    
+    #reset window data to have the permuted values
+    windowdata <- df.all.perm
   }
+  
+  return(quantile(Perm.CC, probs = c(0.0275,0.975), na.rm=T))
+  
+}
 
 
 
@@ -191,11 +218,11 @@ max<-1094
 threshold <- 20
 
 # Vectors needed to store values
-  Day<-vector()
-  Closeness<- vector()
-  Perm.CC<- vector ()
-  Perm.Upper.Values<-vector()
-  Perm.Lower.Values<-vector()
+Day<-vector()
+Closeness<- vector()
+Perm.CC<- vector ()
+Perm.Upper.Values<-vector()
+Perm.Lower.Values<-vector()
 
 while (windowStart + windowsize<=max) {
   
@@ -228,7 +255,7 @@ while (windowStart + windowsize<=max) {
     CC<-mean(igraph::closeness(Window.Network, weights = 1/(E(Window.Network)$weight), mode=c("total")))
     
     #run the permutation
-    Perm.CC <- weekly.perm(windowdata , 30)
+    Perm.CC <- weekly.perm(windowdata , 3000)
     
     #Store values
     Perm.Upper.CI<- Perm.CC[2]
