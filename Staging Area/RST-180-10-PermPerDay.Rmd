@@ -83,9 +83,12 @@ TB: i've checked this block. We just forgot to reset the windowdata with the new
 
 Also i broke the function in 2, it's always easier to figure out smaller functional bits than large ones.
 
+CV: Thanks ! I made sure that the data file we are calling between the 2 functions have the same name (df.j.with and df.j.perm). The upper and lower quantiles The create.network was causing problems (weight = NULL) so I have "forced" it by adding another line attributing the weights to the edges. 
+Now you've seen what it looked like when I ran it a 100 times. I just did it on small part of the data. 
+
 ```{r}
 #takes a dataframe with to and from columns and performs a permutation
-permute.directed.associations <- function(df.start){
+permute.directed.associations <- function(df.j.with){
   
   #Check for selfe loops
   no.loops= FALSE
@@ -96,21 +99,21 @@ permute.directed.associations <- function(df.start){
     while(no.loops == FALSE){
       
       #choose two individuals to switch
-      rows.to.switch <- sample(1:nrow(df.start),2,F)
+      rows.to.switch <- sample(1:nrow(df.j.with),2,F)
       
       #record old order
-      old.order <- df.start$to
-      new.order <- df.start$to
+      old.order <- df.j.with$to
+      new.order <- df.j.with$to
       
       #update order
       new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
       new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
       
       #check to make sure there are no self loops
-      if(sum(as.character(df.start$from)==as.character(new.order) )==0){
+      if(sum(as.character(df.j.with$from)==as.character(new.order) )==0){
         
-        df.start$to <-  as.character(new.order)
-        df.j.perm<- df.start
+        df.j.with$to <-  as.character(new.order)
+        df.j.perm<- df.j.with
         no.loops=TRUE
         
       }
@@ -119,21 +122,21 @@ permute.directed.associations <- function(df.start){
     while(no.loops == FALSE){
       
       #choose two individuals to switch
-      rows.to.switch <- sample(1:nrow(df.start),2,F)
+      rows.to.switch <- sample(1:nrow(df.j.with),2,F)
       
       #record old order
-      old.order <- df.start$from
-      new.order <- df.start$from
+      old.order <- df.j.with$from
+      new.order <- df.j.with$from
       
       #update order
       new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
       new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
       
       #check to make sure there are no self loops
-      if(sum(as.character(new.order)==as.character(df.start$to) )==0){
+      if(sum(as.character(new.order)==as.character(df.j.with$to) )==0){
         
-        df.start$from <- as.character(new.order)
-        df.j.perm<- df.start
+        df.j.with$from <- as.character(new.order)
+        df.j.perm<- df.j.with
         no.loops=TRUE
         
       }
@@ -165,16 +168,17 @@ weekly.perm <- function(windowdata, nPerm=1000){
     df.j.with      <- windowdata[windowdata$Week==time.period.sample,]
     
     #permute the data within the time period
-    df.j.with.perm <- permute.directed.associations(df.j.with)
+    df.j.perm <- permute.directed.associations(df.j.with)
     
     #bind the permuted data with the unpermuted data
-    df.all.perm<-rbind(df.j.without,df.j.with.perm)
+    df.all.perm<-rbind(df.j.without,df.j.perm)
     
     #Create edgelist
     Edgelist<- create.an.edgeList(df.all.perm)
     
-    #Create graph in order to get the measure 
+    #Create graph in order to get the measure
     Perm.network <- create.a.network(Edgelist)
+    E(Perm.network)$weight<-Edgelist$n
     
     # Get measure
     Perm.CC[length(Perm.CC)+1]<- mean(igraph::closeness(Perm.network, mode=c("total"), weights=1/(E(Perm.network)$weight)))
@@ -211,7 +215,7 @@ names(elist)<- c("from", "to", "weight")
 ```{r}
 # Set up window's parameters
 windowsize <- 180
-windowStart  <-2
+windowStart  <-800
 max<- max(Sp.RST.female$DayNb)
 max<-1094
 # Minimum nb of interactions needed
@@ -221,6 +225,7 @@ threshold <- 20
 Day<-vector()
 Closeness<- vector()
 Perm.CC<- vector ()
+
 Perm.Upper.Values<-vector()
 Perm.Lower.Values<-vector()
 
@@ -255,7 +260,7 @@ while (windowStart + windowsize<=max) {
     CC<-mean(igraph::closeness(Window.Network, weights = 1/(E(Window.Network)$weight), mode=c("total")))
     
     #run the permutation
-    Perm.CC <- weekly.perm(windowdata , 3000)
+    Perm.CC <- weekly.perm(windowdata , 100)
     
     #Store values
     Perm.Upper.CI<- Perm.CC[2]
@@ -280,7 +285,7 @@ OutcomeRST <- data.frame(obs=Closeness, lower.perm=Perm.Lower.Values, upper.perm
 
 ```
 
-
+## Plot
 
 ```{r}
 # Plot
