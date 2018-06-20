@@ -149,7 +149,7 @@ permute.directed.associations <- function(df.j.with){
 
 
 #runs permutations within set time periods (e.g., weeks)
-weekly.perm <- function(windowdata, nPerm=1000){
+weekly.perm <- function(windowdata, nPerm=1000, effort=1){
   
   #vector to store the measures
   Perm.CC <- vector()
@@ -178,7 +178,7 @@ weekly.perm <- function(windowdata, nPerm=1000){
     
     #Create graph in order to get the measure
     Perm.network <- create.a.network(Edgelist)
-    E(Perm.network)$weight<-Edgelist$n
+    E(Perm.network)$weight<-Edgelist$n/effort
     
     # Get measure
     Perm.CC[length(Perm.CC)+1]<- mean(igraph::closeness(Perm.network, mode=c("total"), weights=1/(E(Perm.network)$weight)))
@@ -255,12 +255,13 @@ while (windowStart + windowsize<=max) {
     
     #Create the social network
     Window.Network <- create.a.network(Edgelist) 
+    plot(Window.Network, edge.width=E(Window.Network)$weight*500)
     
     #calculate the network measure calculated
     CC<-mean(igraph::closeness(Window.Network, weights = 1/(E(Window.Network)$weight), mode=c("total")))
     
     #run the permutation
-    Perm.CC <- weekly.perm(windowdata , 100)
+    Perm.CC <- weekly.perm(windowdata , 100, effort=scan.tot)
     
     #Store values
     Perm.Upper.CI<- Perm.CC[2]
@@ -289,6 +290,6 @@ OutcomeRST <- data.frame(obs=Closeness, lower.perm=Perm.Lower.Values, upper.perm
 
 ```{r}
 # Plot
-ggplot(OutcomeRST, aes(x=Day, y=obs))  + geom_ribbon(aes(ymin=lower.perm, ymax=upper.perm), fill="red") + geom_point(color="blue") + labs(x= "2015 to 2017 with a 180 days windowsize - shift +1", y="Closeness in spatial proximity behaviour on RST")
+ggplot(OutcomeRST, aes(x=Day, y=obs))  + geom_ribbon(aes(ymin=lower.perm, ymax=upper.perm), fill="red") + geom_point(color="blue") + geom_line() + labs(x= "2015 to 2017 with a 180 days windowsize - shift +1", y="Closeness in spatial proximity behaviour on RST")
 ```
 
