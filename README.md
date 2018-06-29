@@ -6,6 +6,7 @@ This package takes association data with time stamps and creates a time series o
  <br><br>
 
 **Example: primate grooming associations**
+
 Given a data frame with grooming associations and a time stamp (e.g., column names: to, from, time) we: 1) use graphTS to extract mean grooming strength in the network, 2) extract individual grooming strength, and 3) dyadic grooming strength.
 
  <br><br>
