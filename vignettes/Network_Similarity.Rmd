@@ -63,7 +63,6 @@ par(mfrow=c(2,3))
 for(i in 1:6){
   plot(graph.list[[i]], main=paste0("Network ",i))
 }
-
 ```
 
 Measure similarity over time
@@ -72,8 +71,8 @@ similarity.from.start <- vector()
 
 for(i in 1:6){
   similarity.from.start[length(similarity.from.start)+1] <- cosine_between_graphs(graph.list[[1]],graph.list[[i]])
+similarity.between.events <- vector()
 }
-
 
 plot(similarity.from.start, type="b", col="red", main="Network similarity", ylab = "Cosine similarity")
 ```
@@ -115,137 +114,13 @@ min(mdy(netTS::groomEvents$` date`))
 graph.cosine <- graphTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosine")
 
 #extract cosine measures at the node level
-node.cosine <- nodeTS.test(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosine")
+node.cosine <- nodeTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosine")
 
 #plot the cosine similarities
 df.node.cosine <- melt(node.cosine, id.vars = c("windowStart","windowEnd", "windowStartDate", "windowEndDate", "nEvents" ))
 names(df.node.cosine)[names(df.node.cosine)=="variable"] <- "node"
 ggplot(df.node.cosine, aes(x=windowStart, y=value, color=node)) + geom_line() + geom_line(data=graph.cosine, aes(x=windowStart, y=cosine), size=2, col="black") + labs(y="Cosine similarity", x = "Day") + theme_classic()
 ```
-
-
-
-
-```{r}
-nodeTS.test <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL, method="none"){
-
-  #intialize
-  windowEnd=windowStart+windowSize
-  netValues <- data.frame()
-  gplist <- rep(list(NA),lag)
-
-  if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
-
-  #set global dataframe with proper names
-  g.global <- create.a.network(event.data, directedG = directedNet)
-  netValues<- t(rep(1,vcount(g.global)))
-  colnames(netValues)<-names(igraph::V(g.global))
-
-
-  #for every window
-  while (windowStart + windowSize<=max(event.data$time)) {
-
-    #subset the data
-    df.window<-create.window(event.data, windowStart, windowEnd)
-
-    #if there is enough data in this window...
-    if(nrow(df.window)>threshold){
-
-      #if there is no previous network, and the measure requires one
-      if(is.na(gplist[1]) & type=='cosine'){
-
-        if(method=="none"){
-          gplist[[length(gplist)+1]] <- create.a.network(df.window, directedG = directedNet)
-        } else if (method == "SIR"){
-          gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window, directedG = directedNet)
-        }
-
-        gplist<-gplist[-1]
-        df.measure <- as.data.frame(NA)
-        measure.uncertainty<-c(NA,NA,NA)
-        measure.random<-c(NA,NA,NA)
-
-      } else {
-
-        #create a network
-        if(method=="none"){
-          g <- create.a.network(df.window)
-        } else if (method=="SRI"){
-          g <- create.a.network.SRI(df.window)
-        }
-
-        #calculate measure
-        if(type=='between')measure <- betweenness(g)
-        if(type=='eigne')measure <- eigen_centrality(g)$vector
-        if(type=='eigneNoScale')measure <- eigen_centrality(g, scale=F)$vector
-        if(type=='close')measure <- closeness(g)
-        if(type=='cc')measure <- transitivity(g, type=c('local'))
-        if(type=='degree')measure <- degree(g)
-        if(type=='degreeOUT')measure <- degree(g, mode="out")
-        if(type=='degreeIN')measure <- degree(g, mode="in")
-        if(type=='strength')measure <- strength(g)
-        if(type=='strengthOUT')measure <- strength(g, mode="out")
-        if(type=='strengthIN')measure <- strength(g, mode="in")
-        if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet)
-        if(type=='cosineIN')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet, mode="in")
-        if(type=='cosineOUT')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet, mode="out")
-        if(type=='skewness')measure <- edge.weight.skewness(g)
-
-        #create a dataframe with the measures
-        if(type=='cosine'){
-          df.measure <- measure
-          df.measure$windowStart <- windowStart
-          df.measure$windowEnd <- windowEnd
-        } else {
-          df.measure <- data.frame(t(measure))
-          colnames(df.measure)<-names(igraph::V(g))
-          df.measure$windowStart <- windowStart
-          df.measure$windowEnd <- windowEnd
-        }
-
-        #estimate uncertainty of measure (bootstrap)
-        #measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet)
-
-        #esitmate range of random (permutation)
-        #measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
-
-        #save last network
-        gplist[[length(gplist)+1]] <- g
-        gplist<-gplist[-1]
-
-      }
-    } else {
-      df.measure <- as.data.frame(NA)
-      #measure.uncertainty<-c(NA,NA,NA)
-      #measure.random<-c(NA,NA,NA)
-      gp=NA
-    }
-
-    #get window date range
-    windowStartDate <- NA
-    windowEndDate <- NA
-    if(is.null(startDate)==FALSE){
-      windowStartDate <- ymd(startDate) + days(windowStart)
-      windowEndDate <- ymd(startDate) + days(windowEnd)
-    }
-    df.measure$windowStartDate <- windowStartDate
-    df.measure$windowEndDate <- windowEndDate
-    df.measure$nEvents <- nrow(df.window)
-
-    #record values
-    netValues <- rbind.fill(list(as.data.frame(netValues),df.measure ))
-
-    #move window over
-    windowEnd = windowEnd + windowShift
-    windowStart = windowStart + windowShift
-
-  }
-
-  return (netValues[-1,])
-}
-```
-
-
 
 
 ## Vignette Info
