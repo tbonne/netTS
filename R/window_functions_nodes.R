@@ -256,7 +256,7 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
       #if there is no previous network, and the measure requires one
       if(is.na(gplist[1]) & type=='cosine'){
 
-        if(method=="node"){
+        if(method=="none"){
           gplist[[length(gplist)+1]] <- create.a.network(df.window, directedG = directedNet)
         } else if (method == "SIR"){
           gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window, directedG = directedNet)
