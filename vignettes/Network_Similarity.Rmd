@@ -81,14 +81,14 @@ plot(similarity.from.start, type="b", col="red", main="Network similarity", ylab
 
 ###1. Node level similarity
 
-Using the same simulated data from obove we now look at how similarity at the node level changes in time.
+Using the same simulated data from above we now look at how similarity at the node level changes in time.
 
 
 Measure similarity over time for nodes
 ```{r}
+#measure similarity at the node level
 similarity.from.start <- data.frame((cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]])))
 names(similarity.from.start) <- colnames(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]]))
-
 for(i in 2:6){
   similarity.from.start <- rbind.fill( similarity.from.start,  as.data.frame(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[i]]))  )
 }
@@ -103,6 +103,7 @@ names(df.melt)[2] <- "node"
 ggplot(df.melt, aes(y=value, x= seq, color=node)) + geom_line() + theme_classic()
 
 ```
+
 
 ###1. Application to a real dataset: baboon proximity network
 

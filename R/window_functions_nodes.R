@@ -116,6 +116,7 @@ cosine_between_graphs_nodes<- function(graph1, graph2, directed=FALSE, mode="out
   comb$weight.y[is.na(comb$weight.y)]<-0
 
   names.unique<-unique(c(comb$V1.x,comb$V2.x))
+  names.unique <- names.unique[is.na(names.unique)==FALSE]
 
   if(directed==FALSE){
 
@@ -154,7 +155,7 @@ cosine_between_graphs_nodes<- function(graph1, graph2, directed=FALSE, mode="out
 
   #node.cosine[is.nan(node.cosine)]<-0
   cos.df<-as.data.frame(t(node.cosine))
-  names(cos.df)<-names.unique[-length(names.unique)]
+  names(cos.df)<-names.unique
 
   return(cos.df)
 
