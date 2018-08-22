@@ -240,6 +240,7 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
   names(netValues)<-c(type,paste(type,".low95",sep=""),paste(type,".med50",sep=""),paste(type,".high95",sep=""),"perm.low95","perm.med50","perm.high95","nEvents","windowStart","windowEnd","windowStartDate","windowEndDate")
   gplist <- rep(list(NA),lag)
   netlist <- rep(list(NULL),1)
+  first.network = TRUE
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -274,6 +275,11 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
           g <- create.a.network.SRI(df.window, directedG = directedNet)
         }
 
+        if(first.network==TRUE){
+          g.first <- g
+          first.network=FALSE
+        }
+
         #calculate measure
         measure <- NA
         if(type=='between')measure <- mean(betweenness(g))
@@ -287,6 +293,7 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
         if(type=='degree')measure <- mean(degree(g))
         if(type=='strength')measure <- mean(strength(g))
         if(type=='cosine')measure <- cosine_between_graphs(graph1=g,graph2=gplist[[1]])
+        if(type=='cosineFIXED')measure <- cosine_between_graphs(graph1=g,graph2=g.first)
         if(type=='SRI')measure <- get_SRI(create.window.time(event.data, windowStart, windowEnd))
         if(type=='network')netlist[[length(netlist)+1]]<- g
         if(type=='events')netlist[[length(netlist)+1]]<- create.window.group(event.data, windowStart, windowEnd)
@@ -294,6 +301,8 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
         #estimate uncertainty of measure (bootstrap)
         if(type=='cosine'){
           measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet, previousNet = gplist[[1]])
+        } else  if (type=='cosineFIXED'){
+          measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet, previousNet = g.first)
         } else{
           measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet)
         }
@@ -301,6 +310,8 @@ graphTS <- function (event.data,nBoot=0,nPerm=0,windowSize =30,windowShift= 1, t
         #esitmate range of random (permutation)
         if(type=='cosine'){
           measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet, previousNet=gplist[[1]])
+        } else  if (type=='cosineFIXED'){
+          measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet, previousNet=g.first)
         } else {
           measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
         }

@@ -12,7 +12,7 @@ cosine_between_graphs(graph1, graph2)
 \item{graph2}{second graph (igraph)}
 }
 \description{
-This function will calculate the cosine similarity between two graphs
+This function will calculate the cosine similarity between two graphs.
 }
 \examples{
 

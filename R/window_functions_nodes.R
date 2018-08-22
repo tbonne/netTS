@@ -235,6 +235,7 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
   windowEnd=windowStart+windowSize
   netValues <- data.frame()
   gplist <- rep(list(NA),lag)
+  first.network = TRUE
 
   if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
 
@@ -276,6 +277,12 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
           g <- create.a.network.SRI(df.window)
         }
 
+        #keep first network
+        if(first.network==TRUE){
+          g.first <- g
+          first.network=FALSE
+        }
+
         #calculate measure
         if(type=='between')measure <- betweenness(g)
         if(type=='eigne')measure <- eigen_centrality(g)$vector
@@ -291,10 +298,11 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
         if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet)
         if(type=='cosineIN')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet, mode="in")
         if(type=='cosineOUT')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet, mode="out")
+        if(type=='cosineFIXED')measure <- cosine_between_graphs_nodes(graph1=g,graph2=g.first,directed = directedNet)
         if(type=='skewness')measure <- edge.weight.skewness(g)
 
         #create a dataframe with the measures
-        if(type=='cosine'){
+        if(type=='cosine' | type=='cosineOUT' | type=='cosineIN' | type=='cosineFIXED'){
           df.measure <- measure
           df.measure$windowStart <- windowStart
           df.measure$windowEnd <- windowEnd
@@ -305,12 +313,6 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
           df.measure$windowEnd <- windowEnd
         }
 
-        #estimate uncertainty of measure (bootstrap)
-        #measure.uncertainty <- estimate.uncertainty.boot(df.window, nb=nBoot, type=type, directedNet = directedNet)
-
-        #esitmate range of random (permutation)
-        #measure.random <- estimate.random.range.perm(g, np=nPerm, type=type, directedNet = directedNet)
-
         #save last network
         gplist[[length(gplist)+1]] <- g
         gplist<-gplist[-1]
@@ -318,8 +320,6 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
       }
     } else {
       df.measure <- as.data.frame(NA)
-      #measure.uncertainty<-c(NA,NA,NA)
-      #measure.random<-c(NA,NA,NA)
       gp=NA
     }
 
@@ -343,6 +343,10 @@ nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directed
 
   }
 
-  return (netValues[-1,])
+  #remove first row, and column of NA
+  netValues<-netValues[-1,]
+  netValues <- netValues[,!names(netValues)=="NA"]
+
+  return (netValues)
 }
 

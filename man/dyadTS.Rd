@@ -5,7 +5,8 @@
 \title{dyadTS function}
 \usage{
 dyadTS(event.data, windowSize = 30, windowShift = 1, type = "proportion",
-  directedNet = T, threshold = 30, windowStart = 0, startDate = NULL)
+  directedNet = T, threshold = 30, windowStart = 0, startDate = NULL,
+  order.events = F)
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects}

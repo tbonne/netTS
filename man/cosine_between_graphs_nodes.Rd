@@ -4,10 +4,16 @@
 \alias{cosine_between_graphs_nodes}
 \title{Estimate consine similarity between nodes in a graph}
 \usage{
-cosine_between_graphs_nodes(graph1, graph2)
+cosine_between_graphs_nodes(graph1, graph2, directed = FALSE, mode = "out")
 }
 \arguments{
 \item{graph1}{first graph (igraph)}
+
+\item{graph2}{second graph (igraph)}
+
+\item{directed}{Boolean indicating if the graph is directed or not.}
+
+\item{mode}{For directed graphs this allows for in, out, or total cosine similarity to be calculated for each node. This argument is ignored for undirected graphs.}
 
 \item{graph2}{second graph (igraph)}
 }
