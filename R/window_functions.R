@@ -402,7 +402,7 @@ graphTS.plot<-function(df.ts, nEvents=FALSE, dates=FALSE){
 
 #' Estimate consine similarity between graphs
 #'
-#' This function will calculate the cosine similarity between two graphs
+#' This function will calculate the cosine similarity between two graphs.
 #' @param graph1 first graph (igraph)
 #' @param graph2 second graph (igraph)
 #' @export
