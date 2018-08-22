@@ -32,6 +32,7 @@ knitr::opts_chunk$set(
 library(ggplot2)
 library(netTS)
 library(igraph)
+library(plyr)
 library(dplyr)
 library(reshape2)
 ```
@@ -85,11 +86,11 @@ Using the same simulated data from obove we now look at how similarity at the no
 
 Measure similarity over time for nodes
 ```{r}
-similarity.from.start <- data.frame((cosine_between_graphs_nodes(graph.list[[1]],graph.list[[2]])))
-names(similarity.from.start) <- colnames(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[2]]))
+similarity.from.start <- data.frame((cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]])))
+names(similarity.from.start) <- colnames(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]]))
 
 for(i in 2:6){
-  similarity.from.start <- rbind( similarity.from.start,  as.data.frame(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[i]]))  )
+  similarity.from.start <- rbind.fill( similarity.from.start,  as.data.frame(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[i]]))  )
 }
 
 #take a look at the similarity measures as a table
