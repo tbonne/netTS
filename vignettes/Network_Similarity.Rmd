@@ -1,0 +1,145 @@
+---
+title: "Measuring network similarity over time"
+author: "Tyler R. Bonnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Measuring network similarity over time}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+##Introduction
+
+  When looking at a social network in time, it is often important to ask how stable or similar is the network? This vignette runs through the use of the cosine similarity measure proposed by Newman (2010), using the netTS package.
+  
+  The vignette is organised as follows:
+  * 1. Graph level similarity
+  * 2. Node level similarity
+  * 3. Application to real data
+
+###Libraries
+```{r, warning=FALSE,message=FALSE}
+#devtools::install_github("tbonne/netTS")
+library(ggplot2)
+library(netTS)
+library(igraph)
+library(dplyr)
+```
+
+
+###1. Graph level similarity
+
+Simulate a random graph and create a list of modified graphs
+```{r}
+#create a random graph
+graph.original <- igraph::erdos.renyi.game(15,0.3)
+
+#simulate change to the original graph
+graph.list <- list(graph.original)
+graph.temp <- graph.original
+for(i in 1:20){
+  
+  #remove and add an edge
+  graph.modified <- graph.temp %>% delete.edges(sample(E(graph.temp),1)) 
+  graph.modified <- graph.modified %>% add.edges(edges=c(sample(V(graph.modified),2))) 
+  graph.modified <- simplify(graph.modified)
+  
+  #record change
+  graph.list[[length(graph.list)+1]] <- graph.modified
+  graph.temp <- graph.modified
+}
+
+par(mfrow=c(1,2))
+plot(graph.original, main="Starting network")
+plot(graph.list[[21]], main="Ending network")
+```
+
+Measure similarity over time
+```{r}
+similarity.from.start <- vector()
+similarity.between.events <- vector()
+
+for(i in 1:20){
+  similarity.from.start[length(similarity.from.start)+1] <- cosine_between_graphs(graph.list[[1]],graph.list[[i]])
+  if(i<20)similarity.between.events[length(similarity.between.events)+1] <- cosine_between_graphs(graph.list[[i]],graph.list[[i+1]])
+}
+
+
+plot(similarity.from.start, type="b", col="red", main="Network similarity", ylab = "Cosine similarity")
+lines(similarity.between.events, type="b", col="blue")
+```
+
+
+###1. Node level similarity
+
+Using the same simulated data from obove we now look at how similarity at the node level changes in time.
+
+
+Measure similarity over time
+```{r}
+similarity.from.start <- data.frame((cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]])))
+names(similarity.from.start) <- colnames(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]]))
+
+for(i in 1:20){
+  similarity.from.start[length(similarity.from.start)+1] <- cosine_between_graphs_nodes(graph.list[[1]],graph.list[[i]])
+  #if(i<20)similarity.between.events[length(similarity.between.events)+1] <- cosine_between_graphs(graph.list[[i]],graph.list[[i+1]])
+}
+
+
+plot(similarity.from.start, type="b", col="red", main="Network similarity", ylab = "Cosine similarity")
+lines(similarity.between.events, type="b", col="blue")
+```
+
+
+
+
+## Vignette Info
+
+Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))
