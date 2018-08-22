@@ -120,7 +120,7 @@ cosine_between_graphs_nodes<- function(graph1, graph2, directed=FALSE, mode="out
 
   if(directed==FALSE){
 
-    for(i in 1:(length(names.unique)-1)){
+    for(i in 1:(length(names.unique))){
       temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V2.x==names.unique[i])
       node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
     }
@@ -128,21 +128,21 @@ cosine_between_graphs_nodes<- function(graph1, graph2, directed=FALSE, mode="out
   } else if (directed==TRUE){
 
     if(mode=="out"){
-      for(i in 1:(length(names.unique)-1)){
+      for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i])
         node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
       }
     }
 
     if(mode=="in"){
-      for(i in 1:(length(names.unique)-1)){
+      for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, V2.x==names.unique[i])
         node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
       }
     }
 
     if(mode=="total"){
-      for(i in 1:(length(names.unique)-1)){
+      for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V2.x==names.unique[i])
         node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
       }
@@ -150,8 +150,6 @@ cosine_between_graphs_nodes<- function(graph1, graph2, directed=FALSE, mode="out
 
 
   }
-
-
 
   #node.cosine[is.nan(node.cosine)]<-0
   cos.df<-as.data.frame(t(node.cosine))
