@@ -107,10 +107,11 @@ ggplot(df.melt, aes(y=value, x= seq, color=node)) + geom_line() + theme_classic(
 
 ###1. Application to a real dataset: baboon proximity network
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 library(lubridate)
 library(plyr)
-min(mdy(netTS::groomEvents$` date`))
+
+#min(mdy(netTS::groomEvents$` date`))
 
 #extract cosine measures at the graph level
 graph.cosine <- graphTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosine")
