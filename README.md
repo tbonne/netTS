@@ -184,7 +184,7 @@ dyad.values[1:10,1:5]
 #> 11         4         2         4         1        NA
 ```
 
-Plot node level changes
+Plot dyad level changes
 
 ``` r
 df.dyad.values <- melt(dyad.values, id.vars = c("windowstart","windowend", "nEvents" ))
