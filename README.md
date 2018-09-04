@@ -1,3 +1,13 @@
+
+
+Introduction
+------------
+
+The netTS package is meant for relational data that takes place through time. Generally, when constructing social networks to interogate relational data, some amount of aggregation is required. E.g. group all data into years to create yearly networks. The point of this package is to facilitate this process of aggregation, using a moving window approach.
+
+The moving window approach allows a user to define the size of a time window (e.g., windowsize = 1 month) and the amount to move the window (e.g., windowshift = 1 day). This moving window then subsets the relational data within a window, creates a network, and extracts a network measure. It then shifts over in time and repeats the process. By altering the size and shift of this moving window it is then possible to measure how networks change in time.
+
+
 Install netTS, load some libraries
 ----------------------------------
 
@@ -10,12 +20,6 @@ library(igraph)
 library(reshape2)
 ```
 
-Introduction
-------------
-
-The netTS package is meant for relational data that takes place through time. Generally, when constructing social networks to interogate relational data, some amount of aggregation is required. E.g. group all data into years to create yearly networks. The point of this package is to facilitate this process of aggregation, using a moving window approach.
-
-The moving window approach allows a user to define the size of a time window (e.g., windowsize = 1 month) and the amount to move the window (e.g., windowshift = 1 day). This moving window then subsets the relational data within a window, creates a network, and extracts a network measure. It then shifts over in time and repeats the process. By altering the size and shift of this moving window it is then possible to measure how networks change in time.
 
 Look at some example data
 -------------------------
@@ -74,9 +78,13 @@ ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+lab
 
 ![](inst/readme_figs/unnamed-chunk-4-1.png)
 
+
+Compare observed measures to permutations.
+------------------------------------------
+
 It is then possible to test whether these measures differ from random using permutations.
 
-The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.
+The perumation used here randomly swaps individuals in the events dataframe. The results here, from a subset of the data, suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.
 
 ``` r
 graph.values <- graphTS(groomEvents[1:200,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 1000)
@@ -92,6 +100,9 @@ ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
 ```
 
 ![](inst/readme_figs/unnamed-chunk-5-1.png)
+
+Measure network change.
+------------------------------------------
 
 How quickly does the network change in time?
 
@@ -173,7 +184,7 @@ dyad.values[1:10,1:5]
 #> 11         4         2         4         1        NA
 ```
 
-Plot node level changes
+Plot dyad level changes
 
 ``` r
 df.dyad.values <- melt(dyad.values, id.vars = c("windowstart","windowend", "nEvents" ))
