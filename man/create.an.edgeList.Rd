@@ -4,10 +4,10 @@
 \alias{create.an.edgeList}
 \title{Create an edge list}
 \usage{
-create.an.edgeList(events)
+create.an.edgeList(data)
 }
 \arguments{
-\item{events}{dataframe containing all events}
+\item{data}{Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.}
 }
 \description{
 This function will generate an edge list from an events dataframe

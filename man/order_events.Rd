@@ -4,7 +4,7 @@
 \alias{order_events}
 \title{Order events alphabetically}
 \usage{
-order_events(event.data)
+order_events(data)
 }
 \arguments{
 \item{event.data}{dataframe containing events between individuals/objects}

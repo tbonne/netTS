@@ -75,7 +75,7 @@ for(i in 1:6){
 similarity.between.events <- vector()
 }
 
-plot(similarity.from.start, type="b", col="red", main="Network similarity", ylab = "Cosine similarity")
+plot(similarity.from.start, col="red", main="Network similarity", ylab = "Cosine similarity")
 ```
 
 
@@ -85,12 +85,12 @@ Using the same simulated data from above we now look at how similarity at the no
 
 
 Measure similarity over time for nodes
-```{r}
+```{r, warning=FALSE}
 #measure similarity at the node level
-similarity.from.start <- data.frame((cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]])))
-names(similarity.from.start) <- colnames(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[1]]))
+similarity.from.start <- data.frame((cosine_between_nodes(graph.list[[1]],graph.list[[1]])))
+names(similarity.from.start) <- colnames(cosine_between_nodes(graph.list[[1]],graph.list[[1]]))
 for(i in 2:6){
-  similarity.from.start <- rbind.fill( similarity.from.start,  as.data.frame(cosine_between_graphs_nodes(graph.list[[1]],graph.list[[i]]))  )
+  similarity.from.start <- rbind.fill( similarity.from.start,  as.data.frame(cosine_between_nodes(graph.list[[1]],graph.list[[i]]))  )
 }
 
 #take a look at the similarity measures as a table
@@ -107,48 +107,21 @@ ggplot(df.melt, aes(y=value, x= seq, color=node)) + geom_line() + theme_classic(
 
 ###1. Application to a real dataset: baboon proximity network
 
-Change in the network over time: relative to the first network
-```{r, warning=FALSE,message=FALSE}
-library(lubridate)
-library(plyr)
-
-#min(mdy(netTS::groomEvents$` date`))
-groomEvents$to <- tolower(groomEvents$to)
-groomEvents$from <- tolower(groomEvents$from)
-
-#extract cosine measures at the graph level
-graph.cosine <- graphTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosineFIXED")
-
-#extract cosine measures at the node level
-node.cosine <- nodeTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosineFIXED")
-
-#plot the cosine similarities
-df.node.cosine <- melt(node.cosine, id.vars = c("windowStart","windowEnd", "windowStartDate", "windowEndDate", "nEvents" ))
-names(df.node.cosine)[names(df.node.cosine)=="variable"] <- "node"
-ggplot(df.node.cosine, aes(x=windowStart, y=value, color=node)) + geom_line() + geom_line(data=graph.cosine, aes(x=windowStart, y=cosineFIXED), size=2, col="black") + labs(y="Cosine similarity", x = "Day") + theme_classic()
-```
-
-
 Change in the network over time: relative to the previous network in time
 ```{r, warning=FALSE,message=FALSE}
 library(lubridate)
 library(plyr)
 
-#min(mdy(netTS::groomEvents$` date`))
-groomEvents$to <- tolower(groomEvents$to)
-groomEvents$from <- tolower(groomEvents$from)
-
 #extract cosine measures at the graph level
-graph.cosine <- graphTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosine")
+graph.cosine <- graphTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = T,lag=10 ,measureFun= cosine_between_graphs)
 
 #extract cosine measures at the node level
-node.cosine <- nodeTS(event.data = groomEvents, windowSize = 30, windowShift = 10, type= "cosine")
+node.cosine <- nodeTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = T,lag=10, measureFun= cosine_between_nodes)
 
 #plot the cosine similarities
-df.node.cosine <- melt(node.cosine, id.vars = c("windowStart","windowEnd", "windowStartDate", "windowEndDate", "nEvents" ))
+df.node.cosine <- melt(node.cosine, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.node.cosine)[names(df.node.cosine)=="variable"] <- "node"
-ggplot(df.node.cosine, aes(x=windowStart, y=value, color=node)) + geom_line() + geom_line(data=graph.cosine, aes(x=windowStart, y=cosine), size=2, col="black") + labs(y="Cosine similarity", x = "Day") + theme_classic()
+ggplot(df.node.cosine, aes(x=windowstart, y=value, color=node)) + geom_line() + geom_line(data=graph.cosine, aes(x=windowstart, y=measure), size=2, col="black") + labs(y="Cosine similarity", x = "Day") + theme_classic()
 ```
-
 
 

@@ -4,38 +4,34 @@
 \alias{nodeTS}
 \title{nodeTS function}
 \usage{
-nodeTS(event.data, windowSize = 30, windowShift = 1, type = "cc",
-  directedNet = T, threshold = 30, windowStart = 0, lag = 1,
-  startDate = NULL, method = "none")
+nodeTS(data, windowsize = days(30), windowshift = days(1),
+  measureFun = degree, directed = FALSE, lagged = FALSE, lag = 1,
+  cores = 1)
 }
 \arguments{
-\item{event.data}{dataframe containing events between individuals/objects}
+\item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
 
-\item{windowSize}{size of the window in which to make network measures (should be the same scale as the time column)}
+\item{windowsize}{The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.}
 
-\item{windowShift}{the amount to shift the moving window for each measure}
+\item{windowshift}{The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.}
 
-\item{type}{is the type of measure to take in each window. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)}
+\item{measureFun}{This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.}
 
-\item{directedNet}{Whether the events are directed or no: true or false.}
+\item{directed}{Whether the events are directed or no: true or false.}
 
-\item{threshold}{minimum number of events to calculate a network measure (otherwise NA is produced).}
+\item{lagged}{Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.}
 
-\item{windowStart}{The time of the first window. This should corespond to the first events.}
+\item{lag}{If lagged is set to TRUE, this is the lag at which to compare networks.}
 
-\item{lag}{The lag at which to calculate cosine similarity in network structure.}
-
-\item{startDate}{Optional argument to set the date of the first event.}
-
-\item{method}{Optional argument to apply an network index. Current options: none, SRI.}
+\item{cores}{This allows for multiple cores to be used while generating networks and calculating network measures.}
 }
 \description{
-This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
-A time column is required.
+This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
 }
 \examples{
 
-ts.out<-nodeTS(event.data=groomEvents[1:200,])
-nodeTS.plot(ts.out)
+ts.out<-nodeTS(data=groomEvents[1:200,])
+groomEvents$to <- tolower(groomEvents$to)
+groomEvents$from <- tolower(groomEvents$from)
 
 }

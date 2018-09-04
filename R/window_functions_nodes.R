@@ -1,352 +1,141 @@
 
-#' Plotting function for nodeTS dataframes
-#'
-#' This function will plot the output of the nodeTS function
-#' @param df.ts output dataframe from the nodeTS function
-#' @param nEvents Opional argument to plot the number of events
-#' @param dates Optional argument to plot the date as opposed to the time since the first event
-#' @import ggplot2
-#' @importFrom reshape2 melt
-#' @examples
-#'
-#' ts.out<-nodeTS(event.data=groomEvents[1:200,])
-#' nodeTS.plot(ts.out)
-#'
-#' @export
-nodeTS.plot <- function(df.ts, nEvents = FALSE, dates = FALSE){
-
-  if(nEvents ==FALSE){
-
-    if(dates==FALSE){
-
-      df.melt<-melt(df.ts, id=c("windowEnd"))
-      df.melt<-df.melt[complete.cases(df.melt),]
-      df.melt<-filter(df.melt, variable != "windowStart" & variable != "windowEnd" & variable != "windowStartDate" & variable != "windowEndDate", variable != "nEvents")
-
-      fig<-ggplot(df.melt, aes(x=windowEnd, y=value, group=variable, color=variable))+ geom_line()+
-        geom_point(color="blue") +
-        labs(x= "Time since start")
-
-    } else {
-
-      df.melt<-melt(df.ts, id=c("windowEndDate"))
-      df.melt<-df.melt[complete.cases(df.melt),]
-      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate", variable != "nEvents")
-
-      fig<-ggplot(df.melt, aes(x=windowEndDate, y=value, group=variable, color=variable))+ geom_line()+
-        geom_point(color="blue") +
-        labs(x= "Time since start")
-    }
-
-  } else{
-
-    if(dates==FALSE){
-
-      df.melt<-melt(df.ts, id=c("windowEnd"))
-      df.melt<-df.melt[complete.cases(df.melt),]
-      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate")
-
-      fig<-ggplot(df.melt, aes(x=windowEnd, y=nEvents, group=variable, color=variable))+ geom_line()+
-        geom_point(color="blue") +
-        labs(x= "Time since start")
-
-    } else {
-
-      df.melt<-melt(df.ts[,(ncol(df.ts)-1)], id=c("windowEndDate"))
-      df.melt<-df.melt[complete.cases(df.melt),]
-      df.melt<-filter(df.melt, variable != "windowStart" | variable != "windowEnd" | variable != "windowStartDate" | variable != "windowEndDate")
-
-      fig<-ggplot(df.melt, aes(x=windowEndDate, y=nEvents, group=variable, color=variable))+ geom_line()+
-        geom_point(color="blue") +
-        labs(x= "Time since start")
-    }
-  }
-
-  fig
-
-  return(fig)
-}
-
-
-#' Estimate consine similarity between nodes in a graph
-#'
-#' This function will calculate the cosine similarity between nodes at two time periods.
-#' @param graph1 first graph (igraph)
-#' @param graph2 second graph (igraph)
-#' @param directed Boolean indicating if the graph is directed or not.
-#' @param mode For directed graphs this allows for in, out, or total cosine similarity to be calculated for each node. This argument is ignored for undirected graphs.
-#' @param graph2 second graph (igraph)
-#' @export
-#' @import igraph
-#' @importFrom dplyr full_join
-#' @examples
-#'
-#' #two random graphs
-#' library(igraph)
-#' graph1 <-erdos.renyi.game(n=10,p=0.1)
-#' graph2 <-erdos.renyi.game(n=10,p=0.1)
-#' cosine_between_graphs_nodes(graph1,graph2)
-#'
-#'
-cosine_between_graphs_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
-
-  node.cosine <- vector()
-
-  #create weighted edge list from first graph
-  g1.edges<-as.data.frame(get.edgelist(graph1, names=TRUE))
-  if(is.null(igraph::E(graph1)$weight)){
-    g1.edges$weight <- rep(1,nrow(g1.edges))
-  } else {
-    g1.edges$weight<-igraph::E(graph1)$weight
-  }
-  g1.edges$joinC <- ifelse(as.character(g1.edges$V1) < as.character(g1.edges$V2), paste(g1.edges$V1, g1.edges$V2), paste(g1.edges$V2, g1.edges$V1))
-
-  #create weighted edge list from second graph
-  g2.edges<-as.data.frame(get.edgelist(graph2, names=TRUE))
-  if(is.null(igraph::E(graph2)$weight)){
-    g2.edges$weight <- rep(1,nrow(g2.edges))
-  } else {
-    g2.edges$weight<-igraph::E(graph2)$weight
-  }
-  g2.edges$joinC <- ifelse(as.character(g2.edges$V1) < as.character(g2.edges$V2), paste(g2.edges$V1, g2.edges$V2), paste(g2.edges$V2, g2.edges$V1))
-
-  #join the weighted edge lists, setting NAs equal to 0
-  comb<-full_join(g1.edges,g2.edges,by="joinC")
-  comb$weight.x[is.na(comb$weight.x)]<-0
-  comb$weight.y[is.na(comb$weight.y)]<-0
-
-  names.unique<-unique(c(as.character(comb$V1.x),as.character(comb$V2.x) ))
-  names.unique <- names.unique[is.na(names.unique)==FALSE]
-
-  if(directed==FALSE){
-
-    for(i in 1:(length(names.unique))){
-      temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V2.x==names.unique[i])
-      node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
-    }
-
-  } else if (directed==TRUE){
-
-    if(mode=="out"){
-      for(i in 1:(length(names.unique))){
-        temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
-      }
-    }
-
-    if(mode=="in"){
-      for(i in 1:(length(names.unique))){
-        temp.node.w <- dplyr::filter(comb, V2.x==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
-      }
-    }
-
-    if(mode=="total"){
-      for(i in 1:(length(names.unique))){
-        temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V2.x==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
-      }
-    }
-
-
-  }
-
-  #node.cosine[is.nan(node.cosine)]<-0
-  cos.df<-as.data.frame(t(node.cosine))
-  names(cos.df)<-names.unique
-
-  return(cos.df)
-
-}
-
-
-#' Estimate skewness of the edge weight distribution for each node in a graph
-#'
-#' This function will calculate the skewness of edge weights from nodes in a graph.
-#' @param graph1 An igraph object.
-#' @param type The type of edges to pull from the graph: 'in', 'out', or 'all'. In non-directed graphs this is ignored.
-#' @export
-#' @import igraph
-#' @import moments
-#' @examples
-#' library(igraph)
-#'
-#' #Random graph
-#' graph1 <- random.graph.game(n=10, p.or.m = 0.3)
-#' E(graph1)$weight <- c(1,2,3,4,5,6,7,7,7,7)
-#'
-#' #skewness
-#' #edge.weight.skeweness(graph1)
-#'
-edge.weight.skewness <- function(graph1, type = "all"){
-
-  if(type == "all"){
-    edge.skewness <- vector()
-    for(i in 1:vcount(graph1)){
-      inc.edges <- incident(graph1,  V(graph1)[i], mode="all")
-      edge.skewness[length(edge.skewness)+1]<-skewness(E(graph1)[inc.edges]$weight)
-    }
-
-  } else if (type == "out") {
-    edge.skewness <- vector()
-    for(i in 1:vcount(graph1)){
-      inc.edges <- incident(graph1,  V(graph1)[i], mode="out")
-      edge.skewness[length(edge.skewness)+1]<-skewness(E(graph1)[inc.edges]$weight)
-    }
-
-  } else if(type == "in"){
-    edge.skewness <- vector()
-    for(i in 1:vcount(graph1)){
-      inc.edges <- incident(graph1,  V(graph1)[i], mode="in")
-      edge.skewness[length(edge.skewness)+1]<-skewness(E(graph1)[inc.edges]$weight)
-    }
-  }
-
-  return (edge.skewness)
-}
 
 #' nodeTS function
 #'
-#' This function will take a dataframe with events between individuals/objects, and take node level measures using a moving window approach.
-#' A time column is required.
-#' @param event.data dataframe containing events between individuals/objects
-#' @param windowSize size of the window in which to make network measures (should be the same scale as the time column)
-#' @param windowShift the amount to shift the moving window for each measure
-#' @param windowStart The time of the first window. This should corespond to the first events.
-#' @param type is the type of measure to take in each window. Currently available are: betweennes, closeness, eigen, and cc (i.e., clustering coeficient)
-#' @param directedNet Whether the events are directed or no: true or false.
-#' @param threshold minimum number of events to calculate a network measure (otherwise NA is produced).
-#' @param lag The lag at which to calculate cosine similarity in network structure.
-#' @param startDate Optional argument to set the date of the first event.
-#' @param method Optional argument to apply an network index. Current options: none, SRI.
+#' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
+#' @param data A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.
+#' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
+#' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
+#' @param measureFun This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.
+#' @param directed Whether the events are directed or no: true or false.
+#' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
+#' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
+#' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @export
-#' @import igraph
-#' @importFrom plyr rbind.fill
-#' @importFrom lubridate dmy
-#' @importFrom lubridate days
+#' @import lubridate
 #' @examples
 #'
-#' ts.out<-nodeTS(event.data=groomEvents[1:200,])
-#' nodeTS.plot(ts.out)
+#' ts.out<-nodeTS(data=groomEvents[1:200,])
+#'groomEvents$to <- tolower(groomEvents$to)
+#'groomEvents$from <- tolower(groomEvents$from)
 #'
-nodeTS <- function (event.data,windowSize =30,windowShift= 1, type="cc",directedNet=T, threshold=30,windowStart=0,lag=1, startDate=NULL, method="none"){
+nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree,directed=FALSE, lagged=FALSE, lag=1, cores=1){
 
-  #intialize
-  windowEnd=windowStart+windowSize
-  netValues <- data.frame()
-  gplist <- rep(list(NA),lag)
-  first.network = TRUE
-
-  if(windowEnd>max(event.data$time))print("Error: the window size is set larger than the max time difference")
-
-  #set global dataframe with proper names
-  g.global <- create.a.network(event.data, directedG = directedNet)
-  netValues<- t(rep(1,vcount(g.global)))
-  colnames(netValues)<-names(igraph::V(g.global))
-
-
-  #for every window
-  while (windowStart + windowSize<=max(event.data$time)) {
-
-    #subset the data
-    df.window<-create.window(event.data, windowStart, windowEnd)
-
-    #if there is enough data in this window...
-    if(nrow(df.window)>threshold){
-
-      #if there is no previous network, and the measure requires one
-      if(is.na(gplist[1]) & type=='cosine'){
-
-        if(method=="none"){
-          gplist[[length(gplist)+1]] <- create.a.network(df.window, directedG = directedNet)
-        } else if (method == "SIR"){
-          gplist[[length(gplist)+1]] <- create.a.network.SRI(df.window, directedG = directedNet)
-        }
-
-        gplist<-gplist[-1]
-        df.measure <- as.data.frame(NA)
-        measure.uncertainty<-c(NA,NA,NA)
-        measure.random<-c(NA,NA,NA)
-
-      } else {
-
-        #create a network
-        if(method=="none"){
-          g <- create.a.network(df.window)
-        } else if (method=="SRI"){
-          g <- create.a.network.SRI(df.window)
-        }
-
-        #keep first network
-        if(first.network==TRUE){
-          g.first <- g
-          first.network=FALSE
-        }
-
-        #calculate measure
-        if(type=='between')measure <- betweenness(g)
-        if(type=='eigne')measure <- eigen_centrality(g)$vector
-        if(type=='eigneNoScale')measure <- eigen_centrality(g, scale=F)$vector
-        if(type=='close')measure <- closeness(g)
-        if(type=='cc')measure <- transitivity(g, type=c('local'))
-        if(type=='degree')measure <- degree(g)
-        if(type=='degreeOUT')measure <- degree(g, mode="out")
-        if(type=='degreeIN')measure <- degree(g, mode="in")
-        if(type=='strength')measure <- strength(g)
-        if(type=='strengthOUT')measure <- strength(g, mode="out")
-        if(type=='strengthIN')measure <- strength(g, mode="in")
-        if(type=='cosine')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet)
-        if(type=='cosineIN')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet, mode="in")
-        if(type=='cosineOUT')measure <- cosine_between_graphs_nodes(graph1=g,graph2=gplist[[1]],directed = directedNet, mode="out")
-        if(type=='cosineFIXED')measure <- cosine_between_graphs_nodes(graph1=g,graph2=g.first,directed = directedNet)
-        if(type=='skewness')measure <- edge.weight.skewness(g)
-
-        #create a dataframe with the measures
-        if(type=='cosine' | type=='cosineOUT' | type=='cosineIN' | type=='cosineFIXED'){
-          df.measure <- measure
-          df.measure$windowStart <- windowStart
-          df.measure$windowEnd <- windowEnd
-        } else {
-          df.measure <- data.frame(t(measure))
-          colnames(df.measure)<-names(igraph::V(g))
-          df.measure$windowStart <- windowStart
-          df.measure$windowEnd <- windowEnd
-        }
-
-        #save last network
-        gplist[[length(gplist)+1]] <- g
-        gplist<-gplist[-1]
-
-      }
-    } else {
-      df.measure <- as.data.frame(NA)
-      gp=NA
-    }
-
-    #get window date range
-    windowStartDate <- NA
-    windowEndDate <- NA
-    if(is.null(startDate)==FALSE){
-      windowStartDate <- ymd(startDate) + days(windowStart)
-      windowEndDate <- ymd(startDate) + days(windowEnd)
-    }
-    df.measure$windowStartDate <- windowStartDate
-    df.measure$windowEndDate <- windowEndDate
-    df.measure$nEvents <- nrow(df.window)
-
-    #record values
-    netValues <- rbind.fill(list(as.data.frame(netValues),df.measure ))
-
-    #move window over
-    windowEnd = windowEnd + windowShift
-    windowStart = windowStart + windowShift
-
+  #extract networks from the dataframe
+  if(cores > 1){
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2)
+  } else {
+    graphlist <- extract_networks(data, windowsize, windowshift, directed)
   }
 
-  #remove first row, and column of NA
-  netValues<-netValues[-1,]
-  netValues <- netValues[,!names(netValues)=="NA"]
 
-  return (netValues)
+
+  #extract measures from the network list
+  all.unique.names <- unique(c(as.character(data[,1]),as.character(data[,2]) ))
+  if(lagged==FALSE){
+    values <- extract_measure_nodes(netlist=graphlist, measureFun, unique.names = all.unique.names)
+  } else {
+    values <- extract_lagged_measure_nodes(graphlist, measureFun, lag, unique.names = all.unique.names)
+  }
+
+  return (values)
+
 }
 
+
+
+#' Extract node level network measures from a list of networks
+#'
+#' This function will estimate node level network measures from a list of networks.
+#' @param netlist List of networks.
+#' @param measureFun A function that takes a network as input and returns a value for each node.
+#' @param unique.names A list of all names/nodes in the networks.
+#' @export
+#' @import igraph
+#' @examples
+#'
+#'
+#'
+extract_measure_nodes<-function(netlist, measureFun, unique.names){
+
+  #store measures - set global dataframe with proper names
+  netvalues <- data.frame(t(rep(-1,length(unique.names))))
+  names(netvalues) <- unique.names
+  net.measure <- data.frame(nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  netvalues<-cbind(netvalues,net.measure)
+
+  #extract measures
+  if(exists('measureFun', mode='function')){
+
+    for(i in 1:length(netlist)) {
+      df.temp.nodes <- data.frame(t(measureFun(netlist[[i]])))
+      df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                            windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                            windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+      df.temp <- cbind(df.temp.nodes,df.temp.graph)
+      netvalues <- bind_rows(netvalues,df.temp)
+    }
+
+  } else {
+    print("Error: the measurment function was not found.")
+  }
+
+  netvalues<-netvalues[-1,]
+  return(netvalues)
+
+}
+
+
+#' Extract node level measures from a list of networks when the measure requires comparisons between networks.
+#'
+#' This function will estimate node level network measures from a list of networks.
+#' @param netlist List of networks.
+#' @param measureFun A function that takes two networks as input and returns a single value. The first network is the lagged network, and the second is the current network.
+#' @param lag At what lag should networks be compared? The number here will be based on the order of the network list generated. E.g., a list of networks generated using a window shift of 10 days, and a lag of 1, would compare networks 10days apart.
+#' @param unique.names A list of all names/nodes in the networks.
+#' @export
+#' @import igraph
+#' @examples
+#'
+#'
+#'
+extract_lagged_measure_nodes<-function(netlist, measureFun, lag=1, unique.names){
+
+  #store measures - set global dataframe with proper names
+  netvalues <- data.frame(t(rep(-1,length(unique.names))))
+  names(netvalues) <- unique.names
+  net.measure <- data.frame(nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  netvalues<-cbind(netvalues,net.measure)
+
+  if(exists('measureFun', mode='function')){
+
+    for(i in 1:length(netlist)) {
+      if(i-lag>1){
+
+        df.temp.nodes <- data.frame((measureFun(netlist[[i-lag]],netlist[[i]])))
+        df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                    windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                    windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+        df.temp <- cbind(df.temp.nodes,df.temp.graph)
+        netvalues <- bind_rows(netvalues,df.temp)
+
+      } else {
+        df.temp.nodes <- data.frame(t(rep(NA,length(unique.names)) ))
+        names(df.temp.nodes)<-unique.names
+        df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                    windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                    windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+        df.temp <- cbind(df.temp.nodes,df.temp.graph)
+        netvalues <- bind_rows(netvalues,df.temp)
+      }
+
+    }
+
+  } else {
+    print("Error: the measurment function was not found.")
+  }
+
+  netvalues<-netvalues[-1,]
+  return(netvalues)
+
+}

@@ -2,15 +2,15 @@
 % Please edit documentation in R/window_functions.R
 \name{create.a.network}
 \alias{create.a.network}
-\title{Create a network from an edge list}
+\title{Create a network}
 \usage{
-create.a.network(events, directedG = TRUE)
+create.a.network(data, directed = FALSE)
 }
 \arguments{
-\item{events}{dataframe containing all events.}
+\item{data}{Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.}
 
-\item{directedG}{Treat the network as directed or not (Default = TRUE)}
+\item{directed}{Treat the network as directed or not (Default = FALSE)}
 }
 \description{
-This function will generate a network from an event dataframe
+This function will generate a network from an events dataframe.
 }

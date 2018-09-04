@@ -4,10 +4,10 @@
 \alias{create.window}
 \title{Create a window}
 \usage{
-create.window(df.total, start, end)
+create.window(data, start, end)
 }
 \arguments{
-\item{df.total}{dataframe containing all events}
+\item{data}{dataframe containing all events}
 
 \item{start}{the starting time of the window}
 
