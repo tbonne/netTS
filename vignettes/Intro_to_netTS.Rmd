@@ -17,9 +17,9 @@ knitr::opts_chunk$set(
 ```
 
 
-##Install netTS
+##Install netTS, load some libraries
 ```{r, warning=FALSE, message=FALSE}
-#devtools::install_github("tbonne/netTS")
+devtools::install_github("tbonne/netTS")
 library(netTS)
 library(lubridate)
 library(ggplot2)
@@ -27,36 +27,62 @@ library(igraph)
 library(reshape2)
 ```
 
+##Introduction
+
+The netTS package is meant for relational data that takes place through time. Generally, when constructing social networks to interogate relational data, some amount of aggregation is required. E.g. group all data into years to create yearly networks. The point of this package is to facilitate this process of aggregation, using a moving window approach.
+
+The moving window approach allows a user to define the size of a time window (e.g., windowsize = 1 month) and the amount to move the window (e.g., windowshift = 1 day). This moving window then subsets the relational data within a window, creates a network, and extracts a network measure. It then shifts over in time and repeats the process. By altering the size and shift of this moving window it is then possible to measure how networks change in time.    
+
+
 ##Look at some example data
 
-This data is the rquired format for working with netTS: events format. The first two coloumns should have information about what two entities are interacting. The third column should be the weight of those interactions. Finally, the fourth column should contain a time/date column. This last column should be in date format (e.g., ymd, or ymd_hms). The lubridate package can be helpful for setting this up.
+This data is the rquired format for working with netTS. The first two coloumns should have information about what two entities are interacting. The third column should be the weight of those interactions. Finally, the fourth column should contain dates/times. This last column should be in date format (e.g., ymd, or ymd_hms). The lubridate package can be helpful for setting this up.
 ```{r}
-groomEvents
+head(groomEvents)
 ```
 
-Extract graph level measures through time. The graphTS function requires windowsize and windowshift inputs to be a time. Again lubridate can be very useful here, as you can specify many kinds of times: e.g., years(), months(), hours(), minutes(), seconds(). The measureFun input should be a function that takes as input an igraph network and returns one value. Here custom functions can be used or functions already in netTS can be used.
+##Extract graph level measures through time. 
+
+The graphTS function requires windowsize and windowshift inputs to be in units of time. Again lubridate can be very useful here, as you can specify many kinds of times: e.g., years(10), months(10), hours(10), minutes(10), seconds(10). The measureFun input should be a function that takes as input an igraph network and returns one value. Here custom functions can be used. There are also some functions already in netTS that might be useful. 
+
+The idea of using functions here is to provide flexibility to users, and allow a wide range of network measures to be used. An example is provided below where: 1) a function is create, and 2) it is used to extract values from the data through time. 
 ```{r}
+
+#1. create a small function
+my.function <- function(graph){
+  
+  #calculate some measure from the graph
+  my.value <- degree(graph, mode="all")
+  
+  #return the value 
+  return(my.value)
+  
+}
+
+#2. extract values through time
 graph.values <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE)
-graph.values
+head(graph.values)
 ```
 
 Plot the graph level measures through time
-```{r}
+```{r, fig.width=8}
 ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+labs(y="Mean degree",x="Date")+theme_classic()
 ```
 
-Does this differ from random network arrangement. The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.  
-```{r}
+It is then possible to test whether these measures differ from random using permutations. 
+
+The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.  
+```{r, fig.width=4, message=FALSE}
 graph.values <- graphTS(groomEvents[1:200,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 1000)
 ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
   geom_ribbon(data=graph.values, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
   labs(y="Mean degree",x="Date")+theme_classic()
 ```
 
-How quickly does the network change in time
+How quickly does the network change in time?
 
-Here we show that it is possible to measure changes in the network. The measureFun in this case (when lagged == TRUE) should take two networks and return a single value. Here we use the cosine similarity measure, and use firstNet == TRUE to compare the network over time to the first network observed. Similarly, we show the similar plot when comparing networks with a lag of 1 (i.e., 10 days apart due to windowshift of 10).
-```{r}
+Here we show that it is possible to measure changes in the network. The measureFun in this case (when lagged == TRUE) should take two networks and return a single value. Here we use the cosine similarity measure, and use firstNet == TRUE, to compare the network over time to the first network observed. Similarly, we show the similar plot when comparing networks with a lag of 1 (i.e., 10 days apart due to windowshift of 10).
+```{r, fig.width=8, warning=FALSE}
 graph.change <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, firstNet = TRUE)
 
 graph.stability <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, lag = 1)
@@ -71,18 +97,18 @@ ggplot(graph.stability, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
 
 
 
-#Other levels of network change
+##Other levels of network change
 
 It is also possible to ask how the network changes through time at the node level (i.e., the ego network) and the dyadic level (i.e., specific relationships).
 
 Node level changes in degree trough time. Here the measureFun should be a function that takes one network and returns a value for each node.
 ```{r}
 node.values <- nodeTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree, directed=TRUE)
-node.values
+head(node.values)
 ```
 
 Plot node level changes
-```{r}
+```{r, fig.width=8, fig.height=4, warning=FALSE}
 df.node.values <- melt(node.values, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.node.values)[names(df.node.values)=="variable"] <- "node"
 names(df.node.values)[names(df.node.values)=="value"] <- "measure"
@@ -92,11 +118,11 @@ ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_point()+geo
 Dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
 ```{r}
 dyad.values <- dyadTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = dyad_weight, directed=TRUE)
-dyad.values
+dyad.values[1:10,1:5]
 ```
 
 Plot node level changes
-```{r}
+```{r, fig.width=8, fig.height=4, warning=FALSE}
 df.dyad.values <- melt(dyad.values, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.dyad.values)[names(df.dyad.values)=="variable"] <- "dyad"
 names(df.dyad.values)[names(df.dyad.values)=="value"] <- "measure"
