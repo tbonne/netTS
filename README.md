@@ -7,6 +7,9 @@ The netTS package is meant for relational data that takes place through time. Ge
 
 The moving window approach allows a user to define the size of a time window (e.g., windowsize = 1 month) and the amount to move the window (e.g., windowshift = 1 day). This moving window then subsets the relational data within a window, creates a network, and extracts a network measure. It then shifts over in time and repeats the process. By altering the size and shift of this moving window it is then possible to measure how networks change in time.
 
+  
+![](inst/readme_figs/diag_movingWindow.png)
+  
 
 Install netTS, load some libraries
 ----------------------------------
