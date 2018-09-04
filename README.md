@@ -78,9 +78,13 @@ ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+lab
 
 ![](inst/readme_figs/unnamed-chunk-4-1.png)
 
+
+Compare observed measures to permutations.
+------------------------------------------
+
 It is then possible to test whether these measures differ from random using permutations.
 
-The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.
+The perumation used here randomly swaps individuals in the events dataframe. The results here, from a subset of the data, suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.
 
 ``` r
 graph.values <- graphTS(groomEvents[1:200,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 1000)
@@ -96,6 +100,9 @@ ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
 ```
 
 ![](inst/readme_figs/unnamed-chunk-5-1.png)
+
+Measure network change.
+------------------------------------------
 
 How quickly does the network change in time?
 
