@@ -45,7 +45,7 @@ Extract graph level measures through time.
 
 The graphTS function requires windowsize and windowshift inputs to be in units of time. Again lubridate can be very useful here, as you can specify many kinds of times: e.g., years(10), months(10), hours(10), minutes(10), seconds(10). The measureFun input should be a function that takes as input an igraph network and returns one value. Here custom functions can be used. There are also some functions already in netTS that might be useful.
 
-The idea of using functions here is to provide flexibility to users, and allow a wide range of network measures to be used. An example is provided below where: 1) a function is create, and 2) it is used to extract values from the data through time.
+The idea of using functions here is to provide flexibility to users, and allow a wide range of network measures to be used. An example is provided below where: 1) a function is created, and 2) it is used to extract values from the data through time.
 
 ``` r
 
@@ -61,7 +61,7 @@ my.function <- function(graph){
 }
 
 #2. extract values through time
-graph.values <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE)
+graph.values <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = my.function, directed=TRUE)
 #> [1] "45 networks extracted"
 head(graph.values)
 #>   measure nEvents windowstart  windowend
@@ -87,7 +87,7 @@ Compare observed measures to permutations.
 
 It is then possible to test whether these measures differ from random using permutations.
 
-The perumation used here randomly swaps individuals in the events dataframe. The results here, from a subset of the data, suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.
+The perumation used here randomly swaps individuals in the events dataframe, so the number of edges remains the same but the IDs are randomly rearanged. The results here, from a subset of the data, suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.
 
 ``` r
 graph.values <- graphTS(groomEvents[1:200,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 1000)
@@ -135,7 +135,7 @@ Other levels of network change
 
 It is also possible to ask how the network changes through time at the node level (i.e., the ego network) and the dyadic level (i.e., specific relationships).
 
-Node level changes in degree trough time. Here the measureFun should be a function that takes one network and returns a value for each node.
+For example, here we look at how node level changes in degree trough time. Here the measureFun should be a function that takes one network and returns a value for each node.
 
 ``` r
 node.values <- nodeTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree, directed=TRUE)
@@ -168,7 +168,7 @@ ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_point()+geo
 
 ![](inst/readme_figs/unnamed-chunk-8-1.png)
 
-Dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
+For example, here we look at how dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
 
 ``` r
 dyad.values <- dyadTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = dyad_weight, directed=TRUE)
