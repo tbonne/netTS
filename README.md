@@ -1,6 +1,6 @@
 
 
-Introduction
+netTS: Introduction
 ------------
 
 The netTS package is meant for relational data that takes place through time. Generally, when constructing social networks to interogate relational data, some amount of aggregation is required. E.g. group all data into years to create yearly networks. The point of this package is to facilitate this process of aggregation, using a moving window approach.
@@ -40,7 +40,7 @@ head(groomEvents)
 #> 406 daff puzz      1 2014-11-04
 ```
 
-Extract graph level measures through time.
+Extract graph level measures through time
 ------------------------------------------
 
 The graphTS function requires windowsize and windowshift inputs to be in units of time. Again lubridate can be very useful here, as you can specify many kinds of times: e.g., years(10), months(10), hours(10), minutes(10), seconds(10). The measureFun input should be a function that takes as input an igraph network and returns one value. Here custom functions can be used. There are also some functions already in netTS that might be useful.
@@ -82,7 +82,7 @@ ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+lab
 ![](inst/readme_figs/unnamed-chunk-4-1.png)
 
 
-Compare observed measures to permutations.
+Compare observed measures to permutations
 ------------------------------------------
 
 It is then possible to test whether these measures differ from random using permutations.
@@ -104,7 +104,7 @@ ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
 
 ![](inst/readme_figs/unnamed-chunk-5-1.png)
 
-Measure network change.
+Measure network change
 ------------------------------------------
 
 How quickly does the network change in time?
