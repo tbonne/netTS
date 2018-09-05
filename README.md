@@ -135,7 +135,7 @@ Other levels of network change
 
 It is also possible to ask how the network changes through time at the node level (i.e., the ego network) and the dyadic level (i.e., specific relationships).
 
-For example, here we look at how node level changes in degree trough time. Here the measureFun should be a function that takes one network and returns a value for each node.
+For example, here we look at how node level changes in degree through time. Here the measureFun should be a function that takes one network and returns a value for each node.
 
 ``` r
 node.values <- nodeTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree, directed=TRUE)
@@ -168,7 +168,7 @@ ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_point()+geo
 
 ![](inst/readme_figs/unnamed-chunk-8-1.png)
 
-For example, here we look at how dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
+For example, here we look at how dyad level changes in weight through time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
 
 ``` r
 dyad.values <- dyadTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = dyad_weight, directed=TRUE)
