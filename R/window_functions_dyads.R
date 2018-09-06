@@ -167,3 +167,70 @@ extract_lagged_measure_dyads<-function(netlist, measureFun, lag=1, unique.names)
 }
 
 
+#' Trim dyads.
+#'
+#' This function removes dyad values beyond their min and max observed times.
+#' @param dyadvalues Output from the dyadTS function.
+#' @param data The events dataframe used in the dyadTS function.
+#' @param directed Whether to treat the dyads as directed or not
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
+#' @export
+#'
+trim_dyads<-function(dyadvalues, data ,directed){
+
+  #Ensure the names of the first four columns
+  names(data)[1:4]<- c("from","to","weight","date")
+
+  #which names to keep
+  names.kept<-colnames(dyadvalues)[1:(length(dyadvalues)-3)]
+
+  #Initialize trimed dataframes with important vars
+  df.trim<- data.frame(remove=rep(NA,nrow(dyadvalues)))
+
+  #loop through each ID and trim based on min and max date observed
+  for(i in 1:length(names.kept)){
+
+    #get both nodes from dyad
+    node1 <- strsplit(names.kept[i], split="_")[[1]][1]
+    node2 <- strsplit(names.kept[i], split="_")[[1]][2]
+
+    #determine the min and max dates the focal was seen
+    if(directed==FALSE){
+
+      #get all occurances of the dyad
+      df.temp <- data %>% filter( (from == node1 & to == node2) |  (from == node2 & to == node1) )
+      min.date<-min(df.temp$date)
+      max.date<-max(df.temp$date)
+
+    } else {
+
+      #get all occurances of the dyad
+      df.temp <- data %>% filter( (from == node1 & to == node2))
+      min.date<-min(df.temp$date)
+      max.date<-max(df.temp$date)
+
+    }
+
+    #remove all window estimates outside those dates
+    df.temp2 <- dyadvalues %>% dplyr::select(names.kept[i], windowstart, windowend)
+    df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
+    df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
+
+    #build new trimed dataframes
+    df.temp3 <- data.frame((df.temp2[,1]))
+    names(df.temp3) <- c(names.kept[i])
+    df.trim <- cbind(df.trim, df.temp3)
+
+  }
+
+  df.trim<-df.trim[,-1]
+  df.times <- dyadvalues %>% dplyr::select("nEvents","windowstart","windowend")
+  df.trim <- cbind(df.trim,df.times)
+
+
+  return(df.trim)
+
+}
+
+
