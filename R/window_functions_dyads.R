@@ -200,27 +200,50 @@ trim_dyads<-function(dyadvalues, data ,directed){
 
       #get all occurances of the dyad
       df.temp <- data %>% filter( (from == node1 & to == node2) |  (from == node2 & to == node1) )
-      min.date<-min(df.temp$date)
-      max.date<-max(df.temp$date)
+      if(nrow(df.temp)>0){
+        min.date<-min(df.temp$date)
+        max.date<-max(df.temp$date)
+      } else {
+        min.date<-NA
+        max.date<-NA
+      }
+
 
     } else {
 
       #get all occurances of the dyad
       df.temp <- data %>% filter( (from == node1 & to == node2))
-      min.date<-min(df.temp$date)
-      max.date<-max(df.temp$date)
+      if(nrow(df.temp)>0){
+        min.date<-min(df.temp$date)
+        max.date<-max(df.temp$date)
+      } else {
+        min.date<-NA
+        max.date<-NA
+      }
 
     }
 
-    #remove all window estimates outside those dates
-    df.temp2 <- dyadvalues %>% dplyr::select(names.kept[i], windowstart, windowend)
-    df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
-    df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
+    if(is.na(min.date)==FALSE){
 
-    #build new trimed dataframes
-    df.temp3 <- data.frame((df.temp2[,1]))
-    names(df.temp3) <- c(names.kept[i])
-    df.trim <- cbind(df.trim, df.temp3)
+      #remove all window estimates outside those dates
+      df.temp2 <- dyadvalues %>% dplyr::select(names.kept[i], windowstart, windowend)
+      df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
+      df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
+
+      #build new trimed dataframes
+      df.temp3 <- data.frame((df.temp2[,1]))
+      names(df.temp3) <- c(names.kept[i])
+      df.trim <- cbind(df.trim, df.temp3)
+
+    } else {
+
+      #build new trimed dataframes
+      df.temp3 <- data.frame(rep(NA,nrow(df.trim) ))
+      names(df.temp3) <- c(names.kept[i])
+      df.trim <- cbind(df.trim, df.temp3)
+
+    }
+
 
   }
 
