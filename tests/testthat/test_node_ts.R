@@ -1,4 +1,4 @@
-context("graphTS tests")
+context("nodeTS tests")
 library(netTS)
 library(lubridate)
 library(igraph)
@@ -13,20 +13,20 @@ dir.nets <- extract_networks(groomEvents,windowsize = days(30),windowshift = day
 undir.nets <- extract_networks(groomEvents,windowsize = days(30),windowshift = days(30),directed = FALSE)
 
 #test if graphTS code gets the same measures
-output.net.dir<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = degree_mean, directed=TRUE)
+output.net.dir<-nodeTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = degree, directed=TRUE)
 
-output.net.undir<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = degree_mean, directed=FALSE)
+output.net.undir<-nodeTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = degree, directed=FALSE)
 
-mean_out_degree <- function(x){
+out_degree <- function(x){
   mean(degree(x, mode="out"))
 }
-output.net.dir.out<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = mean_out_degree, directed=TRUE)
+output.net.dir.out<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = out_degree, directed=TRUE)
 
 
 test_that("subsetted network is equal", {
   expect_equal(vcount(dir.nets[[1]]), vcount(fixed.net.dir) )
   expect_equal(vcount(undir.nets[[1]]), vcount(fixed.net.undir) )
-  expect_equal(output.net.dir[1,1], mean(degree(fixed.net.dir)) )
-  expect_equal(output.net.undir[1,1], mean(degree(fixed.net.undir)) )
-  expect_equal(output.net.dir.out[1,1], mean(degree(fixed.net.dir, mode="out")) )
+  expect_equal(output.net.dir[1,1], degree(fixed.net.dir) )
+  expect_equal(output.net.undir[1,1], degree(fixed.net.undir) )
+  expect_equal(output.net.dir.out[1,1], degree(fixed.net.dir, mode="out") )
 })
