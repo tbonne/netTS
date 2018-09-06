@@ -123,7 +123,7 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
 #' E(graph1)$weight <- c(1,2,3,4,5,6,7,7,7,7)
 #'
 #' #skewness
-#' edge.weight.skeweness(graph1)
+#' edge.weight.skewness(graph1)
 #'
 edge.weight.skewness <- function(graph1, type = "all"){
 

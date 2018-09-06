@@ -137,3 +137,54 @@ extract_lagged_measure_nodes<-function(netlist, measureFun, lag=1, unique.names)
   return(netvalues)
 
 }
+
+
+#' Trim nodes.
+#'
+#' This function removes node values beyond their min and max observed times.
+#' @param nodevalues Output from the nodeTS function.
+#' @param data The events dataframe used in the nodeTS function.
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
+#' @export
+#'
+trim_nodes<-function(nodevalues, data){
+
+  #ensure the names of the first four columns
+  names(data)[1:4]<- c("from","to","weight","date")
+
+  #which names to keep
+  names.kept<-colnames(nodevalues)[1:(length(nodevalues)-3)]
+
+  #Initialize trimed dataframes with important vars
+  df.trim<- data.frame(remove=rep(NA,nrow(nodevalues)))
+
+  #loop through each ID and trim based on min and max date observed
+  for(i in 1:length(names.kept)){
+
+    #determine the min and max dates the focal was seen
+    df.temp <- data %>% filter(from == names.kept[i] | to == names.kept[i])
+    min.date<-min(df.temp$date)
+    max.date<-max(df.temp$date)
+
+    #remove all window estimates outside those dates
+    df.temp2 <- nodevalues %>% dplyr::select(names.kept[i], windowstart, windowend)
+    df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
+    df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
+
+    #build new trimed dataframes
+    df.temp3 <- data.frame((df.temp2[,1]))
+    names(df.temp3) <- c(names.kept[i])
+    df.trim <- cbind(df.trim, df.temp3)
+
+  }
+
+  df.trim<-df.trim[,-1]
+  df.times <- nodevalues %>% dplyr::select("nEvents","windowstart","windowend")
+  df.trim <- cbind(df.trim,df.times)
+
+
+  return(df.trim)
+
+}
+

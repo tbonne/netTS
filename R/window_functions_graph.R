@@ -12,7 +12,7 @@
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
 #' @param firstNet If lagged is set to TRUE, this forces the comparisons between graphs to always be between the current and first graph.
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
-#' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95% quantiles are returned.
+#' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.
 #' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
 #' @export
 #' @importFrom lubridate days

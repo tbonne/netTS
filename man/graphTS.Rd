@@ -27,7 +27,7 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 
 \item{cores}{This allows for multiple cores to be used while generating networks and calculating network measures.}
 
-\item{nperm}{This allows for the estimation the network measure assuming random permutations. Currently the 95% quantiles are returned.}
+\item{nperm}{This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.}
 
 \item{probs}{When nperm > 0 this will determine the probability of the permutation values returned from the permuations.}
 }
