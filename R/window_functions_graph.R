@@ -10,16 +10,17 @@
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
+#' @param firstNet If lagged is set to TRUE, this forces the comparisons between graphs to always be between the current and first graph.
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95% quantiles are returned.
 #' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
 #' @export
-#' @import lubridate
+#' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-graphTS(data=groomEvents[1:200,])
 #'
-graphTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95){
+graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95){
 
   #extract networks from the dataframe
   if(cores > 1){
@@ -100,8 +101,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE){
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param cores How many cores should be used.
-#' @import parallel
-#' @import dplyr
+#' @importFrom parallel makeCluster
 #' @importFrom igraph set_graph_attr
 #' @export
 #' @examples
@@ -127,7 +127,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 
   #setup parallel backend
   cl <- parallel::makeCluster(cores)
-  doParallel::registerDoParallel(cl)
+  registerDoParallel(cl)
 
   #generate the networks
   final.net.list<-net.para(data, window.ranges, directed)
@@ -231,7 +231,8 @@ net.window.para<-function(data, windowstart, windowend,directed=FALSE){
 #' @param netlist List of networks.
 #' @param measureFun A function that takes a network as input and returns a single value.
 #' @export
-#' @import igraph
+#' @importFrom igraph get.graph.attribute
+#' @importFrom lubridate ymd
 #' @examples
 #'
 #'
@@ -270,8 +271,9 @@ extract_measure_network<-function(netlist, measureFun){
 #' @param netlist List of networks.
 #' @param measureFun A function that takes two networks as input and returns a single value. The first network is the lagged network, and the second is the current network.
 #' @param lag At what lag should networks be compared? The number here will be based on the order of the network list generated. E.g., a list of networks generated using a window shift of 10 days, and a lag of 1, would compare networks 10days apart.
+#' @param firstNet If TRUE the comparison between networks is always between the current and first network.
 #' @export
-#' @import igraph
+#' @importFrom igraph get.graph.attribute
 #' @examples
 #'
 #'
@@ -340,7 +342,6 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet){
 #' @param measureFun This is a function that takes as an input a igraph network and returns a single value.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param nperm Number of permutations to perform before extracting network measures.
-#' @param
 #' @export
 #' @examples
 #'

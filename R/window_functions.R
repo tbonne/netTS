@@ -23,7 +23,8 @@ create.a.network<-function(data, directed = FALSE){
 #'
 #' This function will generate an edge list from an events dataframe
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
-#' @import dplyr
+#' @importFrom dplyr group_by
+#' @importFrom dplyr summarise
 #' @export
 #'
 create.an.edgeList<-function(data){

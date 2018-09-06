@@ -7,7 +7,7 @@
 order_events(data)
 }
 \arguments{
-\item{event.data}{dataframe containing events between individuals/objects}
+\item{data}{Dataframe containing events between individuals/objects}
 }
 \description{
 This function will take an event dataframe and order the names alphabetically. Useful in undirected graphs to ensure all edges have the same name through time.

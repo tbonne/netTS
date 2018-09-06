@@ -13,7 +13,7 @@
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @export
-#' @import lubridate
+#' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-dyadTS(data=groomEvents[1:200,])
@@ -46,7 +46,7 @@ dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=d
 #' Order events alphabetically
 #'
 #' This function will take an event dataframe and order the names alphabetically. Useful in undirected graphs to ensure all edges have the same name through time.
-#' @param event.data dataframe containing events between individuals/objects
+#' @param data Dataframe containing events between individuals/objects
 #'
 order_events <- function(data){
 
@@ -77,7 +77,8 @@ order_events <- function(data){
 #' @param measureFun A function that takes a network as input and returns a value for each dyad.
 #' @param unique.names A list of all dyads/edges in the networks.
 #' @export
-#' @import igraph
+#' @importFrom igraph get.graph.attribute
+#' @importFrom dplyr bind_rows
 #' @examples
 #'
 #'
@@ -120,7 +121,8 @@ extract_measure_dyads<-function(netlist, measureFun, unique.names){
 #' @param lag At what lag should networks be compared? The number here will be based on the order of the network list generated. E.g., a list of networks generated using a window shift of 10 days, and a lag of 1, would compare networks 10days apart.
 #' @param unique.names A list of all names/nodes in the networks.
 #' @export
-#' @import igraph
+#' @importFrom igraph get.graph.attribute
+#' @importFrom dplyr bind_rows
 #' @examples
 #'
 #'

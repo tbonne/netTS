@@ -12,12 +12,10 @@
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @export
-#' @import lubridate
+#' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-nodeTS(data=groomEvents[1:200,])
-#'groomEvents$to <- tolower(groomEvents$to)
-#'groomEvents$from <- tolower(groomEvents$from)
 #'
 nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree,directed=FALSE, lagged=FALSE, lag=1, cores=1){
 
@@ -51,7 +49,8 @@ nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=
 #' @param measureFun A function that takes a network as input and returns a value for each node.
 #' @param unique.names A list of all names/nodes in the networks.
 #' @export
-#' @import igraph
+#' @importFrom igraph get.graph.attribute
+#' @importFrom dplyr bind_rows
 #' @examples
 #'
 #'
@@ -94,7 +93,8 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
 #' @param lag At what lag should networks be compared? The number here will be based on the order of the network list generated. E.g., a list of networks generated using a window shift of 10 days, and a lag of 1, would compare networks 10days apart.
 #' @param unique.names A list of all names/nodes in the networks.
 #' @export
-#' @import igraph
+#' @importFrom igraph get.graph.attribute
+#' @importFrom dplyr bind_rows
 #' @examples
 #'
 #'

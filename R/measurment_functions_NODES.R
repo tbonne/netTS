@@ -22,7 +22,6 @@
 #' @param graph2 second graph (igraph)
 #' @param directed Boolean indicating if the graph is directed or not.
 #' @param mode For directed graphs this allows for in, out, or total cosine similarity to be calculated for each node. This argument is ignored for undirected graphs.
-#' @param graph2 second graph (igraph)
 #' @export
 #' @import igraph
 #' @importFrom dplyr full_join

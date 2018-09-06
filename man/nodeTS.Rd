@@ -31,7 +31,5 @@ This function will take a dataframe with events between individuals/objects, and
 \examples{
 
 ts.out<-nodeTS(data=groomEvents[1:200,])
-groomEvents$to <- tolower(groomEvents$to)
-groomEvents$from <- tolower(groomEvents$from)
 
 }

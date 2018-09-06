@@ -14,8 +14,6 @@ cosine_between_nodes(graph1, graph2, directed = FALSE, mode = "out")
 \item{directed}{Boolean indicating if the graph is directed or not.}
 
 \item{mode}{For directed graphs this allows for in, out, or total cosine similarity to be calculated for each node. This argument is ignored for undirected graphs.}
-
-\item{graph2}{second graph (igraph)}
 }
 \description{
 This function will calculate the cosine similarity between nodes at two time periods.

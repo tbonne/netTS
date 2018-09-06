@@ -12,6 +12,8 @@ extract_lagged_measure_network(netlist, measureFun, lag = 1, firstNet)
 \item{measureFun}{A function that takes two networks as input and returns a single value. The first network is the lagged network, and the second is the current network.}
 
 \item{lag}{At what lag should networks be compared? The number here will be based on the order of the network list generated. E.g., a list of networks generated using a window shift of 10 days, and a lag of 1, would compare networks 10days apart.}
+
+\item{firstNet}{If TRUE the comparison between networks is always between the current and first network.}
 }
 \description{
 This function will estimate network measures from a list of networks.
