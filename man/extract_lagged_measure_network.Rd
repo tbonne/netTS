@@ -18,8 +18,3 @@ extract_lagged_measure_network(netlist, measureFun, lag = 1, firstNet)
 \description{
 This function will estimate network measures from a list of networks.
 }
-\examples{
-
-
-
-}

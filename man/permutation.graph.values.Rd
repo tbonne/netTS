@@ -25,8 +25,3 @@ permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
 \description{
 This function will estimate network measures given random permutations on the original data.
 }
-\examples{
-
-
-
-}

@@ -51,7 +51,6 @@ nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=
 #' @export
 #' @importFrom igraph get.graph.attribute
 #' @importFrom dplyr bind_rows
-#' @examples
 #'
 #'
 #'
@@ -95,7 +94,6 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
 #' @export
 #' @importFrom igraph get.graph.attribute
 #' @importFrom dplyr bind_rows
-#' @examples
 #'
 #'
 #'

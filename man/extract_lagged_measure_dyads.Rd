@@ -18,8 +18,3 @@ extract_lagged_measure_dyads(netlist, measureFun, lag = 1, unique.names)
 \description{
 This function will estimate dyad level network measures from a list of networks.
 }
-\examples{
-
-
-
-}

@@ -18,8 +18,3 @@ extract_lagged_measure_nodes(netlist, measureFun, lag = 1, unique.names)
 \description{
 This function will estimate node level network measures from a list of networks.
 }
-\examples{
-
-
-
-}

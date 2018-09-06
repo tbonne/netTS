@@ -16,8 +16,3 @@ extract_measure_dyads(netlist, measureFun, unique.names)
 \description{
 This function will estimate dyad level network measures from a list of networks.
 }
-\examples{
-
-
-
-}

@@ -56,8 +56,6 @@ graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFu
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @importFrom igraph set_graph_attr
 #' @export
-#' @examples
-#'
 #'
 #'
 extract_networks<-function(data, windowsize, windowshift, directed = FALSE){
@@ -104,8 +102,6 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE){
 #' @importFrom parallel makeCluster
 #' @importFrom igraph set_graph_attr
 #' @export
-#' @examples
-#'
 #'
 #'
 extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2){
@@ -233,8 +229,6 @@ net.window.para<-function(data, windowstart, windowend,directed=FALSE){
 #' @export
 #' @importFrom igraph get.graph.attribute
 #' @importFrom lubridate ymd
-#' @examples
-#'
 #'
 #'
 extract_measure_network<-function(netlist, measureFun){
@@ -274,8 +268,6 @@ extract_measure_network<-function(netlist, measureFun){
 #' @param firstNet If TRUE the comparison between networks is always between the current and first network.
 #' @export
 #' @importFrom igraph get.graph.attribute
-#' @examples
-#'
 #'
 #'
 extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet){
@@ -343,8 +335,6 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet){
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @export
-#' @examples
-#'
 #'
 #'
 permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000){
@@ -400,8 +390,6 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @export
-#' @examples
-#'
 #'
 #'
 perm.interactions <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95){

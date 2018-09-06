@@ -79,7 +79,6 @@ order_events <- function(data){
 #' @export
 #' @importFrom igraph get.graph.attribute
 #' @importFrom dplyr bind_rows
-#' @examples
 #'
 #'
 #'
@@ -123,7 +122,6 @@ extract_measure_dyads<-function(netlist, measureFun, unique.names){
 #' @export
 #' @importFrom igraph get.graph.attribute
 #' @importFrom dplyr bind_rows
-#' @examples
 #'
 #'
 #'

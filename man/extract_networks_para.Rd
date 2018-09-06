@@ -21,8 +21,3 @@ extract_networks_para(data, windowsize, windowshift, directed = FALSE,
 \description{
 This function will create a time series of networks from a dataframe with relational events and a time stamp, using parallel processing.
 }
-\examples{
-
-
-
-}

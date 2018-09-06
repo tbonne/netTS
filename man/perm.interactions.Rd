@@ -21,8 +21,3 @@ perm.interactions(data, measureFun, directed = FALSE, nperm = 1000,
 \description{
 This function will permute a network by randomly switching individuals within events.
 }
-\examples{
-
-
-
-}

@@ -14,8 +14,3 @@ extract_measure_network(netlist, measureFun)
 \description{
 This function will estimate network measures from a list of networks.
 }
-\examples{
-
-
-
-}
