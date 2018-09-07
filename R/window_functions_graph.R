@@ -14,13 +14,15 @@
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.
 #' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
+#' @param check.convergence If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.
+#' @param random.sample.size If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.
 #' @export
 #' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-graphTS(data=groomEvents[1:200,])
 #'
-graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95){
+graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, check.convergence=FALSE,random.sample.size=30){
 
   #extract networks from the dataframe
   if(cores > 1){
@@ -42,7 +44,72 @@ graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFu
     values<-values[,c(1,5,6,2,3,4)]
   }
 
+  if(check.convergence==TRUE){
+    convergence.values <- convergence.check(data, windowsize, windowshift, directed, measureFun = measureFun,random.sample.size)
+    values <- cbind(data.frame(values),convergence.values)
+  }
+
   return (values)
+
+}
+
+
+#' Convergence check
+#'
+#' This function will estimate the convergence of the chosen network measure using random subsets of the data.
+#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param windowsize The size of each window in which to generate a network.
+#' @param windowshift The amount of time to shift the window when generating networks.
+#' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
+#' @importFrom stats coef
+#' @importFrom stats lm
+#' @export
+#'
+#'
+convergence.check<-function(data, windowsize, windowshift, directed = FALSE, measureFun,random.sample.size){
+
+  #intialize times
+  windowstart <- min(data[,4])
+  windowend=windowstart+windowsize
+  if(windowend>max(data[,4]))print("warnning: the window size is set larger than the observed data.")
+
+  #for every window generate a network
+  conv.values <- vector()
+  while (windowstart + windowsize<=max(data[,4])) {
+
+    #subset the data
+    df.window<-create.window(data, windowstart, windowend)
+    Observation.Events <- nrow(df.window)
+
+    #store network measures
+    net.measures <- data.frame(value=-1,sample=-1)
+
+      #Number of
+      for(j in seq(Observation.Events-random.sample.size,Observation.Events,by=1)){
+
+        #subset window
+        df.sub<-df.window[sample(nrow(df.window),j),]
+
+        #create a network and add it to the list
+        g <- create.a.network(df.sub, directed = directed)
+
+        #take measure
+        net.measures <- rbind(net.measures,data.frame(value=measureFun(g),sample=j))
+      }
+
+    net.measures<-net.measures[-1,]
+
+    #calculate convergence (right now just using the slope...)
+    conv.values[length(conv.values)+1] <- coef(lm(value~sample, data = net.measures))["sample"]
+
+    #move the window
+    windowend = windowend + windowshift
+    windowstart = windowstart + windowshift
+
+
+  }
+
+  return(conv.values)
 
 }
 

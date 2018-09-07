@@ -22,6 +22,6 @@ graph1 <- random.graph.game(n=10, p.or.m = 0.3)
 E(graph1)$weight <- c(1,2,3,4,5,6,7,7,7,7)
 
 #skewness
-edge.weight.skeweness(graph1)
+edge.weight.skewness(graph1)
 
 }
