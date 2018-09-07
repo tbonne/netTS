@@ -84,6 +84,8 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
     #store network measures
     net.measures <- data.frame(value=-1,sample=-1)
 
+    if(Observation.Events>1){
+
       #Number of
       for(j in seq(max(Observation.Events-random.sample.size,1),Observation.Events,by=1)){
 
@@ -96,6 +98,10 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
         #take measure
         net.measures <- rbind(net.measures,data.frame(value=measureFun(g),sample=j))
       }
+
+    } else {
+      net.measures <- rbind(net.measures,data.frame(value=NA,sample=0))
+    }
 
     net.measures<-net.measures[-1,]
 
