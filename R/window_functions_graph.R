@@ -79,7 +79,6 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
 
     #subset the data
     df.window<-create.window(data, windowstart, windowend)
-    df.window<-df.window[df.window$from=="harry",]
     Observation.Events <- nrow(df.window)
 
     #store network measures
