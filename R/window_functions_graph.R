@@ -104,7 +104,7 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
     }
 
     net.measures<-net.measures[-1,]
-
+    net.measures<-net.measures[complete.cases(net.measures),]
     #calculate convergence (right now just using the slope...)
     conv.values[length(conv.values)+1] <- coef(lm(value~sample, data = net.measures))["sample"]
 
