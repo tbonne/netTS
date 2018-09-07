@@ -79,6 +79,7 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
 
     #subset the data
     df.window<-create.window(data, windowstart, windowend)
+    df.window<-df.window[df.window$from=="harry",]
     Observation.Events <- nrow(df.window)
 
     #store network measures
@@ -106,7 +107,12 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
     net.measures<-net.measures[-1,]
     net.measures<-net.measures[complete.cases(net.measures),]
     #calculate convergence (right now just using the slope...)
-    conv.values[length(conv.values)+1] <- coef(lm(value~sample, data = net.measures))["sample"]
+
+    if(nrow(net.measures)>0){
+      conv.values[length(conv.values)+1] <- coef(lm(value~sample, data = net.measures))["sample"]
+    } else {
+      conv.values[length(conv.values)+1] <- NA
+    }
 
     #move the window
     windowend = windowend + windowshift
