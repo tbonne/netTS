@@ -16,19 +16,20 @@
 #' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
 #' @param check.convergence If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.
 #' @param random.sample.size If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.
+#' @param trim Whether nodes that are in windows beyond their first/last observation time are removed (i.e., only partially within a time window).
 #' @export
 #' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-graphTS(data=groomEvents[1:200,])
 #'
-graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, check.convergence=FALSE,random.sample.size=30){
+graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, check.convergence=FALSE,random.sample.size=30, trim=FALSE){
 
   #extract networks from the dataframe
   if(cores > 1){
     graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed, trim=trim)
   }
 
   #extract measures from the network list
@@ -132,11 +133,12 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
+#' @param trim Whether to remove nodes from the network if they are past the last observation time.
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
-extract_networks<-function(data, windowsize, windowshift, directed = FALSE){
+extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=FALSE){
 
   #intialize times
   windowstart <- min(data[,4])
@@ -149,6 +151,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE){
 
     #subset the data
     df.window<-create.window(data, windowstart, windowend)
+    if(trim==TRUE)df.window<-trim_graph(df.window,data,windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
     #create a network and add it to the list
@@ -544,14 +547,46 @@ perm.interactions <- function(data, measureFun, directed=FALSE, nperm=1000, prob
 
 
 
+#' Trim nodes when taking network measures.
+#'
+#' This function removes node from the network when they are beyond their min and max observed times, then takes the network measure.
+#' @param nodevalues Output from the nodeTS function.
+#' @param data The events dataframe used in the nodeTS function.
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
+#' @export
+#'
+trim_graph<-function(df.window, data, windowstart, windowend){
 
+  #ensure the names of the first four columns
+  names(data)[1:4]<- c("from","to","weight","date")
 
+  #which names to keep
+  names.kept<-unique( c(df.window[,1],df.window[,2]) )
 
+  #Initialize trimed dataframes with important vars
+  #df.trim<- data.frame(remove=rep(NA,nrow(nodevalues)))
 
+  #loop through each ID and trim based on min and max date observed
+  for(i in 1:length(names.kept)){
 
+    #determine the min and max dates the focal was seen
+    df.temp <- data %>% filter(from == names.kept[i] | to == names.kept[i])
+    min.date<-min(df.temp$date)
+    max.date<-max(df.temp$date)
 
+    #check if individual was seen before/after this particular window
+    if( (min.date<=windowstart & max.date>=windowend) == FALSE){
 
+      #remove this individual from the window
+      df.window<-df.window[df.window[,1]!=names.kept[i],]
+      df.window<-df.window[df.window[,2]!=names.kept[i],]
+    }
 
+  }
 
+  return(df.window)
+
+}
 
 
