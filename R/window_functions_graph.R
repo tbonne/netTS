@@ -27,7 +27,7 @@ graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFu
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, trim=trim)
   } else {
     graphlist <- extract_networks(data, windowsize, windowshift, directed, trim=trim)
   }
@@ -185,7 +185,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
 #' @export
 #'
 #'
-extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2){
+extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2,trim=FALSE){
 
   #intialize times
   windowStart <- min(data[,4])
@@ -207,7 +207,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
   registerDoParallel(cl)
 
   #generate the networks
-  final.net.list<-net.para(data, window.ranges, directed)
+  final.net.list<-net.para(data, window.ranges, directed, trim = trim)
 
   #stop cluster
   parallel::stopCluster(cl)
@@ -227,12 +227,12 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 #' @export
 #'
 #'
-net.para<-function(data, window.ranges,directed=FALSE){
+net.para<-function(data, window.ranges,directed=FALSE,trim){
 
   #run the processes
   try(finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("window.net","create.window", "create.a.network","window.net.para"), .packages = c("igraph", "dplyr") ) %dopar%
 
-        net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed)
+        net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, trim=trim)
 
   )
 
@@ -280,10 +280,11 @@ net.window<-function(data, windowstart, windowend,directed=FALSE){
 #' @export
 #'
 #'
-net.window.para<-function(data, windowstart, windowend,directed=FALSE){
+net.window.para<-function(data, windowstart, windowend,directed=FALSE, trim=FALSE){
 
   #subset the data
   df.window <- data[data[[4]] >= windowstart & data[[4]] < windowend,]
+  if(trim==TRUE)df.window<-trim_graph(df.window,data,windowstart, windowend)
   Observation.Events <- nrow(df.window)
 
   #create a network and add it to the list
