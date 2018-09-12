@@ -7,7 +7,7 @@
 graphTS(data, windowsize = days(30), windowshift = days(1),
   measureFun = degree_mean, directed = FALSE, lagged = FALSE, lag = 1,
   firstNet = FALSE, cores = 1, nperm = 0, probs = 0.95,
-  check.convergence = FALSE, random.sample.size = 30)
+  check.convergence = FALSE, random.sample.size = 30, trim = FALSE)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -35,6 +35,8 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 \item{check.convergence}{If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.}
 
 \item{random.sample.size}{If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.}
+
+\item{trim}{Whether nodes that are in windows beyond their first/last observation time are removed (i.e., only partially within a time window).}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.

@@ -4,7 +4,8 @@
 \alias{extract_networks}
 \title{Extract networks from a moving window}
 \usage{
-extract_networks(data, windowsize, windowshift, directed = FALSE)
+extract_networks(data, windowsize, windowshift, directed = FALSE,
+  trim = FALSE)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -14,6 +15,8 @@ extract_networks(data, windowsize, windowshift, directed = FALSE)
 \item{windowshift}{The amount of time to shift the window when generating networks.}
 
 \item{directed}{Whether to consider the network as directed or not (TRUE/FALSE).}
+
+\item{trim}{Whether to remove nodes from the network if they are past the last observation time.}
 }
 \description{
 This function will create a time series of networks from a dataframe with relational events and a time stamp.

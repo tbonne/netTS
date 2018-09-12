@@ -5,7 +5,7 @@
 \title{Extract networks from a moving window using multiple cores}
 \usage{
 extract_networks_para(data, windowsize, windowshift, directed = FALSE,
-  cores = 2)
+  cores = 2, trim = FALSE)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

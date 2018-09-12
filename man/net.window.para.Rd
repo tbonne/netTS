@@ -4,7 +4,8 @@
 \alias{net.window.para}
 \title{Extract one network within time constriants}
 \usage{
-net.window.para(data, windowstart, windowend, directed = FALSE)
+net.window.para(data, windowstart, windowend, directed = FALSE,
+  trim = FALSE)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
