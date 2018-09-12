@@ -64,6 +64,7 @@ graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFu
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @importFrom stats coef
 #' @importFrom stats lm
+#' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
@@ -95,6 +96,9 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
 
         #create a network and add it to the list
         g <- create.a.network(df.sub, directed = directed)
+        g <- set_graph_attr(g, "nEvents", Observation.Events)
+        g <- set_graph_attr(g, "windowstart", windowstart)
+        g <- set_graph_attr(g, "windowend", windowend)
 
         #take measure
         net.measures <- rbind(net.measures,data.frame(value=measureFun(g),sample=j))
