@@ -24,9 +24,11 @@ library(igraph)
 ```
 
 
-##Introduction
+#Introduction
 
 When choosing a network measure to compare over time, it is important  to think about how changes in data collection/effort might affect the measure. This is especially the case when using raw untransformed data. Using a transformation, such as the simple ratio index (SRI), can facilitate comparisons. However, when the interest is in modeling changes in the network on the untransformed scale, issues of sampling become more important. This vignette provides examples of some of the ways in which to test for the effects of sample size on the chosen network measure 
+
+#1) Not using simple ratio index
 
 
 ##Take a look at how some measures vary
@@ -41,6 +43,7 @@ mean_closeness <- function(x){
 mean_eigen_vector <- function(x){
   return(mean(eigen_centrality(x)$vector))
 }
+
 ```
 
 
@@ -64,7 +67,7 @@ ggplot(df.eigen, aes(y=measure, x=windowstart )) + geom_line() + theme_classic()
 
 This convergence test simply random subsamples the events dataframe, recreates a network with this subsample, and measures the network. The convergence value is the slope of the line fitted to the measures taken from the subsampled networks. Small values here suggest that the measure is relatively robust to changes in sample size.
 ```{r, fig.width=6}
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 plot(x=df.close$convergence.values, y=df.close$nEvents, main="Closeness", ylab="sample size", xlab="Convergence")
 abline(v=0, lty ="dashed")
 plot(x=df.eigen$convergence.values, y=df.eigen$nEvents, main="Eigenvector", ylab="sample size", xlab="Convergence")
@@ -88,5 +91,53 @@ cor.test(df.eigen$measure,df.eigen$nEvents)
 plot(df.eigen$measure,df.eigen$nEvents)
 ```
 
+
 This suggest that on average the closeness measure and the eigenvector measures are not highly correlated to the number of samples within a given window.
+
+
+#1) Using simple ratio index
+
+Extract network measures over time, while checking for convergence 
+```{r}
+df.close.SRI <- graphTS(data=groomEvents, windowsize = days(120), windowshift = days(10), measureFun = mean_closeness, check.convergence = T, SRI=TRUE)
+df.eigen.SRI <- graphTS(data=groomEvents, windowsize = days(120), windowshift = days(10), measureFun = mean_eigen_vector, check.convergence = T, SRI=TRUE)
+```
+
+
+```{r, fig.width=6}
+ggplot(df.close.SRI, aes(y=measure, x=windowstart )) + geom_line() + theme_classic() +labs(y="Closeness")
+ggplot(df.eigen.SRI, aes(y=measure, x=windowstart )) + geom_line() + theme_classic() +labs(y="Eigenvector centrality")
+```
+
+
+####Check to see if the measure converges. 
+
+This convergence test simply random subsamples the events dataframe, recreates a network with this subsample, and measures the network. The convergence value is the slope of the line fitted to the measures taken from the subsampled networks. Small values here suggest that the measure is relatively robust to changes in sample size.
+```{r, fig.width=6}
+par(mfrow=c(1,3))
+plot(x=df.close.SRI$convergence.values, y=df.close.SRI$nEvents, main="Closeness", ylab="sample size", xlab="Convergence")
+abline(v=0, lty ="dashed")
+plot(x=df.eigen.SRI$convergence.values, y=df.eigen.SRI$nEvents, main="Eigenvector", ylab="sample size", xlab="Convergence")
+abline(v=0, lty ="dashed")
+```
+
+This suggests that the measure of closeness and eigenvector measures shows no consistant bias. The magnitude of the convergence values (i.e., the slopes) help determin if the measure is changing in a meaningful way. 
+
+####Check to see how correlated the measure is to the number of events within a given window. 
+
+Closeness
+```{r, fig.width=6}
+cor.test(df.close.SRI$measure,df.close.SRI$nEvents)
+plot(df.close.SRI$measure,df.close.SRI$nEvents)
+```
+
+
+Eigenvector
+```{r, fig.width=6}
+cor.test(df.eigen.SRI$measure,df.eigen.SRI$nEvents)
+plot(df.eigen.SRI$measure,df.eigen.SRI$nEvents)
+```
+
+
+
 

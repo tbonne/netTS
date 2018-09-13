@@ -17,19 +17,20 @@
 #' @param check.convergence If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.
 #' @param random.sample.size If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.
 #' @param trim Whether nodes that are in windows beyond their first/last observation time are removed (i.e., only partially within a time window).
+#' @param SRI Whether to convert edges to the simple ratio index: Nab / (Nab + Na + Nb). Default is set to FALSE.
 #' @export
 #' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-graphTS(data=groomEvents[1:200,])
 #'
-graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, check.convergence=FALSE,random.sample.size=30, trim=FALSE){
+graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFun=degree_mean,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, check.convergence=FALSE,random.sample.size=30, trim=FALSE, SRI=FALSE){
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, trim=trim)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, trim=trim, SRI=SRI)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed, trim=trim)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed, trim=trim, SRI=SRI)
   }
 
   #extract measures from the network list
@@ -40,13 +41,13 @@ graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFu
   }
 
   if(nperm>0){
-    perm.values <- permutation.graph.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs)
+    perm.values <- permutation.graph.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI)
     values <- cbind(data.frame(values),perm.values)
     values<-values[,c(1,5,6,2,3,4)]
   }
 
   if(check.convergence==TRUE){
-    convergence.values <- convergence.check(data, windowsize, windowshift, directed, measureFun = measureFun,random.sample.size)
+    convergence.values <- convergence.check(data, windowsize, windowshift, directed, measureFun = measureFun,random.sample.size, SRI=SRI)
     values <- cbind(data.frame(values),convergence.values)
   }
 
@@ -68,7 +69,7 @@ graphTS <- function (data,windowsize = days(30), windowshift= days(1), measureFu
 #' @export
 #'
 #'
-convergence.check<-function(data, windowsize, windowshift, directed = FALSE, measureFun,random.sample.size){
+convergence.check<-function(data, windowsize, windowshift, directed = FALSE, measureFun,random.sample.size, SRI=FALSE){
 
   #intialize times
   windowstart <- min(data[,4])
@@ -95,7 +96,7 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
         df.sub<-df.window[sample(nrow(df.window),j),]
 
         #create a network and add it to the list
-        g <- create.a.network(df.sub, directed = directed)
+        g <- create.a.network(df.sub, directed = directed, SRI)
         g <- set_graph_attr(g, "nEvents", Observation.Events)
         g <- set_graph_attr(g, "windowstart", windowstart)
         g <- set_graph_attr(g, "windowend", windowend)
@@ -142,7 +143,7 @@ convergence.check<-function(data, windowsize, windowshift, directed = FALSE, mea
 #' @export
 #'
 #'
-extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=FALSE){
+extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=FALSE, SRI=FALSE){
 
   #intialize times
   windowstart <- min(data[,4])
@@ -159,7 +160,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
     Observation.Events <- nrow(df.window)
 
     #create a network and add it to the list
-    g <- create.a.network(df.window, directed = directed)
+    g <- create.a.network(df.window, directed = directed, SRI)
     g <- set_graph_attr(g, "nEvents", Observation.Events)
     g <- set_graph_attr(g, "windowstart", windowstart )
     g <- set_graph_attr(g, "windowend", windowend)
@@ -189,7 +190,10 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
 #' @export
 #'
 #'
-extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2,trim=FALSE){
+extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2,trim=FALSE, SRI){
+
+  #SRI not implimented yet
+  if(SRI==TRUE)print("Warning SRI not yet available for parallel extraction of networks. Using SRI == FALSE.")
 
   #intialize times
   windowStart <- min(data[,4])
@@ -255,14 +259,14 @@ net.para<-function(data, window.ranges,directed=FALSE,trim){
 #' @export
 #'
 #'
-net.window<-function(data, windowstart, windowend,directed=FALSE){
+net.window<-function(data, windowstart, windowend,directed=FALSE, SRI){
 
   #subset the data
   df.window<-create.window(data, windowstart, windowend)
   Observation.Events <- nrow(df.window)
 
   #create a network and add it to the list
-  g <- create.a.network(df.window, directed = directed)
+  g <- create.a.network(df.window, directed = directed, SRI)
   g <- set_graph_attr(g, "nEvents", Observation.Events)
   g <- set_graph_attr(g, "windowstart", windowstart)
   g <- set_graph_attr(g, "windowend", windowend)
@@ -423,7 +427,7 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet){
 #' @export
 #'
 #'
-permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000){
+permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000, SRI=FALSE){
 
   #intialize times
   windowstart <- min(data[,4])
@@ -443,7 +447,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     Observation.Events <- nrow(df.window)
 
     #perform permutations
-    perm.out<-perm.interactions(df.window, measureFun, directed, probs=probs,nperm= nperm)
+    perm.out<-perm.interactions(df.window, measureFun, directed, probs=probs,nperm= nperm, SRI=SRI)
 
     #record the high and low estimates
     perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]
@@ -478,9 +482,9 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
 #' @export
 #'
 #'
-perm.interactions <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95){
+perm.interactions <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI){
 
-  net.list <- list(create.a.network(data, directed))
+  net.list <- list(create.a.network(data, directed,SRI=SRI))
   Perm.measure<-vector()
 
   for(i in 1:nperm){
@@ -539,7 +543,7 @@ perm.interactions <- function(data, measureFun, directed=FALSE, nperm=1000, prob
     }
 
     #Create graph in order to get the measure
-    Perm.network <- create.a.network(NewData, directed)
+    Perm.network <- create.a.network(NewData, directed, SRI = SRI)
 
     # Get measure
     Perm.measure[length(Perm.measure)+1]<- measureFun(Perm.network)
