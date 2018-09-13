@@ -1,10 +1,10 @@
 ---
-title: "Testing network measures over time"
+title: "Comparing network measures over time"
 author: "Tyler R. Bonnell"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Testing network measures over time}
+  %\VignetteIndexEntry{Comparing network measures over time}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -26,7 +26,7 @@ library(igraph)
 
 #Introduction
 
-When choosing a network measure to compare over time, it is important  to think about how changes in data collection/effort might affect the measure. This is especially the case when using raw untransformed data. Using a transformation, such as the simple ratio index (SRI), can facilitate comparisons. However, when the interest is in modeling changes in the network on the untransformed scale, issues of sampling become more important. This vignette provides examples of some of the ways in which to test for the effects of sample size on the chosen network measure 
+When choosing a network measure to compare over time, it is important  to think about how changes in data collection/effort might affect the measure. This is especially the case when using raw untransformed data. Using a transformation, such as the simple ratio index (SRI), can facilitate comparisons. However, when the interest is in modeling changes in the network on the untransformed scale, issues of sampling become more important. This vignette provides examples of some of the ways in which to test for the effects of sample size on the chosen network measure. 
 
 #1) Not using simple ratio index
 
