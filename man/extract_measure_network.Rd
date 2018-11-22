@@ -4,7 +4,7 @@
 \alias{extract_measure_network}
 \title{Extract network measures from a list of networks}
 \usage{
-extract_measure_network(netlist, measureFun)
+extract_measure_network(netlist, measureFun, inOut = NULL)
 }
 \arguments{
 \item{netlist}{List of networks.}

@@ -5,7 +5,7 @@
 \title{Extract networks from a moving window}
 \usage{
 extract_networks(data, windowsize, windowshift, directed = FALSE,
-  trim = FALSE)
+  trim = FALSE, SRI = FALSE, effortFun = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

@@ -18,16 +18,16 @@
 #'
 #' ts.out<-dyadTS(data=groomEvents[1:200,])
 #'
-dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=dyad_weight, directed=FALSE, lagged=FALSE, lag=1, cores=1){
+dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=dyad_weight, effortFun=NULL, directed=FALSE, lagged=FALSE, lag=1, cores=1){
 
   #if undirected, organise the data to look at the data without order.
   if(directed==FALSE) data <- order_events(data)
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed, effortFun = effortFun)
   }
 
   #extract measures from the network list
@@ -87,7 +87,7 @@ extract_measure_dyads<-function(netlist, measureFun, unique.names){
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
   names(netvalues) <- unique.names
-  net.measure <- data.frame(nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  net.measure <- data.frame(nEvents=-1,windowstart=ymd_hms("2000-01-01 12:00:00"), windowend=ymd_hms("2000-01-01 12:00:00"))
   netvalues<-cbind(netvalues,net.measure)
 
   #extract measures
@@ -180,7 +180,7 @@ extract_lagged_measure_dyads<-function(netlist, measureFun, lag=1, unique.names)
 trim_dyads<-function(dyadvalues, data ,directed){
 
   #Ensure the names of the first four columns
-  names(data)[1:4]<- c("from","to","weight","date")
+  names(data)[1:3]<- c("from","to","date")
 
   #which names to keep
   names.kept<-colnames(dyadvalues)[1:(length(dyadvalues)-3)]

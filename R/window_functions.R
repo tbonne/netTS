@@ -3,13 +3,14 @@
 #' This function will generate a network from an events dataframe.
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
 #' @param directed Treat the network as directed or not (Default = FALSE)
+#' @param scans The number of scans, or measure of sampling effort (e.g., hours sampling)
 #' @import igraph
 #' @export
 #'
-create.a.network<-function(data, directed = FALSE, SRI=FALSE){
+create.a.network<-function(data, directed = FALSE, SRI=FALSE, effort=1){
 
   if(SRI==FALSE){
-    elist<-create.an.edgeList(data)
+    elist<-create.an.edgeList(data,effort)
     gg <- graph_from_data_frame(elist, directed = directed, vertices = NULL)
 
     if(is.simple(gg)==FALSE)gg<-simplify(gg, edge.attr.comb=list(weight="sum"))
@@ -36,11 +37,12 @@ create.a.network<-function(data, directed = FALSE, SRI=FALSE){
 #' @importFrom dplyr summarise
 #' @export
 #'
-create.an.edgeList<-function(data){
+create.an.edgeList<-function(data,effort=1){
 
   #create a network and add it to the list
-  names(data)[1:3]<-c("from","to","weight")
-  elist<-data %>% dplyr::group_by(.dots=c("from","to")) %>% summarise(sum(weight))
+  names(data)[1:2]<-c("from","to")
+  if(is.null(data$weight))data$weight=1
+  elist<-data %>% dplyr::group_by(.dots=c("from","to")) %>% summarise(sum(weight)/effort)
   names(elist)<-c("from","to","weight")
 
   return(elist)
@@ -57,7 +59,7 @@ create.an.edgeList<-function(data){
 #'
 create.window <- function(data, start, end){
 
-  df.window <- data[data[[4]] >= start & data[[4]] < end,]
+  df.window <- data[data[[3]] >= start & data[[3]] < end,]
 
   return (df.window)
 }
@@ -147,12 +149,6 @@ create.a.network.SRI <- function(events, directed=FALSE){
 
   return(gg)
 }
-
-
-
-
-
-
 
 
 

@@ -5,9 +5,10 @@
 \title{graphTS function}
 \usage{
 graphTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = degree_mean, directed = FALSE, lagged = FALSE, lag = 1,
-  firstNet = FALSE, cores = 1, nperm = 0, probs = 0.95,
-  check.convergence = FALSE, random.sample.size = 30, trim = FALSE)
+  measureFun = degree_mean, effortFun = NULL,
+  permutationFun = perm.events, directed = FALSE, lagged = FALSE,
+  lag = 1, firstNet = FALSE, cores = 1, nperm = 0, probs = 0.95,
+  SRI = FALSE)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -17,6 +18,8 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 \item{windowshift}{The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.}
 
 \item{measureFun}{This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.}
+
+\item{permutationFun}{This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).}
 
 \item{directed}{Whether the events are directed or no: true or false.}
 
@@ -32,6 +35,8 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 
 \item{probs}{When nperm > 0 this will determine the probability of the permutation values returned from the permuations.}
 
+\item{SRI}{Whether to convert edges to the simple ratio index: Nab / (Nab + Na + Nb). Default is set to FALSE.}
+
 \item{check.convergence}{If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.}
 
 \item{random.sample.size}{If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.}
@@ -44,5 +49,6 @@ This function will take a dataframe with events between individuals/objects, and
 \examples{
 
 ts.out<-graphTS(data=groomEvents[1:200,])
+
 
 }

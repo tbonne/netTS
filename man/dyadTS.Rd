@@ -5,8 +5,8 @@
 \title{dyadTS function}
 \usage{
 dyadTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = dyad_weight, directed = FALSE, lagged = FALSE, lag = 1,
-  cores = 1)
+  measureFun = dyad_weight, effortFun = NULL, directed = FALSE,
+  lagged = FALSE, lag = 1, cores = 1)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}

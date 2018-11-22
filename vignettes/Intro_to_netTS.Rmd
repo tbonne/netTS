@@ -73,7 +73,7 @@ It is then possible to test whether these measures differ from random using perm
 
 The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.  
 ```{r, fig.width=4, message=FALSE}
-graph.values <- graphTS(groomEvents[1:200,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 1000)
+graph.values <- graphTS(groomEvents[1:1000,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 100) 
 ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
   geom_ribbon(data=graph.values, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
   labs(y="Mean degree",x="Date")+theme_classic()
@@ -112,7 +112,7 @@ Plot node level changes
 df.node.values <- melt(node.values, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.node.values)[names(df.node.values)=="variable"] <- "node"
 names(df.node.values)[names(df.node.values)=="value"] <- "measure"
-ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_point()+geom_line() + theme_classic() + labs(y="Mean degree",x="Date")
+ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_line() + theme_classic() + labs(y="Mean degree",x="Date")
 ```
 
 Dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
@@ -126,7 +126,7 @@ Plot node level changes
 df.dyad.values <- melt(dyad.values, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.dyad.values)[names(df.dyad.values)=="variable"] <- "dyad"
 names(df.dyad.values)[names(df.dyad.values)=="value"] <- "measure"
-ggplot(df.dyad.values, aes(x=windowstart, y=measure, col=dyad))+geom_point()+geom_line() + theme_classic() + labs(y="Weight",x="Date") + theme(legend.position="right",legend.text = element_text(size=6))
+ggplot(df.dyad.values, aes(x=windowstart, y=measure, col=dyad))+geom_line() + theme_classic() + labs(y="Weight",x="Date") + theme(legend.position="none",legend.text = element_text(size=6))
 ```
 
 

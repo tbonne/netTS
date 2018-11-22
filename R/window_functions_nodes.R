@@ -3,13 +3,14 @@
 #' nodeTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
-#' @param data A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.
+#' @param data A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
+#' @param firstNet If lagged is set to TRUE, this compares the subsequent networks to the first network.
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @export
 #' @importFrom lubridate days
@@ -17,13 +18,13 @@
 #'
 #' ts.out<-nodeTS(data=groomEvents[1:200,])
 #'
-nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree,directed=FALSE, lagged=FALSE, lag=1, cores=1){
+nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree, effortFun=NULL,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1){
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed, effortFun = effortFun)
   }
 
 
@@ -33,7 +34,7 @@ nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=
   if(lagged==FALSE){
     values <- extract_measure_nodes(netlist=graphlist, measureFun, unique.names = all.unique.names)
   } else {
-    values <- extract_lagged_measure_nodes(graphlist, measureFun, lag, unique.names = all.unique.names)
+    values <- extract_lagged_measure_nodes(graphlist, measureFun, lag, unique.names = all.unique.names, firstNet=firstNet)
   }
 
   return (values)
@@ -59,7 +60,7 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
   names(netvalues) <- unique.names
-  net.measure <- data.frame(nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  net.measure <- data.frame(nEvents=-1,windowstart=ymd_hms("2000-01-01 12:00:00"), windowend=ymd_hms("2000-01-01 12:00:00"))
   netvalues<-cbind(netvalues,net.measure)
 
   #extract measures
@@ -71,7 +72,7 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
                             windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                             windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
       df.temp <- cbind(df.temp.nodes,df.temp.graph)
-      netvalues <- bind_rows(netvalues,df.temp)
+      netvalues <- dplyr::bind_rows(netvalues,df.temp)
     }
 
   } else {
@@ -97,29 +98,42 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
 #'
 #'
 #'
-extract_lagged_measure_nodes<-function(netlist, measureFun, lag=1, unique.names){
+extract_lagged_measure_nodes<-function(netlist, measureFun, lag=1, unique.names, firstNet=FALSE){
 
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
   names(netvalues) <- unique.names
-  net.measure <- data.frame(nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  net.measure <- data.frame(nEvents=-1,windowstart=ymd_hms("2000-01-01 12:00:00"), windowend=ymd_hms("2000-01-01 12:00:00"))
   netvalues<-cbind(netvalues,net.measure)
 
   if(exists('measureFun', mode='function')){
 
-    for(i in 1:length(netlist)) {
-      if(i-lag>1){
+    if(firstNet == FALSE){
+      for(i in 1:length(netlist)) {
+        if(i-lag>1){
 
-        df.temp.nodes <- data.frame((measureFun(netlist[[i-lag]],netlist[[i]])))
-        df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
-                                    windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
-                                    windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
-        df.temp <- cbind(df.temp.nodes,df.temp.graph)
-        netvalues <- bind_rows(netvalues,df.temp)
+          df.temp.nodes <- data.frame((measureFun(netlist[[i-lag]],netlist[[i]])))
+          df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                      windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                      windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+          df.temp <- cbind(df.temp.nodes,df.temp.graph)
+          netvalues <- bind_rows(netvalues,df.temp)
 
-      } else {
-        df.temp.nodes <- data.frame(t(rep(NA,length(unique.names)) ))
-        names(df.temp.nodes)<-unique.names
+        } else {
+          df.temp.nodes <- data.frame(t(rep(NA,length(unique.names)) ))
+          names(df.temp.nodes)<-unique.names
+          df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                      windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                      windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+          df.temp <- cbind(df.temp.nodes,df.temp.graph)
+          netvalues <- bind_rows(netvalues,df.temp)
+        }
+
+      }
+    } else {
+
+      for(i in 1:length(netlist)) {
+        df.temp.nodes <- data.frame((measureFun(netlist[[1]],netlist[[i]])))
         df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
                                     windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                                     windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
@@ -151,7 +165,7 @@ extract_lagged_measure_nodes<-function(netlist, measureFun, lag=1, unique.names)
 trim_nodes<-function(nodevalues, data){
 
   #ensure the names of the first four columns
-  names(data)[1:4]<- c("from","to","weight","date")
+  names(data)[1:3]<- c("from","to","date")
 
   #which names to keep
   names.kept<-colnames(nodevalues)[1:(length(nodevalues)-3)]

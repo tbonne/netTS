@@ -20,13 +20,13 @@ output.net.undir<-nodeTS(groomEvents,windowsize = days(30), windowshift = days(3
 out_degree <- function(x){
   degree(x, mode="out")
 }
-output.net.dir.out<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = out_degree, directed=TRUE)
+output.net.dir.out<-nodeTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = out_degree, directed=TRUE)
 
 
 test_that("subsetted network is equal", {
   expect_equal(vcount(dir.nets[[1]]), vcount(fixed.net.dir) )
   expect_equal(vcount(undir.nets[[1]]), vcount(fixed.net.undir) )
-  expect_equal(output.net.dir[1,2], as.vector(degree(fixed.net.dir)[1]) )
-  expect_equal(output.net.undir[1,2], as.vector(degree(fixed.net.undir)[1]) )
-  expect_equal(output.net.dir.out[1,1], as.vector(degree(fixed.net.dir, mode="out")[1]) )
+  expect_equal(output.net.dir[1,2], as.vector(degree(fixed.net.dir)[16]) )
+  expect_equal(output.net.undir[1,2], as.vector(degree(fixed.net.undir)[16]) )
+  expect_equal(output.net.dir.out[1,1], as.vector(degree(fixed.net.dir, mode="out")[14]) )
 })

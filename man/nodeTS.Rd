@@ -5,11 +5,11 @@
 \title{nodeTS function}
 \usage{
 nodeTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = degree, directed = FALSE, lagged = FALSE, lag = 1,
-  cores = 1)
+  measureFun = degree, effortFun = NULL, directed = FALSE,
+  lagged = FALSE, lag = 1, firstNet = FALSE, cores = 1)
 }
 \arguments{
-\item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
+\item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
 
 \item{windowsize}{The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.}
 
@@ -22,6 +22,8 @@ nodeTS(data, windowsize = days(30), windowshift = days(1),
 \item{lagged}{Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.}
 
 \item{lag}{If lagged is set to TRUE, this is the lag at which to compare networks.}
+
+\item{firstNet}{If lagged is set to TRUE, this compares the subsequent networks to the first network.}
 
 \item{cores}{This allows for multiple cores to be used while generating networks and calculating network measures.}
 }

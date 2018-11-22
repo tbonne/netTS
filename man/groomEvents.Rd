@@ -4,7 +4,7 @@
 \name{groomEvents}
 \alias{groomEvents}
 \title{Data on grooming events in a baboon troop}
-\format{An object of class \code{data.frame} with 1599 rows and 4 columns.}
+\format{An object of class \code{data.frame} with 7519 rows and 3 columns.}
 \source{
 \href{https://www.researchgate.net/profile/Peter_Henzi/publication/312584929_The_strength_of_weak_ties_among_female_baboons_fitness-related_benefits_of_social_bonds/links/5883456892851c21ff445b63/The-strength-of-weak-ties-among-female-baboons-fitness-related-benefits-of-social-bonds.pdf}{download}
 }

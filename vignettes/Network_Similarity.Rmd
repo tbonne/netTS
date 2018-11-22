@@ -105,18 +105,18 @@ ggplot(df.melt, aes(y=value, x= seq, color=node)) + geom_line() + theme_classic(
 ```
 
 
-###1. Application to a real dataset: baboon proximity network
+###1. Application to a real dataset: vervet proximity network
 
-Change in the network over time: relative to the previous network in time
+Change in the network over time: relative to the first network in time
 ```{r, warning=FALSE,message=FALSE}
 library(lubridate)
 library(plyr)
 
 #extract cosine measures at the graph level
-graph.cosine <- graphTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = T,lag=10 ,measureFun= cosine_between_graphs)
+graph.cosine <- graphTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = TRUE,firstNet = TRUE ,measureFun= cosine_between_graphs)
 
 #extract cosine measures at the node level
-node.cosine <- nodeTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = T,lag=10, measureFun= cosine_between_nodes)
+node.cosine <- nodeTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = TRUE, firstNet=TRUE, measureFun= cosine_between_nodes)
 
 #plot the cosine similarities
 df.node.cosine <- melt(node.cosine, id.vars = c("windowstart","windowend", "nEvents" ))

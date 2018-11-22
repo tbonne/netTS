@@ -4,12 +4,14 @@
 \alias{create.a.network}
 \title{Create a network}
 \usage{
-create.a.network(data, directed = FALSE)
+create.a.network(data, directed = FALSE, SRI = FALSE, effort = 1)
 }
 \arguments{
 \item{data}{Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.}
 
 \item{directed}{Treat the network as directed or not (Default = FALSE)}
+
+\item{scans}{The number of scans, or measure of sampling effort (e.g., hours sampling)}
 }
 \description{
 This function will generate a network from an events dataframe.

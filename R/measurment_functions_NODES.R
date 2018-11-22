@@ -6,15 +6,6 @@
 ###################################################
 
 
-
-
-
-
-
-
-
-
-
 #' Estimate consine similarity between nodes in a graph
 #'
 #' This function will calculate the cosine similarity between nodes at two time periods.
