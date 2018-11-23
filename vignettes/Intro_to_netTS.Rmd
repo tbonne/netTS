@@ -117,7 +117,7 @@ ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_line() + th
 
 Dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
 ```{r}
-dyad.values <- dyadTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = dyad_weight, directed=TRUE)
+dyad.values <- dyadTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = dyad_weight, directed=TRUE)
 dyad.values[1:10,1:5]
 ```
 
