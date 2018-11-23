@@ -60,7 +60,7 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
   names(netvalues) <- unique.names
-  net.measure <- data.frame(nEvents=-1,windowstart=ymd_hms("2000-01-01 12:00:00"), windowend=ymd_hms("2000-01-01 12:00:00"))
+  net.measure <- data.frame(nEvents=-1,windowstart=igraph::get.graph.attribute(netlist[[1]], "windowstart" ), windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
   netvalues<-cbind(netvalues,net.measure)
 
   #extract measures
@@ -103,7 +103,7 @@ extract_lagged_measure_nodes<-function(netlist, measureFun, lag=1, unique.names,
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
   names(netvalues) <- unique.names
-  net.measure <- data.frame(nEvents=-1,windowstart=ymd_hms("2000-01-01 12:00:00"), windowend=ymd_hms("2000-01-01 12:00:00"))
+  net.measure <- data.frame(nEvents=-1,windowstart=windowstart=igraph::get.graph.attribute(netlist[[1]], "windowstart" ), windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
   netvalues<-cbind(netvalues,net.measure)
 
   if(exists('measureFun', mode='function')){

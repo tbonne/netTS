@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 
 ##Install netTS, load some libraries
 ```{r, warning=FALSE, message=FALSE}
-devtools::install_github("tbonne/netTS")
+#devtools::install_github("tbonne/netTS")
 library(netTS)
 library(lubridate)
 library(ggplot2)
@@ -45,7 +45,7 @@ head(groomEvents)
 
 The graphTS function requires windowsize and windowshift inputs to be in units of time. Again lubridate can be very useful here, as you can specify many kinds of times: e.g., years(10), months(10), hours(10), minutes(10), seconds(10). The measureFun input should be a function that takes as input an igraph network and returns one value. Here custom functions can be used. There are also some functions already in netTS that might be useful. 
 
-The idea of using functions here is to provide flexibility to users, and allow a wide range of network measures to be used. An example is provided below where: 1) a function is create, and 2) it is used to extract values from the data through time. 
+The idea of using functions here is to provide flexibility to users, and allow a wide range of network measures to be used. An example is provided below where: 1) a function is created, and 2) it is used to extract values from the data through time. 
 ```{r}
 
 #1. create a small function
@@ -60,7 +60,7 @@ my.function <- function(graph){
 }
 
 #2. extract values through time
-graph.values <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE)
+graph.values <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = degree_mean, directed=TRUE)
 head(graph.values)
 ```
 
@@ -73,7 +73,7 @@ It is then possible to test whether these measures differ from random using perm
 
 The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.  
 ```{r, fig.width=4, message=FALSE}
-graph.values <- graphTS(groomEvents[1:1000,], windowsize = days(30), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 100) 
+graph.values <- graphTS(groomEvents[1:1500,], windowsize = days(60), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 100) #a subset of the data and a small value for the number of permutation here is chosen just for show.
 ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
   geom_ribbon(data=graph.values, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
   labs(y="Mean degree",x="Date")+theme_classic()
@@ -83,9 +83,9 @@ How quickly does the network change in time?
 
 Here we show that it is possible to measure changes in the network. The measureFun in this case (when lagged == TRUE) should take two networks and return a single value. Here we use the cosine similarity measure, and use firstNet == TRUE, to compare the network over time to the first network observed. Similarly, we show the similar plot when comparing networks with a lag of 1 (i.e., 10 days apart due to windowshift of 10).
 ```{r, fig.width=8, warning=FALSE}
-graph.change <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, firstNet = TRUE)
+graph.change <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, firstNet = TRUE)
 
-graph.stability <- graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, lag = 1)
+graph.stability <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, lag = 1)
 
 
 ggplot(graph.change, aes(x=windowstart, y=measure))+geom_point()+geom_line()+labs(y="Network change from start (cosine)",x="Date")+theme_classic()
@@ -103,7 +103,7 @@ It is also possible to ask how the network changes through time at the node leve
 
 Node level changes in degree trough time. Here the measureFun should be a function that takes one network and returns a value for each node.
 ```{r}
-node.values <- nodeTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = degree, directed=TRUE)
+node.values <- nodeTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = degree, directed=TRUE)
 head(node.values)
 ```
 
