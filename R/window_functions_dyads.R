@@ -130,7 +130,7 @@ extract_lagged_measure_dyads<-function(netlist, measureFun, lag=1, unique.names)
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
   names(netvalues) <- unique.names
-  net.measure <- data.frame(nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  net.measure <- data.frame(nEvents=-1,windowstart=igraph::get.graph.attribute(netlist[[1]], "windowstart" ), windowend=igraph::get.graph.attribute(netlist[[1]], "windowend" ))
   netvalues<-cbind(netvalues,net.measure)
 
   if(exists('measureFun', mode='function')){
