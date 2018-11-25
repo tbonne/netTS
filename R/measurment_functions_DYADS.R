@@ -28,10 +28,9 @@ dyad_weight <- function(g){
     weight.vector[length(weight.vector)+1] <- weight.value
   }
 
-  df.weight <- data.frame(t(weight.vector))
-  colnames(df.weight)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
+  names(weight.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
 
-  return (df.weight)
+  return (weight.vector)
 
 }
 
@@ -60,10 +59,9 @@ dyad_sum <- function(g){
     sum.vector[length(sum.vector)+1] <- sum.value
   }
 
-  df.sum <- data.frame(t(sum.vector))
-  colnames(df.sum)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
+  names(sum.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
 
-  return (df.sum)
+  return (sum.vector)
 
 }
 
@@ -91,10 +89,9 @@ dyad_mean <- function(g){
     mean.vector[length(mean.vector)+1] <- mean.value
   }
 
-  df.mean <- data.frame(t(mean.vector))
-  colnames(df.mean)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
+  names(mean.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
 
-  return (df.mean)
+  return (mean.vector)
 
 }
 
@@ -123,10 +120,9 @@ dyad_diff <- function(g){
     diff.vector[length(diff.vector)+1] <- diff.value
   }
 
-  df.diff <- data.frame(t(diff.vector))
-  colnames(df.diff)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
+  names(diff.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
 
-  return (df.diff)
+  return (diff.vector)
 
 }
 
@@ -176,10 +172,9 @@ dyad_proportion <- function(g){
   }
 
 
-  df.prop <- data.frame(t(prop.vector))
-  colnames(df.prop)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
+  names(prop.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
 
-  return (df.prop)
+  return (prop.vector)
 
 }
 
@@ -248,7 +243,7 @@ dyad_change <- function(g1,g2){
   df.total <- bind_rows(g1.df,g2.df)
   df.total[ is.na(df.total)] <- 0
   diff <- df.total[2,]-df.total[1,]
-
+  diff<-as.vector(diff)
 
   return(diff)
 }

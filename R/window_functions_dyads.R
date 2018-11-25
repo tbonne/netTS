@@ -138,7 +138,7 @@ extract_lagged_measure_dyads<-function(netlist, measureFun, lag=1, unique.names)
     for(i in 1:length(netlist)) {
       if(i-lag>1){
 
-        df.temp.nodes <- data.frame((measureFun(netlist[[i-lag]],netlist[[i]])))
+        df.temp.nodes <- data.frame(t(measureFun(netlist[[i-lag]],netlist[[i]])))
         df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
                                     windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                                     windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
