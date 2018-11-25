@@ -94,7 +94,7 @@ extract_measure_dyads<-function(netlist, measureFun, unique.names){
   if(exists('measureFun', mode='function')){
 
     for(i in 1:length(netlist)) {
-      df.temp.nodes <- data.frame((measureFun(netlist[[i]])))
+      df.temp.nodes <- data.frame(t(measureFun(netlist[[i]])))
       df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
                                   windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                                   windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))

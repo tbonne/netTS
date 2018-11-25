@@ -19,7 +19,9 @@ knitr::opts_chunk$set(
 
 ##Install netTS, load some libraries
 ```{r, warning=FALSE, message=FALSE}
+#if netTS is not yet installed you can use the following code to install it from github:
 #devtools::install_github("tbonne/netTS")
+
 library(netTS)
 library(lubridate)
 library(ggplot2)
@@ -36,8 +38,9 @@ The moving window approach allows a user to define the size of a time window (e.
 
 ##Look at some example data
 
-This data is the rquired format for working with netTS. The first two coloumns should have information about what two entities are interacting. The third column should be the weight of those interactions. Finally, the fourth column should contain dates/times. This last column should be in date format (e.g., ymd, or ymd_hms). The lubridate package can be helpful for setting this up.
+This data is the rquired format for working with netTS. The first two coloumns should have information about what two entities are interacting. The third column should contain dates/times. This last column should be in date format (e.g., ymd, or ymd_hms). The lubridate package can be helpful for setting this up. Finaly, it is possible to record weights, sampling information, or any other useful information as additional columns.
 ```{r}
+#1. Take a look at the raw data
 head(groomEvents)
 ```
 
@@ -49,10 +52,10 @@ The idea of using functions here is to provide flexibility to users, and allow a
 ```{r}
 
 #1. create a small function
-my.function <- function(graph){
+my.function.net <- function(graph){
   
   #calculate some measure from the graph
-  my.value <- degree(graph, mode="all")
+  my.value <- mean(degree(graph, mode="out"))
   
   #return the value 
   return(my.value)
@@ -60,72 +63,107 @@ my.function <- function(graph){
 }
 
 #2. extract values through time
-graph.values <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = degree_mean, directed=TRUE)
+graph.values <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = my.function.net, directed=TRUE)
+
+#3. Take a look at the outputs
 head(graph.values)
 ```
 
 Plot the graph level measures through time
 ```{r, fig.width=8}
+#1. Plot the results
 ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+labs(y="Mean degree",x="Date")+theme_classic()
 ```
 
-It is then possible to test whether these measures differ from random using permutations. 
+It is then possible to test whether these measures differ from randomly permutated networks. 
 
-The perumation used here randomly swaps individuals in the events dataframe. The results here suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.  
+The perumation used here randomly swaps individuals in the events dataframe. Again there are prespecified options for performin permutaitons, but as it is often useful to specify eactly how a network is permuted users can specify their own permutation functions. The results of this permutation below suggest that the network shows lower mean degree than expected due to chance arrangement of events, i.e., individuals groom fewer partners than expected if grooming was random.  
 ```{r, fig.width=4, message=FALSE}
-graph.values <- graphTS(groomEvents[1:1500,], windowsize = days(60), windowshift = days(10), measureFun = degree_mean, directed=TRUE, nperm = 100) #a subset of the data and a small value for the number of permutation here is chosen just for show.
+
+#1. Estimate the observed network measures and the range expected when permuted. Notes: 1 - a subset of the data and a small value for the number of permutation here is chosen here as the process is slow, and 2 - see perumtation vignette for more options when using permutation tests.
+graph.values <- graphTS(groomEvents[1:1500,], windowsize = days(60), windowshift = days(10), measureFun = my.function.net, directed=TRUE, nperm = 100)
+
+#2. Plot the results
 ggplot(graph.values, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
   geom_ribbon(data=graph.values, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
-  labs(y="Mean degree",x="Date")+theme_classic()
-```
-
-How quickly does the network change in time?
-
-Here we show that it is possible to measure changes in the network. The measureFun in this case (when lagged == TRUE) should take two networks and return a single value. Here we use the cosine similarity measure, and use firstNet == TRUE, to compare the network over time to the first network observed. Similarly, we show the similar plot when comparing networks with a lag of 1 (i.e., 10 days apart due to windowshift of 10).
-```{r, fig.width=8, warning=FALSE}
-graph.change <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, firstNet = TRUE)
-
-graph.stability <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = cosine_between_graphs, directed=TRUE, lagged = TRUE, lag = 1)
-
-
-ggplot(graph.change, aes(x=windowstart, y=measure))+geom_point()+geom_line()+labs(y="Network change from start (cosine)",x="Date")+theme_classic()
-ggplot(graph.stability, aes(x=windowstart, y=measure))+geom_point()+geom_line()+labs(y="Network stability (cosine)",x="Date")+theme_classic()
-
+  labs(y="Mean out degree",x="Date")+theme_classic()
 ```
 
 
+##Extract node level measures through time. 
 
-
-
-##Other levels of network change
-
-It is also possible to ask how the network changes through time at the node level (i.e., the ego network) and the dyadic level (i.e., specific relationships).
-
-Node level changes in degree trough time. Here the measureFun should be a function that takes one network and returns a value for each node.
+It is also possible to ask how the network changes through time at the node level (i.e., the ego network). Here we look at how nodes change in out-degree through time. The measureFun for node level analysis should be a function that takes one network and returns a value for each node. Names should be associated with each value to ensure that values are associated with the correct node. An example is provided below.
 ```{r}
-node.values <- nodeTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = degree, directed=TRUE)
+
+#1. create a small function
+my.function.nodes <- function(graph){
+  
+  #calculate some measure from the graph
+  my.value <- degree(graph, mode="out")
+  
+  #return the values 
+  return(my.value)
+  
+}
+
+#2. extract values through time
+node.values <- nodeTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = my.function.nodes, directed=TRUE)
+
+#3. Take a look at the output
 head(node.values)
 ```
 
+
 Plot node level changes
 ```{r, fig.width=8, fig.height=4, warning=FALSE}
+
+#1. Convert the dataframe from wide to long format
 df.node.values <- melt(node.values, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.node.values)[names(df.node.values)=="variable"] <- "node"
 names(df.node.values)[names(df.node.values)=="value"] <- "measure"
+
+#2. Plot the results
 ggplot(df.node.values, aes(x=windowstart, y=measure, col=node))+geom_line() + theme_classic() + labs(y="Mean degree",x="Date")
 ```
 
-Dyad level changes in weight trough time. Here the measureFun should be a function that takes one network and returns a value for each dyad.
+##Extract dyad level measures through time. 
+
+It is also possible to look at how relationships between two individuals change in time. This is the dyadic level. Here we look at the strength of each dyad trough time, i.e. their number of interactions. A measureFun for dyadic measures should be a function that takes one network and returns a value for each dyad. Names should be associated with each value to ensure that values are associated with the correct node. An example is provided below.
 ```{r}
-dyad.values <- dyadTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = dyad_weight, directed=TRUE)
+
+#1. create a small function
+my.function.dyads <- function(graph){
+  
+  #calculate some measure from the graph
+  my.value <- E(graph)$weight
+  
+  #assign each weight to the correct dyad
+  names(my.value) <- paste(get.edgelist(graph)[, 1], get.edgelist(graph)[, 
+        2], sep = "_")
+  
+  #return the values 
+  return(((my.value)))
+  
+}
+
+
+#2. extract values through time
+dyad.values <- dyadTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = my.function.dyads, directed=TRUE)
+
+
+#3. take a look at the output
 dyad.values[1:10,1:5]
 ```
 
-Plot node level changes
+Plot dyad level changes
 ```{r, fig.width=8, fig.height=4, warning=FALSE}
+
+#1. convert the dataframe from wide to long format
 df.dyad.values <- melt(dyad.values, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.dyad.values)[names(df.dyad.values)=="variable"] <- "dyad"
 names(df.dyad.values)[names(df.dyad.values)=="value"] <- "measure"
+
+#2. plot the results
 ggplot(df.dyad.values, aes(x=windowstart, y=measure, col=dyad))+geom_line() + theme_classic() + labs(y="Weight",x="Date") + theme(legend.position="none",legend.text = element_text(size=6))
 ```
 
