@@ -9,7 +9,7 @@
 #' @export
 #'
 #'
-perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI){
+perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI, effort=1){
 
   Perm.measure<-vector()
 
@@ -47,7 +47,7 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
     }
 
     #Create graph in order to get the measure
-    Perm.network <- create.a.network(data, directed, SRI = SRI)
+    Perm.network <- create.a.network(data, directed, SRI = SRI, effort=effort)
 
     # Get measure
     Perm.measure[length(Perm.measure)+1]<- measureFun(Perm.network)
@@ -72,7 +72,7 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
 #' @export
 #'
 #'
-perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI){
+perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI, effort=1){
 
   net.list <- list(create.a.network(data, directed,SRI=SRI))
   Perm.measure<-vector()
@@ -133,7 +133,7 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
     }
 
     #Create graph in order to get the measure
-    Perm.network <- create.a.network(NewData, directed, SRI = SRI)
+    Perm.network <- create.a.network(NewData, directed, SRI = SRI, effort=effort)
 
     # Get measure
     Perm.measure[length(Perm.measure)+1]<- measureFun(Perm.network)
@@ -156,9 +156,9 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
 #' @export
 #'
 #'
-perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE){
+perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effort=1){
 
-  net.original <- create.a.network(data, directed,SRI=SRI)
+  net.original <- create.a.network(data, directed,SRI=SRI, effort=effort)
   Perm.measure<-vector()
 
   for(i in 1:nperm){
@@ -189,9 +189,9 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
 #' @export
 #'
 #'
-perm.edge.degseq <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE){
+perm.edge.degseq <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effort=1){
 
-  net.original <- create.a.network(data, directed,SRI=SRI)
+  net.original <- create.a.network(data, directed,SRI=SRI, effort=effort)
   Perm.measure<-vector()
 
   for(i in 1:nperm){

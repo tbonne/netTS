@@ -26,7 +26,7 @@
 #' ts.out<-graphTS(data=groomEvents[1:200,])
 #'
 #'
-graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean,effortFun=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
+graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
 
   #extract networks from the dataframe
   if(cores > 1){
@@ -43,7 +43,7 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
   }
 
   if(nperm>0){
-    perm.values <- permutation.graph.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI)
+    perm.values <- permutation.graph.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI, graphlist = graphlist,permutationFun=permutationFun )
     values <- cbind(data.frame(values),perm.values)
     values<-values[,c(1,5,6,2,3,4)]
   }
@@ -246,6 +246,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
     g <- set_graph_attr(g, "nEvents", Observation.Events)
     g <- set_graph_attr(g, "windowstart", windowstart )
     g <- set_graph_attr(g, "windowend", windowend)
+    g <- set_graph_attr(g, "effort", effort)
     netlist[[length(netlist)+1]] <- g
 
     #move the window
@@ -336,35 +337,6 @@ net.para<-function(data, window.ranges,directed=FALSE,trim, effortFun=NULL){
 #' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowstart The start of the window.
 #' @param windowend The end of the window.
-#' @param directed Whether to consider the network as directed or not.
-#' @importFrom igraph set_graph_attr
-#' @export
-#'
-#'
-net.window<-function(data, windowstart, windowend,directed=FALSE, SRI){
-
-  #subset the data
-  df.window<-create.window(data, windowstart, windowend)
-  Observation.Events <- nrow(df.window)
-
-  #create a network and add it to the list
-  g <- create.a.network(df.window, directed = directed, SRI)
-  g <- set_graph_attr(g, "nEvents", Observation.Events)
-  g <- set_graph_attr(g, "windowstart", windowstart)
-  g <- set_graph_attr(g, "windowend", windowend)
-
-  return(g)
-
-}
-
-
-
-#' Extract one network within time constriants
-#'
-#' This function will generate one network from a dataframe with time constraints.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
-#' @param windowstart The start of the window.
-#' @param windowend The end of the window.
 #' @param directed Whether to consider the network as weighted. (default=FALSE)
 #' @importFrom igraph set_graph_attr
 #' @export
@@ -394,6 +366,7 @@ net.window.para<-function(data, windowstart, windowend,directed=FALSE, trim=FALS
   g <- igraph::set_graph_attr(g, "nEvents", Observation.Events)
   g <- igraph::set_graph_attr(g, "windowstart", windowstart)
   g <- igraph::set_graph_attr(g, "windowend", windowend)
+  g <- igraph::set_graph_attr(g, "effort", effort)
 
   return(g)
 
@@ -582,41 +555,39 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet=FA
 #' @export
 #'
 #'
-permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000, SRI=FALSE){
+permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000, SRI=FALSE,graphlist=NULL, permutationFun=perm.events){
 
-  #intialize times
-  windowstart <- min(data[,3])
-  windowend=windowstart+windowsize
-  if(windowend>max(data[,3]))print("warnning: the window size is set larger than the observed data.")
+  #vectors to record permutation results
+  perm.values.high <- vector()
+  perm.values.low <- vector()
 
   #monitor the progress
   pb <- txtProgressBar(min = as.numeric(windowstart + windowsize), max = as.numeric(max(data[,3])), style = 3)
 
-  #for every window generate a network
-  perm.values.high <- vector()
-  perm.values.low <- vector()
-  while (windowstart + windowsize<=max(data[,3])) {
+  #run the permutation on each network
+  for(i in 1:length(graphlist)){
 
-    #subset the data
+    #get the time bounds of each network
+    windowstart <- graph_attr(graphlist[[i]],"windowstart")
+    windowend   <- graph_attr(graphlist[[i]],"windowend")
+
+    #get the data within this time range
     df.window<-create.window(data, windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
     #perform permutations
-    perm.out<-perm.events(df.window, measureFun, directed, probs=probs,nperm= nperm, SRI=SRI)
+    perm.out<-permutationFun(df.window, measureFun, directed=directed, probs=probs,nperm= nperm, SRI=SRI, effort= graph_attr(graphlist[[i]],"effort") )
 
     #record the high and low estimates
     perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]
     perm.values.low[[length(perm.values.low)+1]] <- perm.out[1]
-
-    #move the window
-    windowend = windowend + windowshift
-    windowstart = windowstart + windowshift
 
     #update progress bar
     setTxtProgressBar(pb,  as.numeric(windowend) )
 
   }
 
+  #put the estimates into a data frame
   perm.df<-data.frame(CI.low=perm.values.low,CI.high=perm.values.high)
 
   return(perm.df)

@@ -1,0 +1,133 @@
+---
+title: "Using network permutations"
+author: "Tyler R. Bonnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using network permutations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+##Install netTS, load some libraries
+```{r, warning=FALSE, message=FALSE}
+#if netTS is not yet installed you can use the following code to install it from github:
+#devtools::install_github("tbonne/netTS")
+
+library(netTS)
+library(lubridate)
+library(ggplot2)
+library(igraph)
+library(reshape2)
+```
+
+
+##Introduction
+
+This vignette for the netTS package is meant to provide information on how to use permutations to compare network measures over time. This vignette will first introduce the two pre-built methods for permutations, and then introduce how a user specified function can be developed.
+
+We use grooming data of vervet monkeys as an example:
+```{r}
+head(groomEvents)
+```
+
+
+##Permutations on the events data
+
+This first method permutes the original events data, i.e., before the construction of the network (see Farine (2017)). 
+
+```{r, fig.width=6}
+
+#1. create a measurment function
+mean_strength <- function (net) {
+  md <- mean(strength(net))
+    return(md)
+}
+
+#2. Extract measurments correcting for sampling effort, and compare to networks constructed from permuting the events data frame.
+net.strength <- graphTS(groomEvents[1:1200,], windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE,effortFun = effort.time, permutationFun = perm.events, nperm=10)
+
+#3. Plot the results
+ggplot(net.strength, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
+  geom_ribbon(data=net.strength, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
+  labs(y="Mean strength",x="Date")+theme_classic()
+
+
+```
+
+##Permutations of the edge weights
+
+This second method permutes the wieghts on the network. Here the degree distribution and the distribution of weights remain the same but the specific weights for each edge are permuted.
+
+```{r}
+#1. create a measurment function
+mean_betweenness <- function (net) {
+  md <- mean(betweenness(net))
+    return(md)
+}
+
+#2. Extract measurments correcting for sampling effort, and compare to networks constructed from permuting edge weights.
+net.betweenness <- graphTS(groomEvents[1:1200,], windowsize = days(60), windowshift = days(10), measureFun = mean_betweenness, directed=TRUE,effortFun = effort.time, permutationFun = perm.edge.weights, nperm=100)
+
+#3. Plot the results
+ggplot(net.betweenness, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
+  geom_ribbon(data=net.betweenness, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
+  labs(y="Mean betweenness",x="Date")+theme_classic()
+
+```
+
+##Permutations using user specified functions
+
+Develop a function to permute the data/network. This function should take as inputs a data frame of events and the measurment function used. The function should also have ... as an input, as there are options that are fed from netTS to the permutation function that might be useful when setting up more complicated permutation functions. 
+
+For example, it is possible to use the following inputs from netts: 1) whether the graph should be constructed as directed (directed), 2) should it be converted to SRI values (SRI), 3) effort during this window (effort), 4) the number of permutations to use (nperm), the quantile range to return (probs). Below we make use of the effort calculated in each window to estimate the permuted values.
+```{r}
+#user specified function
+my.permutation.function <- function(data=df.window, measureFun=mean_betweenness, effort, ...){
+  
+  #create a network of the data within a window
+  net.original <- create.a.network(data, directed=TRUE,SRI=FALSE,effort=effort)
+  
+  #vector to store the permutation measures
+  Perm.measure<-vector()
+
+  #perform a series of bootstraps
+  for(i in 1:100){
+
+    #permute edges
+    net.per <- igraph::rewire(net.original, with=keeping_degseq(niter = vcount(net.original) * 10) )
+
+    # Get measure
+    Perm.measure[length(Perm.measure)+1]<- measureFun(net.per)
+
+  }
+  
+  return(quantile(Perm.measure, probs = c(0.025, 0.975), na.rm=T))
+}
+```
+
+Run the user specified permutation
+```{r}
+#1. Extract measurments, and compare to networks constructed from permuting edges.
+net.betweenness.edgeP <- graphTS(groomEvents[1:1200,], windowsize = days(60), windowshift = days(10), measureFun = mean_betweenness, directed=TRUE,effortFun = effort.time, permutationFun = my.permutation.function, nperm = 100)
+
+#1. Plot the results
+ggplot(net.betweenness.edgeP, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
+  geom_ribbon(data=net.betweenness.edgeP, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
+  labs(y="Mean betweenness",x="Date")+theme_classic()
+```
+
+Note: The two examples above show how permuting the network in different ways can lead to very different results (i.e., no difference in the second and large difference in the third examples using mean betweeness). The aim here is to show that it is possible to setup exactly how the permutation is done, facilitating better comparisons between your observed and 'null' networks.
+
+References:
+
+Farine, D.R. (2017) A guide to null models for animal social network analysis. Methods in Ecology and Evolution, 8, 1309-1320.
+

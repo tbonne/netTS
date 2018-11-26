@@ -1,0 +1,147 @@
+---
+title: "Controling for sampling effort"
+author: "Tyler R. Bonnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Controling for sampling effort}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+##Install netTS, load some libraries
+```{r, warning=FALSE, message=FALSE}
+#if netTS is not yet installed you can use the following code to install it from github:
+#devtools::install_github("tbonne/netTS")
+
+library(netTS)
+library(lubridate)
+library(ggplot2)
+library(igraph)
+library(reshape2)
+```
+
+##Introduction
+
+This vignette for the netTS package is meant to provide information on how to control for variation in sampling effort when extracting network measures over time. This vignette will first introduce the two pre-built methods, and then introduce how a user specified function can be developed.
+
+We use grooming data of vervet monkeys as an example:
+```{r}
+head(groomEvents)
+```
+
+
+
+##Controling for sampling effort: time from first to last sample
+
+This first method makes the assmuption that during a sampling day effort between first and last samples taken is constant. Given this assumption it calculates the time spent sampling each day, using first and last sample times, and sums across all days within a window. By then dividing each edge by this effort this method returns the number of interactions / hours sampled.
+
+```{r, fig.width=6}
+
+#1. create a measurment function
+mean_strength <- function (net) {
+  md <- mean(strength(net))
+    return(md)
+}
+
+#2. Extract measurments without correcting for sampling effort
+net.time.noEffort <-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+#3. Extract measurments correcting for sampling effort
+net.time.yesEffort<-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE, effortFun=effort.time)
+
+#3. Plot the results
+ggplot(net.time.noEffort, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue")+labs(y="Average strength") + theme_classic()
+
+ggplot(data=net.time.yesEffort, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue")+labs(y="Average strength / hours observed")+ theme_classic() 
+
+```
+
+
+##Controling for sampling effort: number of sampling events
+
+This second method makes the assmuption that durring a sampling day each round of sampling is marked by a unique identification code. Given this assumption this method calculates the number of unique sampling events across all days within a window. By then dividing each edge by this effort this method returns the number of interactions / number of sampling events.
+
+As the vervet data used here, does not have a unique sampling ID, we add one here arbitrarityl to show how this could work with data collected with unique IDs.
+```{r}
+#1. Add sampling events (these are arbitrarily set)
+groomEvents$sampleID <- as.numeric(as.factor(floor(as.numeric(as.duration(groomEvents$date-min(groomEvents$date) ))/(60*60))))
+
+#2. take a look at the data: i.e., individual observations are part of a unique sampling event.
+head(groomEvents)
+```
+
+Extract time series
+```{r, fig.width=6}
+
+#1. create a measurment function
+mean_strength <- function (net) {
+  md <- mean(strength(net))
+    return(md)
+}
+
+#2. Extract measurments without correcting for sampling effort
+
+net.time.noEffort <-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+#2. Extract measurments with correcting for sampling effort
+net.time.yesEffort<-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE,effortFun=effort.events)
+
+#3. Plot the results
+ggplot(net.time.noEffort, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue")+labs(y="Average strength") + theme_classic()
+
+ggplot(data=net.time.yesEffort, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue")+labs(y="Average strength / sampling event")+ theme_classic() 
+
+```
+
+
+##Controling for sampling effort: custom functions
+
+Add a custom effort function
+```{r}
+
+#1. create a function that takes a subset of my events dataframe and outputs a single value
+my.effort.days <- function(df.window){
+  
+  #calculate the number of unique days within each window
+  numb.days <- length(unique(as.Date(df.window$date)))
+  
+  #return the number of days sampled in each window
+  return(numb.days)
+  
+}
+```
+
+Extract time series
+```{r, fig.width=6}
+
+#1. create a measurment function
+mean_strength <- function (net) {
+  md <- mean(strength(net))
+    return(md)
+}
+
+#2. Extract measurments without correcting for sampling effort
+
+net.time.noEffort <-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+#3. Extract measurments with correcting for sampling effort: using my.effort.days function
+net.time.yesEffort<-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE,effortFun=my.effort.days)
+
+#4. Plot the results
+ggplot(net.time.noEffort, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue")+labs(y="Average strength") + theme_classic()
+
+ggplot(data=net.time.yesEffort, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue")+labs(y="Average strength / sampling event")+ theme_classic() 
+
+
+```
+
+
