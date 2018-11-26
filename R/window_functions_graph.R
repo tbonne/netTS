@@ -562,7 +562,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
   perm.values.low <- vector()
 
   #monitor the progress
-  pb <- txtProgressBar(min = as.numeric(windowstart + windowsize), max = as.numeric(max(data[,3])), style = 3)
+  pb <- txtProgressBar(min = 1, max = length(graphlist), style = 3)
 
   #run the permutation on each network
   for(i in 1:length(graphlist)){
