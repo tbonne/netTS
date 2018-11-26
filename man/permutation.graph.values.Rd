@@ -5,7 +5,8 @@
 \title{Use permutation to extract uncertainty}
 \usage{
 permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
-  measureFun, probs = 0.95, nperm = 1000, SRI = FALSE)
+  measureFun, probs = 0.95, nperm = 1000, SRI = FALSE, graphlist = NULL,
+  permutationFun = perm.events)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

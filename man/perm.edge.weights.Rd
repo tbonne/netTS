@@ -5,7 +5,7 @@
 \title{Perform edge weight permutations}
 \usage{
 perm.edge.weights(data, measureFun, directed = FALSE, nperm = 1000,
-  probs = 0.95, SRI = FALSE)
+  probs = 0.95, SRI = FALSE, effort = 1)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
