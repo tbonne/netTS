@@ -10,7 +10,7 @@
 #'
 sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL){
 
-  day=lubridate::ymd_hms("2002/07/24 09:00:00")
+  day=lubridate::ymd("2002/07/24")
   df.sim <- data.frame(from = 1, to=2, day=day, sampleID=1 )
 
   #monitor the progress
@@ -29,12 +29,12 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
         if(is.null(true.net)){
           g.random <- igraph::make_full_graph(nodes)
           E(g.random)$weight <- runif(ecount(g.random))
-          m.random <- igraph::get.adjacency(g.random, attr="weight", sparse = F)
+          m.random <- igraph::get.adjacency(g.random, attr="weight", sparse = T)
           chosen.node<-sample(1:nodes,1,prob = m.random[,j])
-          df.sim<-rbind(df.sim,data.frame(from = j, to=chosen.node, day=day,sampleID=i ))
+          if(j!=chosen.node)df.sim<-rbind(df.sim,data.frame(from = j, to=chosen.node, day=day,sampleID=i ))
 
         } else {
-          m.random <- igraph::get.adjacency(true.net, attr="weight", sparse = F)
+          m.random <- igraph::get.adjacency(true.net, attr="weight", sparse = T)
           chosen.node<-sample(1:nodes,1,prob = m.random[,j])
           df.sim<-rbind(df.sim,data.frame(from = j, to=chosen.node, day=day,sampleID=i ))
         }

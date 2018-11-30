@@ -32,6 +32,7 @@ library(igraph)
 library(reshape2)
 library(lubridate)
 library(mgcv)
+library(lineprof)
 ```
 
 
@@ -39,9 +40,15 @@ library(mgcv)
 
 Simulate data
 ```{r}
-df.rand <-sim.events.data(nodes=30, sampling.periods = 1000,sampling.periods.per.day = 20)
+#t<-lineprof(sim.events.data(nodes=20, sampling.periods = 2000,sampling.periods.per.day = 20))
+#t
+#shine(t)
+
+df.rand <-sim.events.data(nodes=30, sampling.periods = 200,sampling.periods.per.day = 20)
 
 head(df.rand)
+min(df.rand$day)
+max(df.rand$day)
 ```
 
 Measurement function
@@ -63,12 +70,16 @@ boot.120 <- convergence.check.boot(groomEvents, windowsize = days(120), windowsh
 
 boot.10 <- convergence.check.boot(groomEvents, windowsize = days(10), windowshift = days(5), measureFun = betweenness, directed=TRUE) #error here:"Error in `$<-.data.frame`(`*tmp*`, weight, value = 1) : replacement has 1 row, data has 0"
 
-boot.30$windowsize <- 10
+net.temp<-extract_networks(groomEvents, windowsize = days(10), windowshift = days(5), directed=TRUE)
+net.temp[[68]]
+boot.10 <- graphTS(groomEvents, windowsize = days(10), windowshift = days(5), measureFun = mean_betweenness, directed=TRUE)
+
+boot.10$windowsize <- 10
 boot.30$windowsize <- 30
 boot.60$windowsize <- 60
 #check.boot.90$windowsize <- 90
 boot.120$windowsize <- 120
-check.boot.all <- rbind(boot.30,boot.60,boot.120)
+check.boot.all <- rbind(boot.30,boot.60,boot.10)
 
 p.boot.all<-ggplot(data=check.boot.all,aes(y=mean, x=windowstart, color=factor(windowsize), main="boot check", ylab="corr", xlab="window start"))+geom_point()+geom_path() + geom_hline(yintercept = 1, linetype="dashed") + geom_ribbon(aes(ymin=CI.low,ymax=CI.high, fill=factor(windowsize)), alpha=0.1, color=NA)+ theme_classic()#+ scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y"))
 p.boot.all 

@@ -157,6 +157,8 @@ convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE
     df.window<-create.window(data, windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
+    if(Observation.Events>0){
+
     #calculate the desired network measure
     g <- create.a.network(df.window, directed = directed, SRI=FALSE, effort = 1)
     g <- set_graph_attr(g, "nEvents", Observation.Events)
@@ -192,6 +194,13 @@ convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE
 
     #calculate convergence
     conv.values <- rbind(conv.values,data.frame(mean=mean(cor.measures),CI.low=quantile(cor.measures,probs = probs[1],na.rm = T),CI.high=quantile(cor.measures,probs = probs[2],na.rm = T),windowstart=windowstart, windowend=windowend))
+
+    } else{
+      #calculate convergence
+      conv.values <- rbind(conv.values,data.frame(mean=NA,CI.low=NA,CI.high=NA,windowstart=windowstart, windowend=windowend))
+    }
+
+
 
     #move the window
     windowend = windowend + windowshift
@@ -242,12 +251,22 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
     }
 
     #create a network and add it to the list
-    g <- create.a.network(df.window, directed = directed, SRI, effort=effort)
-    g <- set_graph_attr(g, "nEvents", Observation.Events)
-    g <- set_graph_attr(g, "windowstart", windowstart )
-    g <- set_graph_attr(g, "windowend", windowend)
-    g <- set_graph_attr(g, "effort", effort)
-    netlist[[length(netlist)+1]] <- g
+    if(Observation.Events>0){
+      g <- create.a.network(df.window, directed = directed, SRI, effort=effort)
+      g <- set_graph_attr(g, "nEvents", Observation.Events)
+      g <- set_graph_attr(g, "windowstart", windowstart )
+      g <- set_graph_attr(g, "windowend", windowend)
+      g <- set_graph_attr(g, "effort", effort)
+      netlist[[length(netlist)+1]] <- g
+    } else {
+      g <- make_empty_graph(n=0, directed = directed)
+      g <- set_graph_attr(g, "nEvents", Observation.Events)
+      g <- set_graph_attr(g, "windowstart", windowstart )
+      g <- set_graph_attr(g, "windowend", windowend)
+      g <- set_graph_attr(g, "effort", effort)
+      netlist[[length(netlist)+1]] <- g
+    }
+
 
     #move the window
     windowend = windowend + windowshift
