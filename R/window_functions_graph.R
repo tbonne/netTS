@@ -43,7 +43,7 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
   }
 
   if(nperm>0){
-    perm.values <- permutation.graph.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI, graphlist = graphlist,permutationFun=permutationFun )
+    perm.values <- permutation.graph.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI, graphlist = graphlist,permutationFun=permutationFun, nperm=nperm )
     values <- cbind(data.frame(values),perm.values)
     values<-values[,c(1,5,6,2,3,4)]
   }
@@ -562,7 +562,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
   perm.values.low <- vector()
 
   #monitor the progress
-  pb <- txtProgressBar(min = 1, max = length(graphlist), style = 3)
+  #pb <- txtProgressBar(min = 1, max = length(graphlist), style = 3)
 
   #run the permutation on each network
   for(i in 1:length(graphlist)){
@@ -583,9 +583,12 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     perm.values.low[[length(perm.values.low)+1]] <- perm.out[1]
 
     #update progress bar
-    setTxtProgressBar(pb,  as.numeric(windowend) )
+    #setTxtProgressBar(pb,  as.numeric(windowend) )
 
   }
+
+  #close progress bar
+  #close(pb)
 
   #put the estimates into a data frame
   perm.df<-data.frame(CI.low=perm.values.low,CI.high=perm.values.high)

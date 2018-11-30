@@ -1,0 +1,170 @@
+---
+title: "Using simulated event data"
+author: "Tyler R. Bonnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using simulated event data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+##Introduction
+
+  When validating a statistical methodology it is often useful to test the method using simulated data. Here we test whether a method can correctly identify no pattern when the data is random, and similarly detect the correct pattern when there is a know n structure. This is another way to test whether given the amount and temporal resolution of the data is sufficent to correctly indentify the desired patterns.  
+
+###Libraries
+```{r, warning=FALSE,message=FALSE}
+#if netTS is not yet installed you can use the following code to install it from github:
+#devtools::install_github("tbonne/netTS")
+
+library(ggplot2)
+library(netTS)
+library(igraph)
+library(reshape2)
+library(lubridate)
+library(mgcv)
+```
+
+
+##Testing for change when there is none
+
+Simulate data
+```{r}
+df.rand <-sim.events.data(nodes=30, sampling.periods = 1000,sampling.periods.per.day = 20)
+
+head(df.rand)
+```
+
+Measurement function
+```{r}
+#1. use mean strength of the network
+mean_betweenness <- function (net) {
+  md <- mean(betweenness(net))
+    return(md)
+}
+```
+
+Check for minimum window size
+```{r}
+boot.30 <- convergence.check.boot(groomEvents, windowsize = days(30), windowshift = days(5), measureFun = betweenness, directed=TRUE)
+
+boot.60 <- convergence.check.boot(groomEvents, windowsize = days(60), windowshift = days(5), measureFun = betweenness, directed=TRUE)
+
+boot.120 <- convergence.check.boot(groomEvents, windowsize = days(120), windowshift = days(5), measureFun = betweenness, directed=TRUE)
+
+boot.10 <- convergence.check.boot(groomEvents, windowsize = days(10), windowshift = days(5), measureFun = betweenness, directed=TRUE) #error here:"Error in `$<-.data.frame`(`*tmp*`, weight, value = 1) : replacement has 1 row, data has 0"
+
+boot.30$windowsize <- 10
+boot.30$windowsize <- 30
+boot.60$windowsize <- 60
+#check.boot.90$windowsize <- 90
+boot.120$windowsize <- 120
+check.boot.all <- rbind(boot.30,boot.60,boot.120)
+
+p.boot.all<-ggplot(data=check.boot.all,aes(y=mean, x=windowstart, color=factor(windowsize), main="boot check", ylab="corr", xlab="window start"))+geom_point()+geom_path() + geom_hline(yintercept = 1, linetype="dashed") + geom_ribbon(aes(ymin=CI.low,ymax=CI.high, fill=factor(windowsize)), alpha=0.1, color=NA)+ theme_classic()#+ scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y"))
+p.boot.all 
+```
+
+
+Get network measures overtime and test with permutations: 30 days
+```{r}
+#1. Extract network strength over time
+str.30 <- graphTS(df.rand,windowsize = days(30), windowshift = days(5), measureFun = mean_betweenness, effortFun = effort.events, nperm=100)
+
+#2. Plot the results
+ggplot(str.30, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
+  geom_ribbon(data=str.30, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
+  labs(y="Mean strength",x="Date")+theme_classic()
+```
+
+Run statistical model
+```{r}
+#convert dates to time from start
+str.30$time <- as.numeric(as.duration(str.30$windowstart-(min(str.30$windowstart))))
+str.30$time <- scale(str.30$time)
+
+#fit a generalized additive model to test for a temporal trend
+fit.gam.30 <- gam(measure ~ s(time), data = str.30)
+
+#plot estiamted temporal trend in strength (should be flat!)
+plot(fit.gam.30)
+```
+
+Get network measures overtime and test with permutations: 60 days
+```{r}
+#1. Extract network strength over time
+str.60 <- graphTS(df.rand,windowsize = days(60), windowshift = days(5), measureFun = mean_betweenness, effortFun = effort.events, nperm=100 )
+
+#2. Plot the results
+ggplot(str.60, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
+  geom_ribbon(data=str.60, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
+  labs(y="Mean strength",x="Date")+theme_classic()
+```
+
+Run statistical model
+```{r}
+#convert dates to time from start
+str.60$time <- as.numeric(as.duration(str.60$windowstart-(min(str.60$windowstart))))
+str.60$time <- scale(str.60$time)
+
+#fit a generalized additive model to test for a temporal trend
+fit.gam.60 <- gam(measure ~ s(time), data = str.60)
+
+#plot estiamted temporal trend in strength (should be flat!)
+plot(fit.gam.60)
+```
+
+
+##Testing for structure when there is some
+
+Simulate data
+```{r}
+#1. create a known underlying network
+net1 = make_star(30) 
+E(net1)$weight <- runif(ecount(net1))
+true.betweeneess <- mean(betweenness(net1))
+
+#2. simulate event data using the 'true' network: net1
+df.obs <-sim.events.data(nodes=30, sampling.periods = 100,sampling.periods.per.day = 2, true.net = net1 )
+
+#3. take a look at the data
+head(df.rand)
+```
+
+
+Get network measures overtime and test with permutations: 60 days
+```{r}
+#1. Extract network strength over time
+bet.60.true <- graphTS(df.obs,windowsize = days(60), windowshift = days(5), measureFun = mean_betweenness, effortFun = effort.events, nperm=100 )
+
+#2. Plot the results
+ggplot(bet.60.true, aes(x=windowstart, y=measure))+geom_point()+geom_line()+
+  geom_ribbon(data=bet.60.true, aes(ymin=CI.low, ymax=CI.high), fill="red", alpha=0.2)+
+  labs(y="Mean strength",x="Date")+theme_classic() + geom_hline(yintercept = true.betweeneess, linetype="dashed")
+```
+
+
+Run statistical model
+```{r}
+#convert dates to time from start
+bet.60.true$time <- as.numeric(as.duration(bet.60.true$windowstart-(min(bet.60.true$windowstart))))
+bet.60.true$time <- scale(bet.60.true$time)
+
+#fit a generalized additive model to test for a temporal trend
+fit.gam.60.true <- gam(measure ~ s(time), data = bet.60.true)
+
+#true mean betweeness estiamted?
+summary(fit.gam.60.true)
+
+#plot estiamted temporal trend in strength (should be flat!)
+plot(fit.gam.60.true)
+```

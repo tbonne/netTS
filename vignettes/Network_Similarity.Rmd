@@ -19,33 +19,38 @@ knitr::opts_chunk$set(
 
 ##Introduction
 
-  When looking at a social network in time, it is often important to ask how stable or similar is the network? This vignette runs through the use of the cosine similarity measure proposed by Newman (2010), using the netTS package.
+  When looking at a social network in time, it is often important to ask how stable or similar is the network? This vignette runs through the use of lagged network measures in netTS. We start by introducing the cosine similarity measure proposed by Newman (2010), then introduce how to add custom functions.
   
-  The vignette is organised as follows:
-  * 1. Graph level similarity
-  * 2. Node level similarity
-  * 3. Application to real data
+The vignette is organised as follows:
+
+1. Graph level similarity
+2. Node level similarity
+3. Application to real data
+4. Custom functions for lagged measures
 
 ###Libraries
 ```{r, warning=FALSE,message=FALSE}
+#if netTS is not yet installed you can use the following code to install it from github:
 #devtools::install_github("tbonne/netTS")
+
 library(ggplot2)
 library(netTS)
 library(igraph)
 library(plyr)
 library(dplyr)
 library(reshape2)
+library(lubridate)
 ```
 
 
 ###1. Graph level similarity
 
 Simulate a random graph and create a list of modified graphs
-```{r}
-#create a random graph
+```{r, fig.width=7, fig.height=6}
+#1. create a random graph
 graph.original <- igraph::erdos.renyi.game(15,0.3)
 
-#simulate change to the original graph
+#2. simulate change to the original graph
 graph.list <- list(graph.original)
 graph.temp <- graph.original
 for(i in 1:6){
@@ -60,6 +65,8 @@ for(i in 1:6){
   graph.temp <- graph.modified
 }
 
+
+#3. Plot the modified graphs
 par(mfrow=c(2,3))
 for(i in 1:6){
   plot(graph.list[[i]], main=paste0("Network ",i))
@@ -67,36 +74,39 @@ for(i in 1:6){
 ```
 
 Measure similarity over time
-```{r}
+```{r, fig.width=7}
+#1. vector to store the similarity values
 similarity.from.start <- vector()
 
+#2. calculate similarity for each graph
 for(i in 1:6){
   similarity.from.start[length(similarity.from.start)+1] <- cosine_between_graphs(graph.list[[1]],graph.list[[i]])
 similarity.between.events <- vector()
 }
 
+#3. plot the similarity over time
 plot(similarity.from.start, col="red", main="Network similarity", ylab = "Cosine similarity")
 ```
 
 
-###1. Node level similarity
+###2. Node level similarity
 
 Using the same simulated data from above we now look at how similarity at the node level changes in time.
 
 
 Measure similarity over time for nodes
-```{r, warning=FALSE}
-#measure similarity at the node level
+```{r, warning=FALSE, fig.width=7}
+#1. measure similarity at the node level
 similarity.from.start <- data.frame((cosine_between_nodes(graph.list[[1]],graph.list[[1]])))
 names(similarity.from.start) <- colnames(cosine_between_nodes(graph.list[[1]],graph.list[[1]]))
 for(i in 2:6){
   similarity.from.start <- rbind.fill( similarity.from.start,  as.data.frame(cosine_between_nodes(graph.list[[1]],graph.list[[i]]))  )
 }
 
-#take a look at the similarity measures as a table
+#2. take a look at the similarity measures as a table
 similarity.from.start #Note: NaN values here indicate when a node has no edges in at least one graph being compared.
 
-#plot the similarity of nodes over time
+#3. plot the similarity of nodes over time
 similarity.from.start$seq <- seq(1,6,by=1)
 df.melt<-melt(similarity.from.start, id.vars="seq")
 names(df.melt)[2] <- "node"
@@ -105,23 +115,57 @@ ggplot(df.melt, aes(y=value, x= seq, color=node)) + geom_line() + theme_classic(
 ```
 
 
-###1. Application to a real dataset: vervet proximity network
+###3. Application to a real dataset: vervet grooming
 
 Change in the network over time: relative to the first network in time
-```{r, warning=FALSE,message=FALSE}
-library(lubridate)
-library(plyr)
+```{r, warning=FALSE,message=FALSE, fig.width=7}
 
-#extract cosine measures at the graph level
+#1. extract cosine measures at the graph level: compared to first network
 graph.cosine <- graphTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = TRUE,firstNet = TRUE ,measureFun= cosine_between_graphs)
 
-#extract cosine measures at the node level
+#2. extract cosine measures at the node level: compared to first network
 node.cosine <- nodeTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = TRUE, firstNet=TRUE, measureFun= cosine_between_nodes)
 
-#plot the cosine similarities
+#3. convert the data from wide format to long format for plotting
 df.node.cosine <- melt(node.cosine, id.vars = c("windowstart","windowend", "nEvents" ))
 names(df.node.cosine)[names(df.node.cosine)=="variable"] <- "node"
+
+#4. plot the cosine similarities
 ggplot(df.node.cosine, aes(x=windowstart, y=value, color=node)) + geom_line() + geom_line(data=graph.cosine, aes(x=windowstart, y=measure), size=2, col="black") + labs(y="Cosine similarity", x = "Day") + theme_classic()
 ```
+
+
+###4. User specified functions for lagged comparisons
+
+Create a user specified lagged network function. Here we just use the difference in mean strength between two networks.
+```{r}
+#the function should have two networks as the inputs
+my.lagged.measure <- function(net_t1, net_t2){
+
+  #Meaure between two networks
+  diff.strength <- mean(strength(net_t2))-mean(strength(net_t1))
+  
+  #return value
+  return(diff.strength)
+  
+}
+```
+
+Use the custom lagged function with netTS
+```{r, fig.width=7}
+#1. extract strength difference between graphs: compared to first network
+graph.str.diff <- graphTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = TRUE,firstNet = TRUE ,measureFun= my.lagged.measure)
+
+#2. extract strength difference between graphs: compared to previous network
+graph.str.diff.prev <- graphTS(data = groomEvents, windowsize = days(30), windowshift = days(10), lagged = TRUE,firstNet = FALSE ,measureFun= my.lagged.measure)
+
+#3. plot the strength differences from the first network
+ggplot(graph.str.diff, aes(x=windowstart, y=measure)) + geom_line(col="blue") + labs(y="Strength similarity", x = "Day") + theme_classic() + geom_hline(yintercept = 0, linetype="dashed")
+
+#4. plot the strength differences from the previous networks
+ggplot(graph.str.diff.prev, aes(x=windowstart, y=measure)) + geom_line(col="blue") + labs(y="Strength similarity", x = "Day") + theme_classic() + geom_hline(yintercept = 0, linetype="dashed")
+
+```
+
 
 
