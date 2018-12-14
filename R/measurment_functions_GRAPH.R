@@ -47,7 +47,7 @@ eigen_mean<-function(net){
 #' @param graph1 first graph (igraph)
 #' @param graph2 second graph (igraph)
 #' @export
-#' @import igraph
+#' @importFrom igraph E get.edgelist
 #' @importFrom dplyr full_join
 #' @importFrom lsa cosine
 #' @examples

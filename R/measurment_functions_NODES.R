@@ -14,8 +14,9 @@
 #' @param directed Boolean indicating if the graph is directed or not.
 #' @param mode For directed graphs this allows for in, out, or total cosine similarity to be calculated for each node. This argument is ignored for undirected graphs.
 #' @export
-#' @import igraph
-#' @importFrom dplyr full_join
+#' @importFrom igraph E get.edgelist
+#' @importFrom dplyr full_join filter
+#' @importFrom lsa cosine
 #' @examples
 #'
 #' #two random graphs
@@ -111,8 +112,8 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
 #' @param graph1 An igraph object.
 #' @param type The type of edges to pull from the graph: 'in', 'out', or 'all'. In non-directed graphs this is ignored.
 #' @export
-#' @import igraph
-#' @import moments
+#' @importFrom igraph vcount incident
+#' @importFrom moments skewness
 #' @examples
 #' library(igraph)
 #'

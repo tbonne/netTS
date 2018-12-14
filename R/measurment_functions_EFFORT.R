@@ -12,8 +12,8 @@
 #'
 #' This function will estimate the total time spent sampling, using the min and max observed values per day
 #' @param df.window An events data frame with a column containing the date and time.
-#' @import dplyr
-#' @import lubridate
+#' @importFrom dplyr group_by summarise
+#' @importFrom lubridate minute hour date interval as.duration
 #' @export
 #'
 #'

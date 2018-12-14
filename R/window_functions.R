@@ -4,7 +4,7 @@
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
 #' @param directed Treat the network as directed or not (Default = FALSE)
 #' @param scans The number of scans, or measure of sampling effort (e.g., hours sampling)
-#' @import igraph
+#' @importFrom igraph graph_from_data_frame simplify
 #' @export
 #'
 create.a.network<-function(data, directed = FALSE, SRI=FALSE, effort=1){

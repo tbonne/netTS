@@ -153,6 +153,7 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
+#' @importFrom igraph E
 #' @export
 #'
 #'
@@ -186,6 +187,7 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
+#' @importFrom igraph rewire
 #' @export
 #'
 #'

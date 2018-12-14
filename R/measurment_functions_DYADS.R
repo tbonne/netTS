@@ -14,7 +14,7 @@
 #' This function will take a graph and take dyad level sum of weights.
 #' @param g graph to extract dyad measures from
 #' @export
-#' @import igraph
+#' @importFrom igraph E get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_weight <- function(g){
@@ -40,7 +40,7 @@ dyad_weight <- function(g){
 #' This function will take a graph and take dyad level sum of weights.
 #' @param g graph to extract dyad measures from
 #' @export
-#' @import igraph
+#' @importFrom igraph E is.directed which_mutual ends get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_sum <- function(g){
@@ -70,7 +70,7 @@ dyad_sum <- function(g){
 #' This function will take a graph and take dyad level mean weight.
 #' @param g graph to extract dyad measures from
 #' @export
-#' @import igraph
+#' @importFrom igraph E is.directed which_mutual ends get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_mean <- function(g){
@@ -100,7 +100,7 @@ dyad_mean <- function(g){
 #' This function will take a graph and take dyad level difference in weights.
 #' @param g graph to extract dyad measures from
 #' @export
-#' @import igraph
+#' @importFrom igraph E is.directed which_mutual ends get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_diff <- function(g){
@@ -132,7 +132,7 @@ dyad_diff <- function(g){
 #' This function will take a graph and take dyad proportion of weights.
 #' @param g graph to extract dyad measures from
 #' @export
-#' @import igraph
+#' @importFrom igraph E is.directed which_mutual ends from get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_proportion <- function(g){
@@ -185,7 +185,7 @@ dyad_proportion <- function(g){
 #' @param g1 First graph.
 #' @param g2 Second graph.
 #' @export
-#' @import igraph
+#' @importFrom igraph E head_of tail_of as_ids is.directed which_mutual ends get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_change <- function(g1,g2){
