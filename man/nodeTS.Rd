@@ -17,6 +17,8 @@ nodeTS(data, windowsize = days(30), windowshift = days(1),
 
 \item{measureFun}{This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.}
 
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
 \item{directed}{Whether the events are directed or no: true or false.}
 
 \item{lagged}{Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.}
@@ -32,6 +34,6 @@ This function will take a dataframe with events between individuals/objects, and
 }
 \examples{
 
-ts.out<-nodeTS(data=groomEvents[1:200,])
+ts.out<-nodeTS(data=groomEvents)
 
 }

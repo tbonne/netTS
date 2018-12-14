@@ -15,6 +15,12 @@ convergence.check.value(data, windowsize, windowshift, directed = FALSE,
 \item{windowshift}{The amount of time to shift the window when generating networks.}
 
 \item{directed}{Whether to consider the network as directed or not (TRUE/FALSE).}
+
+\item{measureFun}{The function used to take network measurements.}
+
+\item{random.sample.size}{The maximum number of random samples to remove when recalculating the network metric.}
+
+\item{SRI}{Wether to use the simple ratio index or not (Default=FALSE).}
 }
 \description{
 This function will estimate the convergence of the chosen network measure using random subsets of the data.

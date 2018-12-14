@@ -6,6 +6,9 @@
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param effort This is a measure of sampling effort
+#' @importFrom stats quantile
 #' @export
 #'
 #'
@@ -69,6 +72,9 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param effort This is a measure of sampling effort
+#' @importFrom stats quantile runif
 #' @export
 #'
 #'
@@ -153,7 +159,10 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param effort This is a measure of sampling effort
 #' @importFrom igraph E
+#' @importFrom stats quantile
 #' @export
 #'
 #'
@@ -187,7 +196,10 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param effort This is a measure of sampling effort.
 #' @importFrom igraph rewire
+#' @importFrom stats quantile
 #' @export
 #'
 #'

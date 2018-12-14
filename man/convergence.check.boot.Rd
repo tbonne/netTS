@@ -5,8 +5,8 @@
 \title{Bootstrap convergence check}
 \usage{
 convergence.check.boot(data, windowsize, windowshift, directed = FALSE,
-  measureFun = out_degree, boot.samples = 100, SRI = FALSE,
-  probs = c(0.025, 0.975))
+  measureFun = degree, boot.samples = 100, SRI = FALSE, probs = c(0.025,
+  0.975))
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -17,7 +17,13 @@ convergence.check.boot(data, windowsize, windowshift, directed = FALSE,
 
 \item{directed}{Whether to consider the network as directed or not (TRUE/FALSE).}
 
+\item{measureFun}{The measurment function to perform the bootstap on (should be at the node level).}
+
 \item{boot.samples}{The number of bootstrapped samples to run (Default=100)}
+
+\item{SRI}{Wether to use the simple ratio index (Default=FALSE)}
+
+\item{probs}{The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).}
 }
 \description{
 This function will estimate the convergence of the chosen network measure using bootstrapped samples of the data.

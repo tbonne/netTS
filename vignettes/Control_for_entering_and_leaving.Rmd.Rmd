@@ -1,0 +1,117 @@
+---
+title: "Control for nodes entering and leaving the network"
+author: "Tyler R. Bonnell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Control for nodes entering and leaving the network}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+##Introduction
+
+  Often when constructing networks through time nodes enter and leave the network. When this is due to a permentant removal this can bias in the network that might need to be corrected. In this vignette we present some tools to correct for biases when a node is known to be absent from part of the moving window (e.g., birth only part way through a window, or died part way through a window).
+  
+The vignette is organized as follows:
+
+
+1. Trim individulas from networks they were only partially observable.
+2. Use weighted means for network measures where nodes where only partially observable.
+
+
+Load some libraries
+```{r}
+library(netTS)
+library(lubridate)
+library(igraph)
+library(ggplot2)
+library(reshape2)
+```
+
+
+##1. Trim individuals
+
+This first method simply trims individuals from networks where they do not have the potential to be observed (i.e., they are not born yet, or have died). This method can be particularly useful when modeling node or dyad level changes accross time. The netTS package provides a "trim_nodes" and "trim_dyads" function to cut time series to within first and last observations of a particular node or dyad.
+
+
+First take a look without trim
+```{r}
+#calculate node degree through time
+node.degree <- nodeTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = degree)
+
+#remove node degree measures when the window was beyond the first or last observation of that node (i.e., remove extrapolations). The "trim_dyads" function is the equivalent for dyadTS outputs.
+node.degree.trim<-trim_nodes(node.degree, groomEvents)
+
+#Highlight one individual
+node.degree.Razo<-node.degree%>%dplyr::select(Razo,windowstart)
+node.degree.trim.Razo<-node.degree.trim%>%dplyr::select(Razo,windowstart)
+
+#reshape the data from wide to long format for ploting
+m.deg<-melt(node.degree.Razo, id.vars=c("windowstart"))
+m.deg.trim<-melt(node.degree.trim.Razo, id.vars=c("windowstart"))
+
+#plot both trimmed (red) and non-trimmed (blue) time series
+ggplot(m.deg, aes(y=value,x=windowstart, color=variable))+geom_line(size=4, col="blue") + geom_line(data=m.deg.trim, aes(y=value,x=windowstart, color=variable),size=2, col="red")+theme_classic()
+
+```
+
+
+##2. Weighted means
+
+This second method is useful for graph level measures that are means of node level measures. The idea here is to take the weighted average, where the weight for each node is the portion of time the node was avaiable for observation during a window. E.g., if a node died half way though a window then the weight of that node would be 0.5 rather than 1.
+
+Setup a function to calculate the weighted average
+```{r}
+#calculate first and last observation time for each individual
+firstLast <- node_first_last(groomEvents)
+
+#create a function that will calculate weighted mean
+mean.degree.weighted <- function(x){
+  
+  #calculate node values (this can be any node level measure)
+  node_d<-degree(x)
+  
+  #calculate the weighted mean based on the proportion of time within this window 
+  w_mean_d<-weighted_mean(node_d, inOut=firstLast,net=x)
+  
+  #return the a single weighted mean value
+  return(w_mean_d)
+  
+}
+
+
+#for comparison: mean degree without weighted average
+mean.degree <- function(x){
+  
+  #calculate node values
+  mean_d<-mean(degree(x))
+  
+  #return the value
+  return(mean_d)
+  
+}
+```
+
+Calculate the weighted average
+```{r}
+#calculate non-weighted
+mean_degree <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean.degree)
+
+#calculate weighted
+mean_degree_W <- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean.degree.weighted)
+
+
+#plot the two to compare
+ggplot(mean_degree, aes(y=measure,x=windowstart)) + geom_line(col="blue") + geom_line(data=mean_degree_W,aes(y=measure,x=windowstart), col="red" ) + theme_classic()
+```
+
+

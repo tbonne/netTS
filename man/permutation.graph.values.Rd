@@ -22,6 +22,12 @@ permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
 \item{probs}{numeric vector of probabilities with values in [0,1].}
 
 \item{nperm}{Number of permutations to perform before extracting network measures.}
+
+\item{SRI}{Wether to use the simple ratio index (Default=FALSE).}
+
+\item{graphlist}{A list of networks to perfrom permutations on.}
+
+\item{permutationFun}{A function that will be used to perform permutations on the event data (i.e., before the network) or on the network itself. See vignette: Using_permutations.}
 }
 \description{
 This function will estimate network measures given random permutations on the original data.

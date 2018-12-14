@@ -5,7 +5,7 @@
 \title{Extract one network within time constriants}
 \usage{
 net.window.para(data, windowstart, windowend, directed = FALSE,
-  trim = FALSE, effortFun = NULL)
+  effortFun = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -15,6 +15,8 @@ net.window.para(data, windowstart, windowend, directed = FALSE,
 \item{windowend}{The end of the window.}
 
 \item{directed}{Whether to consider the network as weighted. (default=FALSE)}
+
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
 }
 \description{
 This function will generate one network from a dataframe with time constraints.

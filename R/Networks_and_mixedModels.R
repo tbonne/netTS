@@ -8,6 +8,7 @@
 #' @param directed Whether the relationships are considered as directed or not.
 #' @export
 #' @import igraph
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #'
 re.net<-function(df.int, summary=FALSE, directed = TRUE){
 

@@ -17,6 +17,10 @@ perm.events.directed(data, measureFun, directed = FALSE, nperm = 1000,
 \item{nperm}{Number of permutations to perform before extracting network measures.}
 
 \item{probs}{numeric vector of probabilities with values in [0,1].}
+
+\item{SRI}{Wether to use the simple ratio index (Default=FALSE).}
+
+\item{effort}{This is a measure of sampling effort}
 }
 \description{
 This function will permute a network by randomly switching individuals between events, keeping the oringinal order of the interactions (e.g., individuals in the from or to columns are permuted, but no permutations between from and to columns).

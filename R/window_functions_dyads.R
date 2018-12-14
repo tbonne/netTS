@@ -8,6 +8,7 @@
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
@@ -16,7 +17,7 @@
 #' @importFrom lubridate days
 #' @examples
 #'
-#' ts.out<-dyadTS(data=groomEvents[1:200,])
+#' ts.out<-dyadTS(data=groomEvents)
 #'
 dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=dyad_weight, effortFun=NULL, directed=FALSE, lagged=FALSE, lag=1, cores=1){
 

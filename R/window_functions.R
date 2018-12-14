@@ -2,8 +2,9 @@
 #'
 #' This function will generate a network from an events dataframe.
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
-#' @param directed Treat the network as directed or not (Default = FALSE)
-#' @param scans The number of scans, or measure of sampling effort (e.g., hours sampling)
+#' @param directed Treat the network as directed or not (Default=FALSE).
+#' @param SRI Wether to use the simple ratio index or not (Default=FALSE).
+#' @param effort The number of scans, or measure of sampling effort (e.g., hours sampling). The default of 1 assumes equal sampling effort througout.
 #' @importFrom igraph graph_from_data_frame simplify
 #' @export
 #'
@@ -33,6 +34,7 @@ create.a.network<-function(data, directed = FALSE, SRI=FALSE, effort=1){
 #'
 #' This function will generate an edge list from an events dataframe
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
+#' @param effort The number of scans, or measure of sampling effort (e.g., hours sampling). The default of 1 assumes equal sampling effort througout.
 #' @importFrom dplyr group_by
 #' @importFrom dplyr summarise
 #' @export
@@ -69,8 +71,9 @@ create.window <- function(data, start, end){
 #'
 #' This function will generate an SRI network from an event dataframe. Right now only directed graphs are considered.
 #' @param events dataframe containing all events.
-#' @importFrom dplyr filter
-#' @importFrom dplyr summarise
+#' @param directed Wether the network is directed or not (Default=FALSE).
+#' @importFrom stats complete.cases
+#' @importFrom dplyr summarise filter
 #' @importFrom igraph graph_from_data_frame
 #' @export
 #'

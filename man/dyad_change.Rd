@@ -4,12 +4,14 @@
 \alias{dyad_change}
 \title{dyad_change function}
 \usage{
-dyad_change(g1, g2)
+dyad_change(g1, g2, directed = FALSE)
 }
 \arguments{
 \item{g1}{First graph.}
 
 \item{g2}{Second graph.}
+
+\item{directed}{Wether the networks are directed (Default=FALSE).}
 }
 \description{
 This function will take two graphs and take the difference in dyad weight.

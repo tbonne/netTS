@@ -5,7 +5,7 @@
 \title{Extract networks from a moving window using multiple cores}
 \usage{
 extract_networks_para(data, windowsize, windowshift, directed = FALSE,
-  cores = 2, trim = FALSE, SRI, effortFun = NULL)
+  cores = 2, SRI, effortFun = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -17,6 +17,10 @@ extract_networks_para(data, windowsize, windowshift, directed = FALSE,
 \item{directed}{Whether to consider the network as directed or not (TRUE/FALSE).}
 
 \item{cores}{How many cores should be used.}
+
+\item{SRI}{Wether to use the simple ratio index (Default=FALSE).}
+
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
 }
 \description{
 This function will create a time series of networks from a dataframe with relational events and a time stamp, using parallel processing.

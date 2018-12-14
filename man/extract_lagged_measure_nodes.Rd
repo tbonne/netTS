@@ -15,6 +15,8 @@ extract_lagged_measure_nodes(netlist, measureFun, lag = 1, unique.names,
 \item{lag}{At what lag should networks be compared? The number here will be based on the order of the network list generated. E.g., a list of networks generated using a window shift of 10 days, and a lag of 1, would compare networks 10days apart.}
 
 \item{unique.names}{A list of all names/nodes in the networks.}
+
+\item{firstNet}{Wether to make all network comparisons to the first network observed (Default=FALSE).}
 }
 \description{
 This function will estimate node level network measures from a list of networks.

@@ -17,7 +17,9 @@ Imports:
     plyr,
     reshape2,
     moments,
-    ggplot2
+    ggplot2,
+    doParallel,
+    foreach
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,

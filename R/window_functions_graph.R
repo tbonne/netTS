@@ -7,6 +7,7 @@
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
@@ -15,15 +16,12 @@
 #' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.
 #' @param permutationFun This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).
 #' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
-#' @param check.convergence If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.
-#' @param random.sample.size If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.
-#' @param trim Whether nodes that are in windows beyond their first/last observation time are removed (i.e., only partially within a time window).
 #' @param SRI Whether to convert edges to the simple ratio index: Nab / (Nab + Na + Nb). Default is set to FALSE.
 #' @export
 #' @importFrom lubridate days
 #' @examples
 #'
-#' ts.out<-graphTS(data=groomEvents[1:200,])
+#' ts.out<-graphTS(data=groomEvents)
 #'
 #'
 graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
@@ -60,8 +58,10 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
-#' @importFrom stats coef
-#' @importFrom stats lm
+#' @param measureFun The function used to take network measurements.
+#' @param random.sample.size The maximum number of random samples to remove when recalculating the network metric.
+#' @param SRI Wether to use the simple ratio index or not (Default=FALSE).
+#' @importFrom stats lm complete.cases coef sigma
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
@@ -136,13 +136,16 @@ convergence.check.value<-function(data, windowsize, windowshift, directed = FALS
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
+#' @param measureFun The measurment function to perform the bootstap on (should be at the node level).
 #' @param boot.samples The number of bootstrapped samples to run (Default=100)
-#' @importFrom stats cor.test
-#' @importFrom igraph set_graph_attr
+#' @param SRI Wether to use the simple ratio index (Default=FALSE)
+#' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
+#' @importFrom stats cor.test quantile
+#' @importFrom igraph set_graph_attr degree
 #' @export
 #'
 #'
-convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE, measureFun=out_degree,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975)){
+convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE, measureFun=degree,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -222,12 +225,13 @@ convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
-#' @param trim Whether to remove nodes from the network if they are past the last observation time.
+#' @param SRI Whether to use the simple ratio index (Default=FALSE).
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
-extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=FALSE, SRI=FALSE, effortFun=NULL){
+extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=FALSE, effortFun=NULL){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -240,7 +244,6 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
 
     #subset the data
     df.window<-create.window(data, windowstart, windowend)
-    if(trim==TRUE)df.window<-trim_graph(df.window,data,windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
     #calculate effort
@@ -287,12 +290,15 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE,trim=
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param cores How many cores should be used.
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
 #' @importFrom parallel makeCluster
 #' @importFrom igraph set_graph_attr
+#' @importFrom doParallel registerDoParallel
 #' @export
 #'
 #'
-extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2,trim=FALSE, SRI, effortFun=NULL){
+extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2, SRI, effortFun=NULL){
 
   #SRI not implimented yet
   if(SRI==TRUE)print("Warning SRI not yet available for parallel extraction of networks. Using SRI == FALSE.")
@@ -317,7 +323,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
   registerDoParallel(cl)
 
   #generate the networks
-  final.net.list<-net.para(data, window.ranges, directed, trim = trim, effortFun=effortFun)
+  final.net.list<-net.para(data, window.ranges, directed, effortFun=effortFun)
 
   #stop cluster
   parallel::stopCluster(cl)
@@ -334,15 +340,17 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 #' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param window.ranges The dataframe containing the start and end times of each window to create a network from.
 #' @param directed Whether to consider the networks are directed or not.
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @importFrom foreach foreach %dopar%
 #' @export
 #'
 #'
-net.para<-function(data, window.ranges,directed=FALSE,trim, effortFun=NULL){
+net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL){
 
   #run the processes
   try(finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("effortFun","window.net","create.window", "create.a.network","window.net.para"), .packages = c("igraph", "dplyr") ) %dopar%
 
-        net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, trim=trim, effortFun=effortFun)
+        net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, effortFun=effortFun)
 
   )
 
@@ -357,15 +365,15 @@ net.para<-function(data, window.ranges,directed=FALSE,trim, effortFun=NULL){
 #' @param windowstart The start of the window.
 #' @param windowend The end of the window.
 #' @param directed Whether to consider the network as weighted. (default=FALSE)
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
-net.window.para<-function(data, windowstart, windowend,directed=FALSE, trim=FALSE, effortFun=NULL){
+net.window.para<-function(data, windowstart, windowend,directed=FALSE, effortFun=NULL){
 
   #subset the data
   df.window <- data[data[[3]] >= windowstart & data[[3]] < windowend,]
-  if(trim==TRUE)df.window<-trim_graph(df.window,data,windowstart, windowend)
   Observation.Events <- nrow(df.window)
 
   #calculate effort
@@ -402,7 +410,7 @@ net.window.para<-function(data, windowstart, windowend,directed=FALSE, trim=FALS
 #' @importFrom lubridate ymd
 #'
 #'
-extract_measure_network<-function(netlist, measureFun, inOut=NULL){
+extract_measure_network<-function(netlist, measureFun){
 
   #store measures
   net.measure <- data.frame(measure=-1,nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
@@ -418,11 +426,6 @@ extract_measure_network<-function(netlist, measureFun, inOut=NULL){
       windowend.temp=igraph::get.graph.attribute(netlist[[i]], "windowend" )
 
       if(length(obs.measure)>1)print("Warning: the measurement function is returing multiple values. In the case of graphTS the function should only return one value")
-
-      #check if weighted average should be taken
-      if(is.null(inOut)==FALSE){
-        obs.measure<-weightedAvg(obs.measure,inOut,windowstart.temp,windowend.temp)
-      }
 
       df.temp <- data.frame(measure=obs.measure,
                             nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
@@ -441,58 +444,98 @@ extract_measure_network<-function(netlist, measureFun, inOut=NULL){
 }
 
 
-#' Calculate the weighted average of network measures
+#' Calculate the weighted average correcting for nodes enter or leaving the network
 #'
-#' This function will estimate the weighted average of node level measures based on their leaving and entering each network (e.g., due to births or deaths).
+#' This function will estimate the weights of node based on their first and last observation and the time within a given window (e.g., due to births or deaths), and calculate the weighted average network value.
 #' @param obs.values Vector of node level network measures, with column names for each individual measure.
 #' @param inOut A dataframe with names in the first column, in a second column the dates these individuals first entered the network, and in a third column the dates these individuals left the network.
-#' @param windowstart The starting date of the window.
-#' @param windowend The ending date of the window.
+#' @param net The network used to calculate the weighted mean.
 #' @export
 #' @importFrom igraph get.graph.attribute
+#' @importFrom lubridate %within% interval seconds as.duration
 #'
 #'
-weightedAvg<-function(obs.values, inOut, windowstart,windowend){
+weighted_mean<-function(obs.values, inOut, net){
 
+  #Individual nodes
   IDs<-names(obs.values)
+
+  #start and end dates of this network
+  windowstart = get.graph.attribute(net, "windowstart" )
+  windowend   = get.graph.attribute(net, "windowend" )
   window.interval <- lubridate::interval(windowstart,windowend)
+  windowsize = as.numeric(lubridate::seconds(window.interval))
 
   #get individual weights
   ID.weights<-vector()
   for (i in IDs){
 
     #get an individuals start and end time in the network
-    ind.inOut<-inOut[inOut[,1]==IDs,]
+    ind.inOut<-inOut[inOut[,1]==i,]
     in.date <- ind.inOut[1,2]
     out.date <- ind.inOut[1,3]
 
-    weight[i]<-1
+    weight<-1
 
     if ( (in.date %within% window.interval) & (out.date %within% window.interval) ){
 
-      weight[i]<- as.numeric(as.duration(lubridate::interval(in.date,out.date)),"seconds") /lubridate::seconds(windowsize)
+      weight<- as.numeric(as.duration(lubridate::interval(in.date,out.date)),"seconds") /windowsize
 
     } else if (in.date %within% window.interval){
 
-      weight[i]<- as.numeric(as.duration(lubridate::interval(in.date,windowend)),"seconds")/lubridate::seconds(windowsize)
+      weight<- as.numeric(as.duration(lubridate::interval(in.date,windowend)),"seconds")/windowsize
 
     } else if (out.date %within% window.interval){
 
-      weight[i]<- as.numeric(as.duration(lubridate::interval(windowstart,out.date)),"seconds")/lubridate::seconds(windowsize)
+      weight<- as.numeric(as.duration(lubridate::interval(windowstart,out.date)),"seconds")/windowsize
 
     }
 
-    if (weight[i]>1 | weight[i]< 0) print("something wrong with weights")
+    if (weight>1 | weight< 0) print("something wrong with weights")
 
-    ID.weights[length(ID.weights)] <- weight
+    ID.weights[length(ID.weights)+1] <- weight
   }
 
   #get new average network value
   total.weight <- sum(ID.weights)
-  new.obs.values<- ID.weights*obs.values/total.weight
+  new.obs.values<- ID.weights*obs.values
 
-  return(new.obs.values)
+  return(mean(new.obs.values))
 
+}
+
+#' First and last observation time of each node
+#'
+#' This calculates nodes min and max observed times.
+#' @param data The events dataframe used in the nodeTS function.
+#' @importFrom dplyr select
+#' @importFrom dplyr filter
+#' @export
+#'
+node_first_last<-function(data){
+
+  #initialize inOut dataframe
+  inOut <- data.frame(ID=data[1,1],min=data[1,3], max=data[1,3] )
+  inOut<-inOut[-1,]
+
+  #ensure the names of the first four columns
+  names(data)[1:3]<- c("from","to","date")
+
+  #which names to keep
+  names.kept<-unique( c(as.character(data[,1]),as.character(data[,2]) ) )
+
+  #loop through each ID and get min and max date observed
+  for(i in 1:length(names.kept)){
+
+    #determine the min and max dates the focal was seen
+    df.temp <- data %>% dplyr::filter(from == names.kept[i] | to == names.kept[i])
+    min.date<-min(df.temp$date)
+    max.date<-max(df.temp$date)
+    inOut <- rbind(inOut,data.frame(ID=names.kept[i],min=min.date,max=max.date))
+
+  }
+
+  return(inOut)
 }
 
 
@@ -505,6 +548,7 @@ weightedAvg<-function(obs.values, inOut, windowstart,windowend){
 #' @param firstNet If TRUE the comparison between networks is always between the current and first network.
 #' @export
 #' @importFrom igraph get.graph.attribute
+#' @importFrom lubridate ymd_hms
 #'
 #'
 extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet=FALSE){
@@ -571,6 +615,9 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet=FA
 #' @param measureFun This is a function that takes as an input a igraph network and returns a single value.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param nperm Number of permutations to perform before extracting network measures.
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param graphlist A list of networks to perfrom permutations on.
+#' @param permutationFun A function that will be used to perform permutations on the event data (i.e., before the network) or on the network itself. See vignette: Using_permutations.
 #' @export
 #'
 #'
@@ -613,52 +660,6 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
   perm.df<-data.frame(CI.low=perm.values.low,CI.high=perm.values.high)
 
   return(perm.df)
-
-}
-
-
-
-
-
-#' Trim nodes when taking network measures.
-#'
-#' This function removes node from the network when they are beyond their min and max observed times, then takes the network measure.
-#' @param nodevalues Output from the nodeTS function.
-#' @param data The events dataframe used in the nodeTS function.
-#' @importFrom dplyr select
-#' @importFrom dplyr filter
-#' @export
-#'
-trim_graph<-function(df.window, data, windowstart, windowend){
-
-  #ensure the names of the first four columns
-  names(data)[1:3]<- c("from","to","date")
-
-  #which names to keep
-  names.kept<-unique( c(df.window[,1],df.window[,2]) )
-
-  #Initialize trimed dataframes with important vars
-  #df.trim<- data.frame(remove=rep(NA,nrow(nodevalues)))
-
-  #loop through each ID and trim based on min and max date observed
-  for(i in 1:length(names.kept)){
-
-    #determine the min and max dates the focal was seen
-    df.temp <- data %>% filter(from == names.kept[i] | to == names.kept[i])
-    min.date<-min(df.temp$date)
-    max.date<-max(df.temp$date)
-
-    #check if individual was seen before/after this particular window
-    if( (min.date<=windowstart & max.date>=windowend) == FALSE){
-
-      #remove this individual from the window
-      df.window<-df.window[df.window[,1]!=names.kept[i],]
-      df.window<-df.window[df.window[,2]!=names.kept[i],]
-    }
-
-  }
-
-  return(df.window)
 
 }
 

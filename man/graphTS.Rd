@@ -19,6 +19,8 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 
 \item{measureFun}{This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.}
 
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
 \item{permutationFun}{This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).}
 
 \item{directed}{Whether the events are directed or no: true or false.}
@@ -36,19 +38,13 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 \item{probs}{When nperm > 0 this will determine the probability of the permutation values returned from the permuations.}
 
 \item{SRI}{Whether to convert edges to the simple ratio index: Nab / (Nab + Na + Nb). Default is set to FALSE.}
-
-\item{check.convergence}{If this is TRUE the function will calculate network measures for each window using random subsets of the data to measure the stability of the network measure. The value returned is the slope from the random subsets of decreasing size.}
-
-\item{random.sample.size}{If check.convergence is TRUE this specifices the minimum size of the random subset used in calculating the convergence slope, i.e., minimum random subset size = actual sample size within a window - random.sample.size.}
-
-\item{trim}{Whether nodes that are in windows beyond their first/last observation time are removed (i.e., only partially within a time window).}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
 }
 \examples{
 
-ts.out<-graphTS(data=groomEvents[1:200,])
+ts.out<-graphTS(data=groomEvents)
 
 
 }

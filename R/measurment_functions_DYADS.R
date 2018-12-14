@@ -127,68 +127,17 @@ dyad_diff <- function(g){
 }
 
 
-#' dyad_proportion function
-#'
-#' This function will take a graph and take dyad proportion of weights.
-#' @param g graph to extract dyad measures from
-#' @export
-#' @importFrom igraph E is.directed which_mutual ends get.edgelist
-#' @importFrom plyr rbind.fill
-#'
-dyad_proportion <- function(g){
-
-  prop.vector <- vector()
-
-  for(i in 1:length(E(g))){
-
-    if(is.directed(g)==F){
-
-      edge.value=E(g)[i]$weight
-
-      start.node.1<-ends(g, E(g)[i])[1]
-      total.weight.1 <- sum(E(g)[from(start.node.1)]$weight)
-
-      start.node.2<-ends(g, E(g)[i])[2]
-      total.weight.2 <- sum(E(g)[from(start.node.2)]$weight)
-
-
-      prop.value <- ( (edge.value / total.weight.1) + (edge.value / total.weight.2) ) / 2
-
-    } else {
-
-      #check to see if there is a reciprical edge
-
-      edge.value=E(g)[i]$weight
-
-      start.node<-ends(g, E(g)[i])[1]
-      total.weight <- sum(E(g)[from(start.node)]$weight)
-
-      prop.value <- edge.value / total.weight
-
-    }
-
-    prop.vector[length(prop.vector)+1] <- prop.value
-
-  }
-
-
-  names(prop.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
-
-  return (prop.vector)
-
-}
-
-
 #' dyad_change function
 #'
 #' This function will take two graphs and take the difference in dyad weight.
 #' @param g1 First graph.
 #' @param g2 Second graph.
+#' @param directed Wether the networks are directed (Default=FALSE).
 #' @export
 #' @importFrom igraph E head_of tail_of as_ids is.directed which_mutual ends get.edgelist
 #' @importFrom plyr rbind.fill
 #'
-dyad_change <- function(g1,g2){
+dyad_change <- function(g1,g2, directed=FALSE){
 
   #get weights by dyad for g1
   g1.dyad.names <- vector()

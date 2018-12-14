@@ -8,6 +8,8 @@ create.a.network.SRI(events, directed = FALSE)
 }
 \arguments{
 \item{events}{dataframe containing all events.}
+
+\item{directed}{Wether the network is directed or not (Default=FALSE).}
 }
 \description{
 This function will generate an SRI network from an event dataframe. Right now only directed graphs are considered.

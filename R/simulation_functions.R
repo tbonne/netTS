@@ -6,6 +6,8 @@
 #' @param sampling.periods.per.day The number of sampling perids per day.
 #' @param true.net (Optional) A true underlying network describing the probability of each individual interacting.
 #' @importFrom igraph make_full_graph
+#' @importFrom utils setTxtProgressBar txtProgressBar
+#' @importFrom stats runif
 #' @export
 #'
 sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL){
