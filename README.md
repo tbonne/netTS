@@ -197,3 +197,9 @@ ggplot(df.dyad.values, aes(x=windowstart, y=measure, col=dyad))+geom_point()+geo
 ```
 
 ![](inst/readme_figs/unnamed-chunk-10-1.png)
+
+
+Tutorials
+------------------------------------------
+
+3. [a relative link](inst/Tutorials/Control_for_entering_and_leaving.Rmd.nb.html)Controling for nodes entering and leaving the network.
