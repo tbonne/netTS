@@ -294,7 +294,6 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
 #' @importFrom parallel makeCluster
 #' @importFrom igraph set_graph_attr
-#' @importFrom doParallel registerDoParallel
 #' @export
 #'
 #'
