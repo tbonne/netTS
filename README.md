@@ -202,4 +202,6 @@ ggplot(df.dyad.values, aes(x=windowstart, y=measure, col=dyad))+geom_point()+geo
 Tutorials
 ------------------------------------------
 
+1. 
+2.
 3. [Controling for nodes entering and leaving the network.](inst/Tutorials/Control_for_entering_and_leaving.Rmd.nb.html)
