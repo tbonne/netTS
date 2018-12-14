@@ -132,7 +132,7 @@ dyad_diff <- function(g){
 #' This function will take a graph and take dyad proportion of weights.
 #' @param g graph to extract dyad measures from
 #' @export
-#' @importFrom igraph E is.directed which_mutual ends from get.edgelist
+#' @importFrom igraph E is.directed which_mutual ends get.edgelist
 #' @importFrom plyr rbind.fill
 #'
 dyad_proportion <- function(g){
