@@ -202,7 +202,7 @@ ggplot(df.dyad.values, aes(x=windowstart, y=measure, col=dyad))+geom_point()+geo
 Tutorials
 ------------------------------------------
 
-1. [Introduction](inst/Tutorials/Intro_to_netTS.nb.html)
+1. [Introduction](https://tbonne.github.io/netTS/inst/Tutorials/Intro_to_netTS.nb.html)
 2. [Controling for sampling effort](inst/Tutorials/Control_for_sampling_effort.html)
 3. [Controling for nodes entering and leaving the network.](inst/Tutorials/Control_for_entering_and_leaving.Rmd.nb.html)
 4. [Network similarity](inst/Tutorials/Network_Similarity.html)
