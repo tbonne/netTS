@@ -128,10 +128,10 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Often when constructing networks through time nodes enter and leave the network. When this is due to a permentant removal this can bias in the network that might need to be corrected. In this vignette we present some tools to correct for biases when a node is known to be absent from part of the moving window (e.g., birth only part way through a window, or died part way through a window).</p>
+<p>Often when constructing networks through time nodes enter and leave the network. When this is due to a permentant removal this can add bias that might need to be corrected. In this vignette we present some tools to correct for biases when a node is known to be absent from part of the moving window (e.g., birth only part way through a window, or died part way through a window).</p>
 <p>The vignette is organized as follows:</p>
 <ol style="list-style-type: decimal">
-<li>Trim individulas from networks they were only partially observable.</li>
+<li>Trim individulas from networks where they were only partially observable.</li>
 <li>Use weighted means for network measures where nodes where only partially observable.</li>
 </ol>
 <p>Load some libraries</p>
@@ -168,8 +168,8 @@ ggplot(m.deg, aes(y=value,x=windowstart, color=variable))+geom_line(size=4, col=
 </div>
 <div id="weighted-means" class="section level2">
 <h2>2. Weighted means</h2>
-<p>This second method is useful for graph level measures that are means of node level measures. The idea here is to take the weighted average, where the weight for each node is the portion of time the node was avaiable for observation during a window. E.g., if a node died half way though a window then the weight of that node would be 0.5 rather than 1.</p>
-<p>Setup a function to calculate the weighted average</p>
+<p>This second method is useful for graph level measures that are means of node level measures. The idea here is to take the weighted mean, where the weight for each node is the portion of time the node was avaiable for observation during a window. E.g., if a node died half way though a window then the weight of that node would be 0.5 rather than 1.</p>
+<p>Setup a function to calculate the weighted mean</p>
 <pre class="r"><code>#calculate first and last observation time for each individual
 firstLast &lt;- node_first_last(groomEvents)
 
@@ -188,7 +188,7 @@ mean.degree.weighted &lt;- function(x){
 }
 
 
-#for comparison: mean degree without weighted average
+#for comparison: mean degree without weighted mean
 mean.degree &lt;- function(x){
   
   #calculate node values
@@ -198,7 +198,7 @@ mean.degree &lt;- function(x){
   return(mean_d)
   
 }</code></pre>
-<p>Calculate the weighted average</p>
+<p>Calculate the weighted mean</p>
 <pre class="r"><code>#calculate non-weighted
 mean_degree &lt;- graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean.degree)</code></pre>
 <pre><code>## [1] &quot;45 networks extracted&quot;</code></pre>
