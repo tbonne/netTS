@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tyler R. Bonnell" />
 
-<meta name="date" content="2018-12-17" />
+<meta name="date" content="2019-01-04" />
 
 <title>NetTS tutorial 2: Controling for sampling effort</title>
 
@@ -121,7 +121,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">NetTS tutorial 2: Controling for sampling effort</h1>
 <h4 class="author"><em>Tyler R. Bonnell</em></h4>
-<h4 class="date"><em>2018-12-17</em></h4>
+<h4 class="date"><em>2019-01-04</em></h4>
 
 </div>
 
@@ -173,7 +173,7 @@ ggplot(net.time.noEffort, aes(x=windowstart, y=measure))+geom_line(color=&quot;b
 </div>
 <div id="controling-for-sampling-effort-number-of-sampling-events" class="section level2">
 <h2>Controling for sampling effort: number of sampling events</h2>
-<p>This second method makes the assmuption that durring a sampling day each round of sampling is marked by a unique identification code. Given this assumption this method calculates the number of unique sampling events across all days within a window. By then dividing each edge by this effort this method returns the number of interactions / number of sampling events.</p>
+<p>This second method makes the assmuption that during a sampling day each round of sampling is marked by a unique identification code. Given this assumption this method calculates the number of unique sampling events across all days within a window. By then dividing each edge by this effort this method returns the number of interactions / number of sampling events.</p>
 <p>As the vervet data used here, does not have a unique sampling ID, we add one here arbitrarityl to show how this could work with data collected with unique IDs.</p>
 <pre class="r"><code>#1. Add sampling events (these are arbitrarily set)
 groomEvents$sampleID &lt;- as.numeric(as.factor(floor(as.numeric(as.duration(groomEvents$date-min(groomEvents$date) ))/(60*60))))
