@@ -617,10 +617,13 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet=FA
 #' @param SRI Wether to use the simple ratio index (Default=FALSE).
 #' @param graphlist A list of networks to perfrom permutations on.
 #' @param permutationFun A function that will be used to perform permutations on the event data (i.e., before the network) or on the network itself. See vignette: Using_permutations.
+#' @importFrom R.utils doCall
 #' @export
 #'
 #'
 permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000, SRI=FALSE,graphlist=NULL, permutationFun=perm.events){
+
+  print("perm")
 
   #vectors to record permutation results
   perm.values.high <- vector()
@@ -641,7 +644,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     Observation.Events <- nrow(df.window)
 
     #perform permutations
-    perm.out<-permutationFun(df.window, measureFun, directed=directed, probs=probs,nperm= nperm, SRI=SRI, effort= graph_attr(graphlist[[i]],"effort") )
+    perm.out<-R.utils::doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, probs=probs,nperm= nperm, SRI=SRI, effort= graph_attr(graphlist[[i]],"effort") )
 
     #record the high and low estimates
     perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]
