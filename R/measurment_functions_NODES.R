@@ -40,7 +40,7 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
   #if(directed==FALSE){
   #  g1.edges$joinC <- ifelse(as.character(g1.edges$V1) < as.character(g1.edges$V2), paste(g1.edges$V1, g1.edges$V2), paste(g1.edges$V2, g1.edges$V1))
   #} else {
-    g1.edges$joinC <- paste(g1.edges$V1, g1.edges$V2)
+    g1.edges$joinC <- paste(g1.edges[,1], g1.edges[,2])
   #}
   #create weighted edge list from second graph
   g2.edges<-as.data.frame(get.edgelist(graph2, names=TRUE))
@@ -52,7 +52,7 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
   #if(directed==FALSE){
   #  g2.edges$joinC <- ifelse(as.character(g2.edges$V1) < as.character(g2.edges$V2), paste(g2.edges$V1, g2.edges$V2), paste(g2.edges$V2, g2.edges$V1))
   #} else {
-    g2.edges$joinC <- paste(g2.edges$V1, g2.edges$V2)
+    g2.edges$joinC <- paste(g2.edges[,1], g2.edges[,2])
  # }
 
   #join the weighted edge lists, setting NAs equal to 0
@@ -60,13 +60,14 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
   comb$weight.x[is.na(comb$weight.x)]<-0
   comb$weight.y[is.na(comb$weight.y)]<-0
 
-  names.unique <- unique(c(as.character(g1.edges$V1),as.character(g1.edges$V2),as.character(g2.edges$V1),as.character(g2.edges$V2) ))
+  names.unique <- unique(c(as.character(g1.edges[,1]),as.character(g1.edges[,2]),as.character(g2.edges[,1]),as.character(g2.edges[,2]) ))
   names.unique <- names.unique[is.na(names.unique)==FALSE]
+
 
   if(directed==FALSE){
 
     for(i in 1:(length(names.unique))){
-      temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V2.x==names.unique[i] | V1.y==names.unique[i] | V2.y==names.unique[i])
+      temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,2]==names.unique[i] | comb[,5]==names.unique[i] | comb[,6]==names.unique[i])
       node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
     }
 
@@ -74,21 +75,21 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
 
     if(mode=="out"){
       for(i in 1:(length(names.unique))){
-        temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V1.y==names.unique[i])
+        temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,5]==names.unique[i])
         node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
       }
     }
 
     if(mode=="in"){
       for(i in 1:(length(names.unique))){
-        temp.node.w <- dplyr::filter(comb, V2.x==names.unique[i] | V2.y==names.unique[i])
+        temp.node.w <- dplyr::filter(comb, comb[,2]==names.unique[i] | comb[,6]==names.unique[i])
         node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
       }
     }
 
     if(mode=="total"){
       for(i in 1:(length(names.unique))){
-        temp.node.w <- dplyr::filter(comb, V1.x==names.unique[i] | V2.x==names.unique[i] | V1.y==names.unique[i] | V2.y==names.unique[i])
+        temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,2]==names.unique[i] | comb[,5]==names.unique[i] | comb[,6]==names.unique[i])
         node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
       }
     }

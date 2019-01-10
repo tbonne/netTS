@@ -18,7 +18,8 @@ Imports:
     reshape2,
     moments,
     ggplot2,
-    foreach
+    foreach,
+    R.utils
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,
