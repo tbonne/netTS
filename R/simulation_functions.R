@@ -38,7 +38,7 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
         } else {
           m.random <- igraph::get.adjacency(true.net, attr="weight", sparse = T)
           chosen.node<-sample(1:nodes,1,prob = m.random[,j])
-          df.sim<-rbind(df.sim,data.frame(from = j, to=chosen.node, day=day,sampleID=i ))
+          df.sim<-rbind(df.sim,data.frame(from = j, to=chosen.node, date=day,sampleID=i ))
         }
       }
     }
