@@ -60,7 +60,7 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
 
   #store measures - set global dataframe with proper names
   netvalues <- data.frame(t(rep(-1,length(unique.names))))
-  names(netvalues) <- unique.names
+  names(netvalues) <- as.character(unique.names)
   net.measure <- data.frame(nEvents=-1,windowstart=igraph::get.graph.attribute(netlist[[1]], "windowstart" ), windowend=igraph::get.graph.attribute(netlist[[1]], "windowend" ))
   netvalues<-cbind(netvalues,net.measure)
 
@@ -69,6 +69,7 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
 
     for(i in 1:length(netlist)) {
       df.temp.nodes <- data.frame(t(measureFun(netlist[[i]])))
+      names(df.temp.nodes) <- as.character(V(netlist[[i]])$name)
       df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
                             windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                             windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))

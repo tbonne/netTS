@@ -86,13 +86,13 @@ create.a.network.SRI <- function(events, directed=FALSE){
   for(i in 1:nrow(elist)){
 
     #how much A interacts with B
-    Nab <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(elist[,2]==as.character(elist[i,][,2]) ) %>% summarise(x=sum(elist[,3]))
+    Nab <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(to==as.character(elist[i,][,2]) ) %>% summarise(x=sum(weight))
 
     #how much A interacts with not B
-    Na <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(elist[,2]!=as.character(elist[i,][,2]) ) %>% summarise(x=sum(elist[,3]))
+    Na <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(to!=as.character(elist[i,][,2]) ) %>% summarise(x=sum(weight))
 
     #how much B gets interacted with by not A
-    Nb <- elist %>% dplyr::filter(to==as.character(elist[i,][,2]) ) %>% dplyr::filter(elist[,1]!=as.character(elist[i,][,1]) ) %>% summarise(x=sum(elist[,3]))
+    Nb <- elist %>% dplyr::filter(to==as.character(elist[i,][,2]) ) %>% dplyr::filter(from!=as.character(elist[i,][,1]) ) %>% summarise(x=sum(weight))
 
     #if no events
     if(nrow(Na)==0)Na=0
@@ -120,16 +120,16 @@ create.a.network.SRI <- function(events, directed=FALSE){
     for(i in 1:nrow(elist)){
 
       #how much A and B interact
-      Nab <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(elist[,2]==as.character(elist[i,][,2]) ) %>% summarise(x=sum(elist[,3]))
+      Nab <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(to==as.character(elist[i,][,2]) ) %>% summarise(x=sum(weight))
 
       #how much A interacts with not B
-      Na1 <- elist %>% dplyr::filter(elist[,1]==as.character(elist[i,][,1]) ) %>% dplyr::filter(elist[,2]!=as.character(elist[i,][,2]) ) %>% summarise(x=sum(elist[,3]))
-      Na2 <- elist %>% dplyr::filter(elist[,2]==as.character(elist[i,][,1]) ) %>% dplyr::filter(elist[,1]!=as.character(elist[i,][,2]) ) %>% summarise(x=sum(elist[,3]))
+      Na1 <- elist %>% dplyr::filter(from==as.character(elist[i,][,1]) ) %>% dplyr::filter(to!=as.character(elist[i,][,2]) ) %>% summarise(x=sum(weight))
+      Na2 <- elist %>% dplyr::filter(to==as.character(elist[i,][,1]) ) %>% dplyr::filter(from!=as.character(elist[i,][,2]) ) %>% summarise(x=sum(weight))
       Na <- Na1+Na2
 
       #how much B interacts with not A
-      Nb1 <- elist %>% dplyr::filter(elist[,2]==as.character(elist[i,][,2]) ) %>% dplyr::filter(elist[,1]!=as.character(elist[i,][,1]) ) %>% summarise(x=sum(elist[,3]))
-      Nb2 <- elist %>% dplyr::filter(elist[,1]==as.character(elist[i,][,2]) ) %>% dplyr::filter(elist[,2]!=as.character(elist[i,][,1]) ) %>% summarise(x=sum(elist[,3]))
+      Nb1 <- elist %>% dplyr::filter(to==as.character(elist[i,][,2]) ) %>% dplyr::filter(from!=as.character(elist[i,][,1]) ) %>% summarise(x=sum(weight))
+      Nb2 <- elist %>% dplyr::filter(from==as.character(elist[i,][,2]) ) %>% dplyr::filter(to!=as.character(elist[i,][,1]) ) %>% summarise(x=sum(weight))
       Nb <- Nb1 + Nb2
 
       #if no events
