@@ -19,7 +19,9 @@ Imports:
     moments,
     ggplot2,
     foreach,
-    R.utils
+    R.utils,
+    corpcor,
+    MASS
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,

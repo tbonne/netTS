@@ -5,7 +5,7 @@
 \title{Simulate some observation data}
 \usage{
 sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
-  true.net = NULL)
+  true.net = NULL, ind.probs = NULL, cor.mat = NULL, ind.sd = NULL)
 }
 \arguments{
 \item{nodes}{Number of individuals within a simulated group.}
