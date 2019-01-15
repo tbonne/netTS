@@ -5,6 +5,9 @@
 #' @param sampling.periods The number of times the simulated group is observed.
 #' @param sampling.periods.per.day The number of sampling perids per day.
 #' @param true.net (Optional) A true underlying network describing the probability of each individual interacting.
+#' @ind.probs (Optional) A vector specifying the probability of observing the individual performing the behaivour. Should be the same length as the number of nodes.
+#' @ind.sd (Optional) A value for the standard deviation around observed probability of observing a behaviour. Used with the cor.mat option to determine the rate of change in probability of behaviour.
+#' @cor.mat (Optional) A correlation matrix (size nodes x nodes) describing the dependence between individual changes in behaviour.
 #' @importFrom igraph make_full_graph
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom stats runif
@@ -12,7 +15,7 @@
 #' @importFrom MASS mvrnorm
 #' @export
 #'
-sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, cor.mat=NULL, ind.sd=NULL){
+sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, ind.sd=NULL, cor.mat=NULL){
 
   #setup dataframe to capture simulated data
   day=lubridate::ymd_hms("2002/07/24 00:00:00")
