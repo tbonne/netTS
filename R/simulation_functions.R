@@ -5,13 +5,13 @@
 #' @param sampling.periods The number of times the simulated group is observed.
 #' @param sampling.periods.per.day The number of sampling perids per day.
 #' @param true.net (Optional) A true underlying network describing the probability of each individual interacting.
-#' @ind.probs (Optional) A vector specifying the probability of observing the individual performing the behaivour. Should be the same length as the number of nodes.
-#' @ind.sd (Optional) A value for the standard deviation around observed probability of observing a behaviour. Used with the cor.mat option to determine the rate of change in probability of behaviour.
-#' @cor.mat (Optional) A correlation matrix (size nodes x nodes) describing the dependence between individual changes in behaviour.
+#' @param ind.probs (Optional) A vector specifying the probability of observing the individual performing the behaivour. Should be the same length as the number of nodes.
+#' @param ind.sd (Optional) A value for the standard deviation around observed probability of observing a behaviour. Used with the cor.mat option to determine the rate of change in probability of behaviour.
+#' @param cor.mat (Optional) A correlation matrix (size nodes x nodes) describing the dependence between individual changes in behaviour.
 #' @importFrom igraph make_full_graph
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom stats runif
-#' @importFrom corpcor make.positive.definite
+#' @importFrom corpcor make.positive.definite is.positive.definite
 #' @importFrom MASS mvrnorm
 #' @export
 #'
@@ -26,8 +26,9 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
     change_vec <- rep(ind.sd,nrow(cor.mat))
     b <- change_vec %*% t(change_vec)
     a_covariance <- b * cor.mat
-    a_covariance <- make.positive.definite(a_covariance)
-    print("correlation matrix used for updating node behaivour")
+    if(is.positive.definite(a_covariance)==FALSE)print("Warning resulting covariance is not positive semidefinte")
+    print("covariance matrix used for updating node behaivour")
+    print(a_covariance)
   }
 
   #Set probability each individual will show the behaviour
@@ -50,7 +51,7 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
     if(is.null(ind.probs)){
       ind.behav <- runif(nodes)
     } else if (!is.null(cor.mat) & !is.null(ind.sd)){
-      ind.behav <- ind.behav +  mvrnorm(1,rep(0,length(ind.behav)),a_covariance)
+      ind.behav <- pmax(0,pmin(1,ind.behav +  mvrnorm(1,rep(0,length(ind.behav)),a_covariance)))
     }
 
     #Each individual perform the behaviour

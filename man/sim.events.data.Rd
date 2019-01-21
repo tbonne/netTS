@@ -5,7 +5,7 @@
 \title{Simulate some observation data}
 \usage{
 sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
-  true.net = NULL, ind.probs = NULL, cor.mat = NULL, ind.sd = NULL)
+  true.net = NULL, ind.probs = NULL, ind.sd = NULL, cor.mat = NULL)
 }
 \arguments{
 \item{nodes}{Number of individuals within a simulated group.}
@@ -15,6 +15,12 @@ sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
 \item{sampling.periods.per.day}{The number of sampling perids per day.}
 
 \item{true.net}{(Optional) A true underlying network describing the probability of each individual interacting.}
+
+\item{ind.probs}{(Optional) A vector specifying the probability of observing the individual performing the behaivour. Should be the same length as the number of nodes.}
+
+\item{ind.sd}{(Optional) A value for the standard deviation around observed probability of observing a behaviour. Used with the cor.mat option to determine the rate of change in probability of behaviour.}
+
+\item{cor.mat}{(Optional) A correlation matrix (size nodes x nodes) describing the dependence between individual changes in behaviour.}
 }
 \description{
 This function will simulate events data.

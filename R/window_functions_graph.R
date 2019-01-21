@@ -247,7 +247,9 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
     Observation.Events <- nrow(df.window)
 
     #calculate effort
-    if(is.null(effortFun)==FALSE){
+    if(is.data.frame(effortFun)){
+      effort = sum(effortFun[(effortFun[,1]>=windowstart & effortFun[,1]<windowend), ][,2])
+    }else if(is.null(effortFun)==FALSE){
       effort = effortFun(df.window)
     } else {
       effort = 1
