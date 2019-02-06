@@ -20,15 +20,15 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
   ####create time series of behaivour probabilities
 
   #mean values
-  A <- matrix(runif(nodes), nrow=nodes, ncol=1)
+  A <- matrix(runif(nodes,-1,1), nrow=nodes, ncol=1)
   if(!is.null(ind.probs) ) A <- matrix(ind.probs, nrow=nodes, ncol=1)
 
   #correlation matrix
-  B <- diag(nodes)
+  B <- diag(nodes)*0.8
   if(!is.null(cor.mat))B<-cor.mat
 
   #error/change rate
-  ind.sd=1
+  ind.sd=0.0001
   if(!is.null(e.sd))ind.sd=e.sd
 
   #covariate estiamtes
@@ -41,8 +41,8 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
   if(!is.null(covariates)) U <- covariates
   E <- matrix(rnorm(sampling.periods*nodes) * ind.sd, nrow=sampling.periods, ncol=nodes)
 
-  #initial values
-  X[1,] <- runif(nodes,0,1)
+  #initial values (start at the mean)
+  X[1,] <- A
 
   #simulate the probability time series
   for(i in 2:sampling.periods){
