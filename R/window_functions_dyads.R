@@ -174,11 +174,12 @@ extract_lagged_measure_dyads<-function(netlist, measureFun, lag=1, unique.names)
 #' @param dyadvalues Output from the dyadTS function.
 #' @param data The events dataframe used in the dyadTS function.
 #' @param directed Whether to treat the dyads as directed or not
+#' @param enter_leave Optional: a data frame that specifies the entering and leaving dates of each dyad (ID, enterDate, leaveDate)
 #' @importFrom dplyr select
 #' @importFrom dplyr filter
 #' @export
 #'
-trim_dyads<-function(dyadvalues, data ,directed){
+trim_dyads<-function(dyadvalues, data ,directed, enter_leave=NULL){
 
   #Ensure the names of the first four columns
   names(data)[1:3]<- c("from","to","date")
@@ -189,69 +190,140 @@ trim_dyads<-function(dyadvalues, data ,directed){
   #Initialize trimed dataframes with important vars
   df.trim<- data.frame(remove=rep(NA,nrow(dyadvalues)))
 
-  #loop through each ID and trim based on min and max date observed
-  for(i in 1:length(names.kept)){
+  #(Default) use first and last observations to set trim
+  if(is.null(enter_leave)){
 
-    #get both nodes from dyad
-    node1 <- strsplit(names.kept[i], split="_")[[1]][1]
-    node2 <- strsplit(names.kept[i], split="_")[[1]][2]
+    #loop through each ID and trim based on min and max date observed
+    for(i in 1:length(names.kept)){
 
-    #determine the min and max dates the focal was seen
-    if(directed==FALSE){
+      #get both nodes from dyad
+      node1 <- strsplit(names.kept[i], split="_")[[1]][1]
+      node2 <- strsplit(names.kept[i], split="_")[[1]][2]
 
-      #get all occurances of the dyad
-      df.temp <- data %>% filter( (from == node1 & to == node2) |  (from == node2 & to == node1) )
-      if(nrow(df.temp)>0){
-        min.date<-min(df.temp$date)
-        max.date<-max(df.temp$date)
+      #determine the min and max dates the focal was seen
+      if(directed==FALSE){
+
+        #get all occurances of the dyad
+        df.temp <- data %>% filter( (from == node1 & to == node2) |  (from == node2 & to == node1) )
+        if(nrow(df.temp)>0){
+          min.date<-min(df.temp$date)
+          max.date<-max(df.temp$date)
+        } else {
+          min.date<-NA
+          max.date<-NA
+        }
+
+
       } else {
-        min.date<-NA
-        max.date<-NA
+
+        #get all occurances of the dyad
+        df.temp <- data %>% filter( (from == node1 & to == node2))
+        if(nrow(df.temp)>0){
+          min.date<-min(df.temp$date)
+          max.date<-max(df.temp$date)
+        } else {
+          min.date<-NA
+          max.date<-NA
+        }
+
+      }
+
+      if(is.na(min.date)==FALSE){
+
+        #remove all window estimates outside those dates
+        df.temp2 <- dyadvalues %>% dplyr::select(names.kept[i], windowstart, windowend)
+        df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
+        df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
+
+        #build new trimed dataframes
+        df.temp3 <- data.frame((df.temp2[,1]))
+        names(df.temp3) <- c(names.kept[i])
+        df.trim <- cbind(df.trim, df.temp3)
+
+      } else {
+
+        #build new trimed dataframes
+        df.temp3 <- data.frame(rep(NA,nrow(df.trim) ))
+        names(df.temp3) <- c(names.kept[i])
+        df.trim <- cbind(df.trim, df.temp3)
+
       }
 
 
-    } else {
+    }
 
-      #get all occurances of the dyad
-      df.temp <- data %>% filter( (from == node1 & to == node2))
-      if(nrow(df.temp)>0){
-        min.date<-min(df.temp$date)
-        max.date<-max(df.temp$date)
+    df.trim<-df.trim[,-1]
+    df.times <- dyadvalues %>% dplyr::select("nEvents","windowstart","windowend")
+    df.trim <- cbind(df.trim,df.times)
+
+    #Use a user specified dates
+  } else {
+
+    #ensure column names
+    names(enter_leave)[1:3]<- c("ID","enter","leave")
+
+    #loop through each ID and trim based on min and max date observed
+    for(i in 1:length(names.kept)){
+
+      #get both nodes from dyad
+      node1 <- strsplit(names.kept[i], split="_")[[1]][1]
+      node2 <- strsplit(names.kept[i], split="_")[[1]][2]
+
+      #determine the min and max dates the focal was seen
+      if(directed==FALSE){
+
+        #get all occurances of the dyad
+        df.temp <- data %>% filter( (from == node1 & to == node2) |  (from == node2 & to == node1) )
+        if(nrow(df.temp)>0){
+          min.date<-min(df.temp$date)
+          max.date<-max(df.temp$date)
+        } else {
+          min.date<-NA
+          max.date<-NA
+        }
+
+
       } else {
-        min.date<-NA
-        max.date<-NA
+
+        #get all occurances of the dyad
+        df.temp <- data %>% filter( (from == node1 & to == node2))
+        if(nrow(df.temp)>0){
+          min.date<-min(df.temp$date)
+          max.date<-max(df.temp$date)
+        } else {
+          min.date<-NA
+          max.date<-NA
+        }
+
       }
 
+      if(is.na(min.date)==FALSE){
+
+        #remove all window estimates outside those dates
+        df.temp2 <- dyadvalues %>% dplyr::select(names.kept[i], windowstart, windowend)
+        df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
+        df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
+
+        #build new trimed dataframes
+        df.temp3 <- data.frame((df.temp2[,1]))
+        names(df.temp3) <- c(names.kept[i])
+        df.trim <- cbind(df.trim, df.temp3)
+
+      } else {
+
+        #build new trimed dataframes
+        df.temp3 <- data.frame(rep(NA,nrow(df.trim) ))
+        names(df.temp3) <- c(names.kept[i])
+        df.trim <- cbind(df.trim, df.temp3)
+
+      }
     }
 
-    if(is.na(min.date)==FALSE){
-
-      #remove all window estimates outside those dates
-      df.temp2 <- dyadvalues %>% dplyr::select(names.kept[i], windowstart, windowend)
-      df.temp2[,1] <- ifelse(df.temp2[,2]<min.date,NA,df.temp2[,1])
-      df.temp2[,1] <- ifelse(df.temp2[,3]>max.date,NA,df.temp2[,1])
-
-      #build new trimed dataframes
-      df.temp3 <- data.frame((df.temp2[,1]))
-      names(df.temp3) <- c(names.kept[i])
-      df.trim <- cbind(df.trim, df.temp3)
-
-    } else {
-
-      #build new trimed dataframes
-      df.temp3 <- data.frame(rep(NA,nrow(df.trim) ))
-      names(df.temp3) <- c(names.kept[i])
-      df.trim <- cbind(df.trim, df.temp3)
-
-    }
-
+    df.trim<-df.trim[,-1]
+    df.times <- dyadvalues %>% dplyr::select("nEvents","windowstart","windowend")
+    df.trim <- cbind(df.trim,df.times)
 
   }
-
-  df.trim<-df.trim[,-1]
-  df.times <- dyadvalues %>% dplyr::select("nEvents","windowstart","windowend")
-  df.trim <- cbind(df.trim,df.times)
-
 
   return(df.trim)
 

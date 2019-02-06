@@ -15,32 +15,42 @@
 #' @importFrom MASS mvrnorm
 #' @export
 #'
-sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, ind.sd=NULL, cor.mat=NULL){
+sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, ind.sd=NULL, cor.mat=NULL, covariates=NULL, covariates.beta=NULL){
+
+  ####create time series of behaivour probabilities
+
+  #mean values
+  A <- matrix(runif(nodes), nrow=nodes, ncol=1)
+  if(!is.null(ind.probs) ) A <- matrix(ind.probs, nrow=nodes, ncol=1)
+
+  #correlation matrix
+  B <- diag(nodes)
+  if(!is.null(cor.mat))B<-cor.mat
+
+  #covariate estiamtes
+  C <- matrix(0, nrow=nodes, ncol=1)
+  if(!is.null(covariates.beta)) C <- covariates.beta
+
+  #setup for sim
+  X <- matrix(NA, nrow=sampling.periods, ncol=nodes, dimnames=list(NULL, as.character(1:nodes)))
+  U <- matrix(0, nrow=sampling.periods, ncol=1)
+  if(!is.null(covariates)) C <- covariates
+  E <- matrix(rnorm(sampling.periods*nodes) * ind.sd, nrow=sampling.periods, ncol=nodes)
+
+  #initial values
+  X[1,] <- runif(nodes,0,1)
+
+  #simulate the probability time series
+  for(i in 2:sampling.periods){
+    p_scale<-A + B%*%matrix(X[i-1,],ncol=1) + C%*%matrix(U[i,],ncol=1) + E[i,]
+    X[i,] <- exp(p_scale)/(1+exp(p_scale))
+  }
+
+  plot(X[4,], type="l")
 
   #setup dataframe to capture simulated data
   day=lubridate::ymd_hms("2002/07/24 00:00:00")
   df.sim <- data.frame(from = 1, to=2, date=day, sampleID=1 )
-
-  #convert correlation matrix to covariance matrix
-  if( !is.null(cor.mat) & !is.null(ind.sd) ){
-    change_vec <- rep(ind.sd,nrow(cor.mat))
-    b <- change_vec %*% t(change_vec)
-    a_covariance <- b * cor.mat
-    if(is.positive.definite(a_covariance)==FALSE)print("Warning resulting covariance is not positive semidefinte")
-    print("covariance matrix used for updating node behaivour")
-    print(a_covariance)
-  }
-
-  #Set probability each individual will show the behaviour
-  if(is.null(ind.probs)){
-    ind.behav <- runif(nodes) #random
-    print("Uniform random draws used for updating node behaivour")
-  } else{
-    ind.behav <- ind.probs #user set
-    if(is.null(cor.mat) | is.null(ind.sd)){
-      print("Fixed node behaivour")
-    }
-  }
 
   #monitor the progress
   pb <- txtProgressBar(min = 1, max = sampling.periods, style = 3)
@@ -48,11 +58,7 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
   for(i in 1:sampling.periods){
 
     #update probability each individual will show the behaviour
-    if(is.null(ind.probs)){
-      ind.behav <- runif(nodes)
-    } else if (!is.null(cor.mat) & !is.null(ind.sd)){
-      ind.behav <- pmax(0,pmin(1,ind.behav +  mvrnorm(1,rep(0,length(ind.behav)),a_covariance)))
-    }
+    ind.behav <- X[i,]
 
     #Each individual perform the behaviour
     for(j in 1:length(ind.behav)){

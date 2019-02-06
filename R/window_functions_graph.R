@@ -145,7 +145,7 @@ convergence.check.value<-function(data, windowsize, windowshift, directed = FALS
 #' @export
 #'
 #'
-convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE, measureFun=degree,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975)){
+convergence.check.boot <- function(data, windowsize, windowshift, directed = FALSE, measureFun=degree,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -216,6 +216,54 @@ convergence.check.boot<-function(data, windowsize, windowshift, directed = FALSE
   return(conv.values)
 
 }
+
+
+#' Variance by window size check
+#'
+#' This function will estimate the variance in the time series based on the window size.
+#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param windowsize_min The min size of windowsize to test.
+#' @param windowsize_max The max size of windowsize to test.
+#' @param by The resolution at which to test window sizes between the min and the max window sizes
+#' @param windowshift The amount of time to shift the window when generating networks.
+#' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
+#' @param measureFun The measurment function to perform the bootstap on (Default: density).
+#' @param SRI Wether to use the simple ratio index (Default=FALSE)
+#' @importFrom stats cor.test quantile
+#' @importFrom igraph set_graph_attr degree density
+#' @export
+#'
+#'
+convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=days(40),by=days(1), windowshift=days(1), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE){
+
+  #setup dataframe to return variance values
+  df.var <- data.frame(windowsize = -1, var=-1)
+
+  #for each window size calculate the overall variance and add it to df.var
+  #pb <- txtProgressBar(0, length(x), style = 3)
+  windowsize_seq = windowsize_min
+  while(windowsize_seq<=windowsize_max){
+
+    #calculate time series
+    graph.values<-graphTS(data, windowsize = windowsize_seq, windowshift= windowshift, measureFun=measureFun ,effortFun=NULL, permutationFun=perm.events,directed=directed, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=SRI)
+
+    #record
+    df.var<-rbind(df.var, data.frame(windowsize=as.numeric(as.duration(windowsize_seq),"days"), var=var(graph.values[,1])) )
+
+    #update window size tested
+    windowsize_seq = windowsize_seq + by
+
+    print(windowsize_seq)
+
+  }
+
+  df.var<-df.var[-1,]
+
+  return(df.var)
+
+}
+
+
 
 
 #' Extract networks from a moving window
