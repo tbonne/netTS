@@ -15,7 +15,7 @@
 #' @importFrom MASS mvrnorm
 #' @export
 #'
-sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, ind.sd=NULL, cor.mat=NULL, covariates=NULL, covariates.beta=NULL){
+sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, e.sd=NULL, cor.mat=NULL, covariates=NULL, covariates.beta=NULL){
 
   ####create time series of behaivour probabilities
 
@@ -27,14 +27,18 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
   B <- diag(nodes)
   if(!is.null(cor.mat))B<-cor.mat
 
+  #error/change rate
+  ind.sd=1
+  if(!is.null(ind.sd))ind.sd=e.sd
+
   #covariate estiamtes
   C <- matrix(0, nrow=nodes, ncol=1)
-  if(!is.null(covariates.beta)) C <- covariates.beta
+  if(!is.null(covariates.beta)) C <- matrix(covariates.beta,nrow=nodes)
 
   #setup for sim
   X <- matrix(NA, nrow=sampling.periods, ncol=nodes, dimnames=list(NULL, as.character(1:nodes)))
   U <- matrix(0, nrow=sampling.periods, ncol=1)
-  if(!is.null(covariates)) C <- covariates
+  if(!is.null(covariates)) U <- covariates
   E <- matrix(rnorm(sampling.periods*nodes) * ind.sd, nrow=sampling.periods, ncol=nodes)
 
   #initial values
@@ -45,8 +49,6 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
     p_scale<-A + B%*%matrix(X[i-1,],ncol=1) + C%*%matrix(U[i,],ncol=1) + E[i,]
     X[i,] <- exp(p_scale)/(1+exp(p_scale))
   }
-
-  plot(X[4,], type="l")
 
   #setup dataframe to capture simulated data
   day=lubridate::ymd_hms("2002/07/24 00:00:00")
