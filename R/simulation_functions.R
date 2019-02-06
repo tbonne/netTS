@@ -29,7 +29,7 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
 
   #error/change rate
   ind.sd=1
-  if(!is.null(ind.sd))ind.sd=e.sd
+  if(!is.null(e.sd))ind.sd=e.sd
 
   #covariate estiamtes
   C <- matrix(0, nrow=nodes, ncol=1)
