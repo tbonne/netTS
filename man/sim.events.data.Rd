@@ -5,7 +5,8 @@
 \title{Simulate some observation data}
 \usage{
 sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
-  true.net = NULL, ind.probs = NULL, ind.sd = NULL, cor.mat = NULL)
+  true.net = NULL, A = NULL, B = NULL, C = NULL, D = NULL, E = NULL,
+  covariates = NULL)
 }
 \arguments{
 \item{nodes}{Number of individuals within a simulated group.}
@@ -16,11 +17,17 @@ sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
 
 \item{true.net}{(Optional) A true underlying network describing the probability of each individual interacting.}
 
-\item{ind.probs}{(Optional) A vector specifying the probability of observing the individual performing the behaivour. Should be the same length as the number of nodes.}
+\item{A}{(Optional) A vector specifying the average probability of observing the individual performing the behaivour. Should be the same length as the number of nodes. Default: runif(node,0,1)}
 
-\item{ind.sd}{(Optional) A value for the standard deviation around observed probability of observing a behaviour. Used with the cor.mat option to determine the rate of change in probability of behaviour.}
+\item{B}{(Optional) A matrix (node x node) specifying the interdependence of individual mean probabilities. Default: matrix of zeros}
 
-\item{cor.mat}{(Optional) A correlation matrix (size nodes x nodes) describing the dependence between individual changes in behaviour.}
+\item{C}{(Optional) A matrix specifying the effects of each covariate value on the mean probability. Default: matrix of zeros}
+
+\item{D}{(Optional) A matrix specifying the interdependence of individual variations probabilities. Default: matrix of zeros}
+
+\item{E}{(Optional) A value for the standard deviation around observed probability of observing a behaviour. Default: 0.1}
+
+\item{covariates}{A matrix with covariate values for each sampling period. Should be of size (sampleing.periods x number of covariates)}
 }
 \description{
 This function will simulate events data.

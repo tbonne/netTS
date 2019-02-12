@@ -5,9 +5,12 @@
 #' @param sampling.periods The number of times the simulated group is observed.
 #' @param sampling.periods.per.day The number of sampling perids per day.
 #' @param true.net (Optional) A true underlying network describing the probability of each individual interacting.
-#' @param ind.probs (Optional) A vector specifying the probability of observing the individual performing the behaivour. Should be the same length as the number of nodes.
-#' @param ind.sd (Optional) A value for the standard deviation around observed probability of observing a behaviour. Used with the cor.mat option to determine the rate of change in probability of behaviour.
-#' @param cor.mat (Optional) A correlation matrix (size nodes x nodes) describing the dependence between individual changes in behaviour.
+#' @param A (Optional) A vector specifying the average probability of observing the individual performing the behaivour. Should be the same length as the number of nodes. Default: runif(node,0,1)
+#' @param B (Optional) A matrix (node x node) specifying the interdependence of individual mean probabilities. Default: matrix of zeros
+#' @param C (Optional) A matrix specifying the effects of each covariate value on the mean probability. Default: matrix of zeros
+#' @param D (Optional) A matrix specifying the interdependence of individual variations probabilities. Default: matrix of zeros
+#' @param E (Optional) A value for the standard deviation around observed probability of observing a behaviour. Default: 0.1
+#' @param covariates A matrix with covariate values for each sampling period. Should be of size (sampleing.periods x number of covariates)
 #' @importFrom igraph make_full_graph
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom stats runif
@@ -15,40 +18,29 @@
 #' @importFrom MASS mvrnorm
 #' @export
 #'
-sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, ind.probs=NULL, e.sd=NULL, cor.mat=NULL, covariates=NULL, covariates.beta=NULL){
+sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1, true.net=NULL, A=NULL, B=NULL, C=NULL, D=NULL, E=NULL, covariates=NULL){
 
-  ####create time series of behaivour probabilities
+  #initialize individual probability of behaviour
+  if(is.null(A))A<-matrix(runif(nodes,0,1), nrow=nodes, ncol=1)
+  A.logit <- log(A/(1-A))
 
-  #mean values
-  A <- matrix(runif(nodes,-1,1), nrow=nodes, ncol=1)
-  if(!is.null(ind.probs) ) A <- matrix(ind.probs, nrow=nodes, ncol=1)
+  #correlation matrix: means
+  if(is.null(B))B<-diag(nodes)*0
 
-  #correlation matrix
-  B <- diag(nodes)*0.8
-  if(!is.null(cor.mat))B<-cor.mat
+  #correlation matrix: error
+  if(is.null(D))D<-diag(nodes)*0.0
 
   #error/change rate
-  ind.sd=0.0001
-  if(!is.null(e.sd))ind.sd=e.sd
+  if(is.null(E))E=0.1
 
-  #covariate estiamtes
-  C <- matrix(0, nrow=nodes, ncol=1)
-  if(!is.null(covariates.beta)) C <- matrix(covariates.beta,nrow=nodes)
+  #covariate effects on individual probabilities
+  if(is.null(C)) C <- matrix(0, nrow=nodes, ncol=1)
 
-  #setup for sim
+  #covariate values
+  if(is.null(covariates)) covariates <- matrix(0, nrow=sampling.periods, ncol=1)
+
+  #probabilties
   X <- matrix(NA, nrow=sampling.periods, ncol=nodes, dimnames=list(NULL, as.character(1:nodes)))
-  U <- matrix(0, nrow=sampling.periods, ncol=1)
-  if(!is.null(covariates)) U <- covariates
-  E <- matrix(rnorm(sampling.periods*nodes) * ind.sd, nrow=sampling.periods, ncol=nodes)
-
-  #initial values (start at the mean)
-  X[1,] <- A
-
-  #simulate the probability time series
-  for(i in 2:sampling.periods){
-    p_scale<-A + B%*%matrix(X[i-1,],ncol=1) + C%*%matrix(U[i,],ncol=1) + E[i,]
-    X[i,] <- exp(p_scale)/(1+exp(p_scale))
-  }
 
   #setup dataframe to capture simulated data
   day=lubridate::ymd_hms("2002/07/24 00:00:00")
@@ -57,10 +49,11 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
   #monitor the progress
   pb <- txtProgressBar(min = 1, max = sampling.periods, style = 3)
 
-  for(i in 1:sampling.periods){
+  #individuals start at mean probability
+  ind.behav <- A
 
-    #update probability each individual will show the behaviour
-    ind.behav <- X[i,]
+  #Start simulations
+  for(i in 1:sampling.periods){
 
     #Each individual perform the behaviour
     for(j in 1:length(ind.behav)){
@@ -87,6 +80,18 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
       day = day+lubridate::days(1)
     }
 
+    ###update probability each individual will show the behaviour
+    #convert probability to logit scale
+    ind.behav<-ifelse(ind.behav<0.001,0.001,ifelse(ind.behav>0.999,0.999,ind.behav))
+    p.logit<-log(ind.behav/(1-ind.behav))
+    #adjust probability (AR model)
+    p.logit.mean <- A.logit + B%*%matrix(p.logit,ncol=1) + C%*%matrix(covariates[i,],ncol=1) + D%*%matrix(p.logit-A.logit,ncol=1) + matrix(mvrnorm(n = 1, rep(0,nodes), Sigma=diag(nodes)),ncol=1)*E
+
+    #convert back to probability
+    p.mean <- exp(p.logit.mean)/(exp(p.logit.mean)+1)
+    ind.behav <- p.mean
+    X[i,] <- p.mean
+
     #update progress bar
     setTxtProgressBar(pb,  i )
 
@@ -94,6 +99,7 @@ sim.events.data <- function(nodes, sampling.periods, sampling.periods.per.day=1,
 
   close(pb)
 
-  return(df.sim)
+  return(list(beha=df.sim,probs=X))
 }
+
 

@@ -4,12 +4,14 @@
 \alias{trim_nodes}
 \title{Trim nodes.}
 \usage{
-trim_nodes(nodevalues, data)
+trim_nodes(nodevalues, data, enter_leave = NULL)
 }
 \arguments{
 \item{nodevalues}{Output from the nodeTS function.}
 
 \item{data}{The events dataframe used in the nodeTS function.}
+
+\item{enter_leave}{Optional: a data frame that specifies the entering and leaving dates of each node (ID, enterDate, leaveDate)}
 }
 \description{
 This function removes node values beyond their min and max observed times.

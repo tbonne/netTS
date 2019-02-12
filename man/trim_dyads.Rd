@@ -4,7 +4,7 @@
 \alias{trim_dyads}
 \title{Trim dyads.}
 \usage{
-trim_dyads(dyadvalues, data, directed)
+trim_dyads(dyadvalues, data, directed, enter_leave = NULL)
 }
 \arguments{
 \item{dyadvalues}{Output from the dyadTS function.}
@@ -12,6 +12,8 @@ trim_dyads(dyadvalues, data, directed)
 \item{data}{The events dataframe used in the dyadTS function.}
 
 \item{directed}{Whether to treat the dyads as directed or not}
+
+\item{enter_leave}{Optional: a data frame that specifies the entering and leaving dates of each dyad (ID, enterDate, leaveDate)}
 }
 \description{
 This function removes dyad values beyond their min and max observed times.
