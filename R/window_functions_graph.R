@@ -230,7 +230,7 @@ convergence.check.boot <- function(data, windowsize, windowshift, directed = FAL
 #' @param measureFun The measurment function to perform the bootstap on (Default: density).
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @importFrom stats cor.test quantile
-#' @importFrom igraph set_graph_attr degree density
+#' @importFrom igraph set_graph_attr degree edge_density
 #' @export
 #'
 #'
