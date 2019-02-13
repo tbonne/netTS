@@ -4,7 +4,7 @@
 \name{df.scans}
 \alias{df.scans}
 \title{Data on observational scans of a vervet monkey group}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 338 rows and 2 columns.}
+\format{An object of class \code{data.frame} with 338 rows and 2 columns.}
 \usage{
 df.scans
 }
