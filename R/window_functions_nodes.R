@@ -15,6 +15,7 @@
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
 #' @export
 #' @importFrom lubridate days
+#' @importFrom igraph degree
 #' @examples
 #'
 #' ts.out<-nodeTS(data=groomEvents)
@@ -68,8 +69,7 @@ extract_measure_nodes<-function(netlist, measureFun, unique.names){
   if(exists('measureFun', mode='function')){
 
     for(i in 1:length(netlist)) {
-      df.temp.nodes <- data.frame(t(measureFun(netlist[[i]])))
-      names(df.temp.nodes) <- as.character(V(netlist[[i]])$name)
+      df.temp.nodes <- as.data.frame(t(measureFun(netlist[[i]])))
       df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
                             windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                             windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))

@@ -1,15 +1,22 @@
 context("Trim tests")
 library(netTS)
+library(lubridate)
 
 #set random
 set.seed(123)
 
 #simulate some data
 events1 <-sim.events.data(nodes=3,sampling.periods = 100,sampling.periods.per.day = 1)
+events1 <- events1$beha
 events2 <-sim.events.data(nodes=2,sampling.periods = 100,sampling.periods.per.day = 1)
+events2 <- events2$beha
 events2$sampleID<-events2$sampleID+100
 events2$date<-events2$date+days(100)
 eventsAll <- rbind(events1,events2)
+
+str(eventsAll)
+eventsAll$from <- as.character(eventsAll$from)
+eventsAll$to <- as.character(eventsAll$to)
 
 #extract measures
 node.ts <- nodeTS(eventsAll)
@@ -45,16 +52,16 @@ true.leave = ymd("2002-07-24")+days(100)
 
 #test that it worked properly
 test_that("Trimmed network is equal to expectations", {
-   expect_equal(is.na(node.ts.trim[69,3]),FALSE )
-   expect_equal(is.na(node.ts.trim[70,3]),TRUE )
-   expect_equal(is.na(node.ts.trim.user[69,3]),FALSE )
-   expect_equal(is.na(node.ts.trim.user[70,3]),TRUE )
-   expect_equal(is.na(dyad.ts.trim.unDir[69,3]),FALSE )
-   expect_equal(is.na(dyad.ts.trim.unDir[70,3]),TRUE )
-   expect_equal(is.na(dyad.ts.trim.unDir.user[69,3]),FALSE )
-   expect_equal(is.na(dyad.ts.trim.unDir.user[70,3]),TRUE )
-   expect_equal(is.na(dyad.ts.trim.Dir[69,3]),FALSE )
-   expect_equal(is.na(dyad.ts.trim.Dir[70,3]),TRUE )
-   expect_equal(is.na(dyad.ts.trim.Dir.user[69,3]),FALSE )
-   expect_equal(is.na(dyad.ts.trim.Dir.user[70,3]),TRUE )
+   expect_equal(is.na(node.ts.trim[70,2]),FALSE )
+   expect_equal(is.na(node.ts.trim[71,2]),TRUE )
+   expect_equal(is.na(node.ts.trim.user[69,2]),FALSE )
+   expect_equal(is.na(node.ts.trim.user[70,2]),TRUE )
+   expect_equal(is.na(dyad.ts.trim.unDir[70,2]),FALSE )
+   expect_equal(is.na(dyad.ts.trim.unDir[71,2]),TRUE )
+   expect_equal(is.na(dyad.ts.trim.unDir.user[70,2]),FALSE )
+   expect_equal(is.na(dyad.ts.trim.unDir.user[71,2]),TRUE )
+   expect_equal(is.na(dyad.ts.trim.Dir[70,2]),FALSE )
+   expect_equal(is.na(dyad.ts.trim.Dir[71,2]),TRUE )
+   expect_equal(is.na(dyad.ts.trim.Dir.user[70,2]),FALSE )
+   expect_equal(is.na(dyad.ts.trim.Dir.user[71,2]),TRUE )
  })

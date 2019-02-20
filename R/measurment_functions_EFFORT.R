@@ -33,7 +33,7 @@ effort.time <- function(df.window){
 #' @export
 #'
 #'
-effort.events <- function(df.window){
+effort.scan <- function(df.window){
   if(is.null(df.window$sampleID) )print("Please rename the column containing the sample IDs: sampleID")
   total.samples <- length(unique(df.window$sampleID))
   return(total.samples)
