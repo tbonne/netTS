@@ -4,10 +4,10 @@
 \alias{nodeTS_plot}
 \title{Plot function for nodeTS outputs}
 \usage{
-nodeTS_plot(data = output.net.dir, legend = TRUE)
+nodeTS_plot(data, legend = TRUE)
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{Output from the nodeTS function.}
 
 \item{legend}{Whether to include the legend (Default: TRUE)}
 }

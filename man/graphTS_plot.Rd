@@ -4,10 +4,10 @@
 \alias{graphTS_plot}
 \title{Plot function for graphTS outputs}
 \usage{
-graphTS_plot(data, plotCI = TRUE)
+graphTS_plot(data, plotCI = FALSE)
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{Output from the graphTS function.}
 
 \item{plotCI}{Whether to plot the confidence intervals (Default: TRUE)}
 }
