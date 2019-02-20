@@ -8,7 +8,7 @@
 #' @export
 #'
 #'
-graphTS_plot <- function(data, plotCI=TRUE){
+graphTS_plot <- function(data, plotCI=FALSE){
 
   if(plotCI==TRUE){
     g<-ggplot(data, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue") + geom_ribbon(aes(ymin=CI.low,ymax=CI.high),  fill="red", alpha=0.1) + theme_classic()
