@@ -200,7 +200,6 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
   df.var <- data.frame(windowsize = -1, var=-1)
 
   #for each window size calculate the overall variance and add it to df.var
-  #pb <- txtProgressBar(0, length(x), style = 3)
   windowsize_seq = windowsize_min
   while(windowsize_seq<=windowsize_max){
 
@@ -212,9 +211,6 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
 
     #update window size tested
     windowsize_seq = windowsize_seq + by
-
-    print(windowsize_seq)
-
   }
 
   df.var<-df.var[-1,]
