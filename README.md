@@ -28,8 +28,9 @@ Tutorials for getting started
 ------------------------------------------
 
 1. [Introduction](https://tbonne.github.io/netTS/inst/Tutorials/Intro_to_netTS.html)
-2. [Controling for sampling effort](https://tbonne.github.io/netTS/inst/Tutorials/Control_for_sampling_effort.html)
-3. [Controling for nodes entering and leaving the network.](https://tbonne.github.io/netTS/inst/Tutorials/Control_for_entering_and_leaving.Rmd.html)
-4. [Network similarity](https://tbonne.github.io/netTS/inst/Tutorials/Network_Similarity.html)
-5. [Using network permutations](https://tbonne.github.io/netTS/inst/Tutorials/Using_permutations.html)
-6. [Using network simulations](https://tbonne.github.io/netTS/inst/Tutorials/Using_simulated_event_data.html)
+2. [Choosing a window size](https://tbonne.github.io/netTS/inst/Tutorials/Intro_to_netTS_WindowSizeChoice.html)
+3. [Controling for sampling effort](https://tbonne.github.io/netTS/inst/Tutorials/Control_for_sampling_effort.html)
+4. [Controling for nodes entering and leaving the network.](https://tbonne.github.io/netTS/inst/Tutorials/Control_for_entering_and_leaving.Rmd.html)
+5. [Network similarity](https://tbonne.github.io/netTS/inst/Tutorials/Network_Similarity.html)
+6. [Using network permutations](https://tbonne.github.io/netTS/inst/Tutorials/Using_permutations.html)
+7. [Using network simulations](https://tbonne.github.io/netTS/inst/Tutorials/Using_simulated_event_data.html)
