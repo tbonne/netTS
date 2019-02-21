@@ -3,9 +3,11 @@
 netTS: Introduction
 ------------
 
-   The netTS package is meant for relational data that takes place through time. Generally, when constructing social networks to interogate relational data, some amount of aggregation is required. E.g. group all data into years to create yearly networks. The point of this package is to facilitate this process of aggregation, using a moving window approach.
+   The netTS package is meant for relational data that takes place through time, e.g., interactions between two individuals with a time stamp. The package takes a time-aggregated network approach and uses an adjustable moving window to measure how a social network changes through time.
 
    The moving window approach allows a user to define the size of a time window (e.g., windowsize = 1 month) and the amount to move the window (e.g., windowshift = 1 day). This moving window then subsets the relational data within a window, creates a network, and extracts a network measure. It then shifts over in time and repeats the process. By altering the size and shift of this moving window it is then possible to measure how networks change in time.
+   
+   The package also provides tools for choosing window sizes, comparing observed network measures to null models, and for simulating network data to aid in statistical model construction and testing.
 
   
 ![](inst/readme_figs/diag_movingWindow.png)
