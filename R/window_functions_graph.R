@@ -26,6 +26,12 @@
 #'
 graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
 
+  #check for missing data
+  if(sum(is.na(data)) > 0){
+    print(paste0("Data contains NA, removing ",sum(!complete.cases(data)), " row(s)."))
+    data<-data[complete.cases(data),]
+  }
+
   #extract networks from the dataframe
   if(cores > 1){
     graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, SRI=SRI, effortFun = effortFun)

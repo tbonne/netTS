@@ -22,6 +22,12 @@
 #'
 nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree, effortFun=NULL,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1){
 
+  #check for missing data
+  if(sum(is.na(data)) > 0){
+    print(paste0("Data contains NA, removing ",sum(!complete.cases(data)), " row(s)."))
+    data<-data[complete.cases(data),]
+  }
+
   #extract networks from the dataframe
   if(cores > 1){
     graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun)

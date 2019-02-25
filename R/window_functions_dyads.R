@@ -21,6 +21,12 @@
 #'
 dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=dyad_weight, effortFun=NULL, directed=FALSE, lagged=FALSE, lag=1, cores=1){
 
+  #check for missing data
+  if(sum(is.na(data)) > 0){
+    print(paste0("Data contains NA, removing ",sum(!complete.cases(data)), " row(s)."))
+    data<-data[complete.cases(data),]
+  }
+
   #if undirected, organise the data to look at the data without order.
   if(directed==FALSE) data <- order_events(data)
 

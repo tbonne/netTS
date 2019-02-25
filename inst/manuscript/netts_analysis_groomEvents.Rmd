@@ -1,0 +1,463 @@
+---
+title: "Code for the manuscript: Analyzing time aggregated networks: the role of bootstrapping, permutation, and simulation."
+output: html_notebook
+---
+
+##Introduction:
+
+ This code was used to perform the analysis in the manuscript: "Analyzing time aggregated networks: the role of bootstrapping, permutation, and simulation." The following three analyses were performed:
+ 
+ 1) Controlling for sampling
+ 2) Choosing a window size
+ 3) Quantifying consistency in social structures
+ 4) Identification of keystone individuals
+ 5) Measuring inter-dependence between individual behaviour
+
+Load libraries
+```{r, warning=FALSE,message=FALSE}
+#devtools::install_github("tbonne/netts")
+library(netTS)
+library(lubridate)
+library(igraph)
+library(ggplot2)
+library(brms)
+library(rstan)
+library(scales)
+```
+
+Using vervet grooming data
+```{r}
+head(groomEvents)
+```
+
+
+###1) Controlling for sampling effort
+
+Use mean strength as the network measure
+```{r}
+mean_strength <- function (net) {
+  md <- mean(strength(net))
+    return(md)
+}
+```
+
+Control for sampling effort
+```{r}
+#extract networks: not controlling for sampling effort
+net.time.noEffort <-graphTS(groomEvents, windowsize = days(33), windowshift = days(1), measureFun = mean_strength, effortFun=NULL, directed=TRUE)
+
+#extract networks: controlling for sampling effort
+net.time.yesEffort<-graphTS(groomEvents, windowsize = days(33), windowshift = days(1), measureFun = mean_strength, effortFun=df.scans, directed=TRUE)
+
+#plot the results
+graphTS_plot(net.time.noEffort) + ylab("Mean strength") + scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y"))
+graphTS_plot(net.time.yesEffort)+ ylab("Mean strength/number of scans") + scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y"))
+```
+
+###2) Choosing a window size
+
+Look for patterns of measure variation with changes in windowsize: here we use edge density
+```{r, warning=FALSE, message=FALSE}
+df.var <- netTS::convergence.check.var(groomEvents, windowsize_min = days(10),windowsize_max = days(200),windowshift = days(5), measureFun = edge_density)
+
+#plot changes in variation by window size
+ggplot(df.var, aes(y=var, x=windowsize))+geom_line()+ theme_classic()
+```
+
+
+Visualize different windowsizes
+```{r}
+net.str.10<-graphTS(groomEvents, windowsize = days(10), windowshift = days(10), measureFun = mean_strength, effortFun=effort.time, directed=TRUE)
+
+net.str.30<-graphTS(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = mean_strength, effortFun=effort.time, directed=TRUE)
+
+net.str.60<-graphTS(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, effortFun=effort.time, directed=TRUE)
+
+net.str.90<-graphTS(groomEvents, windowsize = days(90), windowshift = days(10), measureFun = mean_strength, effortFun=effort.time, directed=TRUE)
+
+net.str.120<-graphTS(groomEvents, windowsize = days(120), windowshift = days(10), measureFun = mean_strength, effortFun=effort.time, directed=TRUE)
+
+net.str.10$windowsize <- 10
+net.str.30$windowsize <- 30
+net.str.60$windowsize <- 60
+net.str.90$windowsize <- 90
+net.str.120$windowsize <- 120
+net.str.all <- rbind(net.str.10,net.str.30,net.str.60,net.str.90,net.str.120)
+
+p.str.all<-ggplot(data=net.str.all,aes(y=measure, x=windowstart, color=factor(windowsize), ylab="mean strength", xlab="Date"))+geom_point()+geom_path() + theme_classic()+ scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y"))
+p.str.all 
+```
+
+
+Look at how similarity between bootstrapped networks and observed network changes with window size.
+```{r}
+#get bootstrap similarity using different window sizes
+check.boot.10<-convergence.check.boot(groomEvents, windowsize = days(10), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+check.boot.30<-convergence.check.boot(groomEvents, windowsize = days(30), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+check.boot.60<-convergence.check.boot(groomEvents, windowsize = days(60), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+check.boot.90<-convergence.check.boot(groomEvents, windowsize = days(90), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+check.boot.120<-convergence.check.boot(groomEvents, windowsize = days(120), windowshift = days(10), measureFun = mean_strength, directed=TRUE)
+
+
+#combine datasets
+check.boot.10$windowsize <- 10
+check.boot.30$windowsize <- 30
+check.boot.60$windowsize <- 60
+check.boot.90$windowsize <- 90
+check.boot.120$windowsize <- 120
+check.boot.all <- rbind(check.boot.10,check.boot.30,check.boot.60,check.boot.90,check.boot.120)
+
+#plot results
+p.boot.all<-ggplot(data=check.boot.all,aes(y=mean, x=windowstart, color=factor(windowsize), main="boot check", ylab="corr", xlab="window start"))+geom_point()+geom_path() + geom_hline(yintercept = 1, linetype="dashed") + geom_ribbon(aes(ymin=CI.low,ymax=CI.high, fill=factor(windowsize)), alpha=0.1, color=NA)+ theme_classic()+ scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y"))
+p.boot.all 
+```
+
+```{r}
+cowplot::plot_grid(p.str.all,p.boot.all, ncol=1)
+```
+
+
+###3) Network structure through time
+
+Network measures to look at:
+```{r}
+#mean out-degree
+mean_out_degree <- function(x){
+  mean(degree(x,mode="out"))
+}
+
+#mean eigenvector
+eigen_mean <- function(x){
+  mean(eigen_centrality(x)$vector)
+}
+```
+
+Run permutations for both measures
+```{r}
+outDeg.33<-graphTS(groomEvents, windowsize = days(33), windowshift = days(10), measureFun = mean_out_degree, effortFun=df.scans, permutationFun=perm.events, directed=TRUE, nperm=1000)
+
+eigenCent.33.eigen<-graphTS(groomEvents, windowsize = days(33), windowshift = days(10), measureFun = eigen_mean, effortFun=df.scans, permutationFun=perm.events, directed=TRUE, nperm = 1000)
+```
+
+Plot the results
+```{r}
+graphTS_plot(outDeg.33)
+graphTS_plot(eigenCent.33.eigen)
+```
+
+
+Full network stability
+```{r}
+#from the start
+graph.change <- graphTS(groomEvents, windowsize = days(33), windowshift = days(10), measureFun = cosine_between_graphs, effortFun = df.scans, directed=TRUE, lagged = TRUE, firstNet = TRUE)
+
+#from the previous
+graph.stability <- graphTS(groomEvents, windowsize = days(33), windowshift = days(10), measureFun = cosine_between_graphs, effortFun = df.scans, directed=TRUE, lagged = TRUE, lag = 1)
+
+#plot the results
+graphTS_plot(graph.change)
+graphTS_plot(graph.stability)
+
+```
+
+###4) Identifying Keystone individuals?
+
+Extract node level and graph level measures
+```{r}
+#node level measure function
+out_degree <- function (net) {
+  md <- degree(net, mode="out")
+    return(md)
+}
+out_strength <- function (net) {
+  md <- strength(net, mode="out")
+    return(md)
+}
+
+#extract node level values
+node.values <- nodeTS(groomEvents, windowsize = days(33), windowshift = days(1), measureFun = out_strength, effortFun=df.scans, directed=TRUE)
+
+#extract graph level values
+graph.values <- graphTS(groomEvents, windowsize = days(33), windowshift = days(1), measureFun = eigen_mean, effortFun=df.scans, directed=TRUE)
+
+#combine graph and node values
+all.values <- cbind(graph.values[,1],node.values)
+names(all.values)[1] <-"eigen" 
+
+
+#Plot the data individual data
+node.values2<-node.values[,-c(2,11,12,13,14,15,20,21,23,24,29,31,32,33,34)]
+df.melt.ind <- reshape2::melt(node.values2, id = c("windowend","windowstart", "nEvents"))
+fig.ind <- ggplot(data=df.melt.ind, aes(x = as.Date(windowstart), y = value,group = variable, color = variable)) + geom_line() + scale_x_date(date_breaks = "2 month",labels = date_format("%m-%Y")) + labs(x = "Date", y="out-grooming behaviour (events/hour)") + theme_classic() + theme(legend.position="none") 
+fig.ind 
+```
+
+Estimate how individual node changes influence network level measure
+```{r}
+#get the data in the right format
+df.melt.all <- reshape2::melt(all.values, id = c("windowend","windowstart", "nEvents","eigen"))
+df.melt.all$dayOfYear <- yday(df.melt.all$windowstart)
+df.melt.all$cumulativeDay <- as.integer(difftime(df.melt.all$windowstart,min(df.melt.all$windowstart), units = "days"))
+
+#fit random intercept-slope model 
+fit.2 <- brm(eigen ~ s(value) + s(dayOfYear, bs="cc") + (1+value|variable), autocor = cor_ar(~cumulativeDay|variable,p=1), data =df.melt.all, iter=1000, cores=4,chains=4, prior = set_prior("normal(0,1)", class="b"))
+
+#fit random intercept model
+fit.2b <- brm(eigen ~ s(value) + s(dayOfYear, bs="cc") + (1|variable), autocor = cor_ar(~cumulativeDay|variable,p=1), data =df.melt.all, iter=1000, cores=4,chains=4, prior = set_prior("normal(0,1)", class="b"))
+
+#compare models using WAIC
+compare_ic(WAIC(fit.2),WAIC(fit.2b))
+```
+
+Model checking
+```{r}
+#Posterior checks
+pp_check(fit.2)
+pp_check(fit.1, type = "stat_grouped", group="variable", stat="mean" )
+pp_check(fit.1, type = "stat_grouped", group="variable", stat="median" )
+pp_check(fit.1, type = "stat_grouped", group="variable", stat="sd" )
+
+#r-suareds
+r2.mar<-bayes_R2(fit.2, incl_autocor = F, re_formula = NA)
+r2.con<-bayes_R2(fit.2, incl_autocor = F)
+
+#marginal means
+p.mar<-plot(marginal_effects(fit.2), ask=F)
+```
+
+Forest plots of individual differences
+```{r}
+ran.model<-ranef(fit.2, probs=c(0.025,0.975))
+
+#get random intercept plot
+df.int<-as.data.frame(ran.model$variable[,,"Intercept"])
+df.int$ID.names <- row.names(df.int)
+names(df.int)[3] <- "low25Per"
+names(df.int)[4] <- "high75Per"
+df.int <- dplyr::arrange(df.int, Estimate) #desc for decreasing
+df.int <- dplyr::mutate(df.int, ID.names = factor(ID.names, ID.names)) #arrange factors
+
+plot.eigen.int<-ggplot(df.int , aes(y=ID.names,x=Estimate)) + geom_point() + geom_errorbarh(aes(xmin=low25Per, xmax=high75Per))+ theme_classic() + geom_vline(xintercept=0, linetype="dashed") + labs(x="Intercept", y="ID")
+plot.eigen.int
+
+
+#get random slope plot
+df.rain<-as.data.frame(ran.model$variable[,,"value"])
+df.rain$ID.names <- row.names(df.rain)
+names(df.rain)[3] <- "low25Per"
+names(df.rain)[4] <- "high75Per"
+df.rain <- dplyr::arrange(df.rain, Estimate) #desc for decreasing
+df.rain <- dplyr::mutate(df.rain, ID.names = factor(ID.names, ID.names)) #arrange factors
+
+plot.str.rain<-ggplot(df.rain , aes(y=ID.names,x=Estimate)) + geom_point() + geom_errorbarh(aes(xmin=low25Per, xmax=high75Per))+ theme_classic() + geom_vline(xintercept=0, linetype="dashed")+ labs(x="strength", y="ID")
+plot.str.rain
+```
+
+Spaghetti plots: network level changes in response to individual changes
+```{r}
+#Create a new dataset target to changes in sis
+npred <- 100
+unique.names <- unique(df.melt.all$variable)
+newdata.full <- data.frame(value=-1, dayOfYear=-1,variable="pris",cumulativeDay=1)
+
+#loop through and create a dataframe for each id
+for(i in 1:length(unique.names)){
+  
+  #create a dataframe for one individual
+  newdata.id <- data.frame(
+    value=seq(min(df.melt.all$value, na.rm = T),max(df.melt.all$value, na.rm = T),length.out = npred), 
+    dayOfYear=-1,
+    variable=rep(unique.names[i],npred),
+    cumulativeDay=1
+  )
+  
+  newdata.full <- rbind(newdata.full, newdata.id)
+  
+}
+newdata.full <- newdata.full[-1,]
+
+#add deviation from mean
+df.sis<-as.data.frame(ran.model$variable[,,"value"], summary=T)
+df.sis$variable <- row.names(df.sis)
+names(df.sis)[1]<-"deviation"
+df.sis$deviation1 <- abs(df.sis$deviation)
+df.sis$deviation2 <- (df.sis$deviation1 - min(df.sis$deviation1) )/ (max(df.sis$deviation1)-min(df.sis$deviation1))
+newdata.full <- dplyr::left_join(newdata.full,df.sis[,-c(2:4) ],by="variable")
+summary(df.sis$deviation)
+
+#Make predictions using this dataset
+df.pred<-predict(fit.2, newdata=newdata.full,summary=T, incl_autocor = F)
+
+#make predictions about the mean
+df.pred.mean<-predict(fit.2, newdata=newdata.id,summary=T, incl_autocor = F, re_formula = NA)
+newdata.mean <- cbind(newdata.id,df.pred.mean)
+names(newdata.mean)[( (ncol(newdata.mean)-1): ncol(newdata.mean) )] <- c("low.ci","up.ci")
+
+library(directlabels)
+#plot out the model predictions
+newdata.full.comb<-cbind(as.data.frame(newdata.full),as.data.frame(df.pred))
+names(newdata.full.comb)[( (ncol(newdata.full.comb)-1): ncol(newdata.full.comb) )] <- c("low.ci","up.ci")
+p<-ggplot(newdata.full.comb, aes(x=value,y=Estimate, group=variable)) +
+  geom_ribbon(aes(ymin = low.ci, ymax = up.ci), fill = "grey90", linetype="blank", alpha=0.2)+
+  geom_line(aes(color=deviation,alpha=deviation2^1), size=1 ) + 
+  scale_colour_gradient2(low="blue", mid="white",high="red")+
+  geom_line(data=newdata.mean, aes(x=value,y=Estimate),size=2, linetype="dashed")+ 
+  geom_ribbon(data=newdata.mean,aes(ymin = low.ci, ymax = up.ci), fill = "grey70", linetype="blank", alpha=0.05)+
+  theme_classic() + #+ ylim(0,2)
+  geom_dl(aes(label = variable, alpha=deviation2^1), method = list(dl.combine("first.points", "last.points"), cex = 0.8)) + theme(legend.position="none")
+p
+
+```
+
+plot both
+```{r}
+cowplot::plot_grid(p.mar$value+theme_classic(),p)
+```
+
+
+
+###5) Individual dependence within the network
+
+setup data matrix
+```{r}
+library(dplyr)
+library(rstan)
+
+out_strength <- function (net) {
+  md <- strength(net, mode="out")
+    return(md)
+}
+
+#extract node level values
+node.values <- nodeTS(groomEvents, windowsize = days(33), windowshift = days(33), measureFun = out_strength, effortFun=df.scans, directed=TRUE)
+
+#remove columns with NAs
+summary(node.values)
+all.values.mat <- as.matrix(node.values[,-c(2,11,12,13,14,15,19,20,21,23,24,26,29,31,32,33,34,35,36,37,38)])
+summary(all.values.mat)
+```
+
+specify the model
+```{r}
+mv_ar1_block <-"
+data {
+  int<lower=0> T; // No. of time periods observed
+  int<lower=0> M; // No. of variables in y_t
+  int<lower=1> P; // Lag order
+  vector[M] Y[T]; // Obs of state variables
+}
+transformed data {
+  vector[M] Y_obs[T-P];
+  for (t in 1:(T-P)) 
+    Y_obs[t] = Y[t + P];
+  
+}
+parameters {
+  cholesky_factor_corr[M] L_corr_noise;
+  vector<lower=0>[M] sd_noise;
+  vector[M] A;
+}
+transformed parameters {
+  matrix[M,M] L_sigma;
+  L_sigma = diag_pre_multiply(sd_noise, L_corr_noise);
+}
+model {
+  vector[M] mus[T-P]; 
+  for (t in 1:(T-P)) {
+    mus[t] = A ;
+    for (p in 1:P) 
+      mus[t] = mus[t] ;
+  }
+  L_corr_noise ~ lkj_corr_cholesky(3.0);
+  sd_noise ~ normal(0,1);
+  A ~ normal(0,1);
+
+  Y_obs ~ multi_normal_cholesky(mus,L_sigma);
+}
+generated quantities {
+  matrix[M,M] Corr;
+  Corr = L_corr_noise * L_corr_noise';
+}
+"
+
+
+mv_ar1_model <- stan_model(model_code=mv_ar1_block)
+
+mv_ar1_fit <- sampling(mv_ar1_model,
+                       data=list(T=nrow(all.values.mat),
+                                 M=ncol(all.values.mat),
+                                 P=1,
+                                 Y=all.values.mat,
+                                 S=diag(ncol(all.values.mat))),
+                       iter=1000, chains=4, cores=4, init="0", control=list(adapt_delta=0.9,max_treedepth=14))
+
+print(mv_ar1_fit, probs = c(0.025,0.975))
+#traceplot(mv_ar1_fit)
+```
+
+Predicted dependence in error around the means
+```{r}
+nodes=17
+
+#get corr values
+post.corr<-as.data.frame(mv_ar1_fit, pars=c("Corr"))
+
+#build array
+corr.array <- array(NA,c(2000,nodes,nodes))
+for(i in 1:nrow(post.corr)){
+  corr.array[i,,]<-( matrix(as.numeric(post.corr[i,]),ncol=nodes,nrow=nodes) )  #
+}
+
+#get mean of each dyad corr
+corr.mat.all <- matrix(0,ncol=nodes,nrow=nodes)
+for(j in 1:nodes){
+  for(k in 1:nodes){
+      corr.mat.all[j,k] <- mean(corr.array[,j,k])
+  }
+}
+
+#take a look
+corr.mat.all
+rethinking::HPDI(corr.mat.all[ corr.mat.all!=1],prob=0.95)
+rethinking::dens(corr.mat.all[ corr.mat.all!=1],prob=0.95)
+
+#get mean and sd of each corr and keep only those that do not contain 0 within their 95%CI
+corr.mat <- matrix(0,ncol=nodes,nrow=nodes)
+for(j in 1:nodes){
+  for(k in 1:nodes){
+    hpdi.obs<-rethinking::HPDI(corr.array[,j,k], prob = 0.95)
+    if( (hpdi.obs[1] <= 0 & hpdi.obs[2] >= 0 )==FALSE   ){
+      corr.mat[j,k] <- mean(corr.array[,j,k])
+    }
+  }
+}
+```
+
+Point estimate veiw
+```{r}
+corr.df.all <- data.frame(mean=-1,ci.low=-1,ci.high=-1, dyad=paste0("1_1")) 
+for(j in 1:nodes){
+  for(k in 1:nodes){
+    hpdi.obs<-rethinking::HPDI(corr.array[,j,k], prob = 0.95)
+      corr.df.all <- rbind(corr.df.all, data.frame(mean=mean(corr.array[,j,k]),ci.low=hpdi.obs[1],ci.high=hpdi.obs[2], dyad=paste0(j,"_",k)  ))
+  }
+}
+corr.df.all<-corr.df.all[-1,]
+ggplot(data=corr.df.all, aes(x=reorder(dyad,mean), y=mean))+ geom_point() + geom_errorbar(data=corr.df.all, aes(ymin=ci.low,ymax=ci.high)) + geom_hline(yintercept = 0, linetype="dashed")+ theme_classic()
+```
+
+Graph view
+```{r}
+#plot the remaining edges after removing those within 95%CI
+gS.no<-graph_from_adjacency_matrix(corr.mat, weighted = T, mode="directed")
+gS.no<-simplify(gS.no)
+e.colours <- ifelse(E(gS.no)$weight>0.25, "green","grey70")
+plot(gS.no, edge.width=2*(E(gS.no)$weight+1), edge.color=e.colours, arrow.color="grey90", layout=layout_with_dh)
+
+ecount(gS.no)
+```
+
