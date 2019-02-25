@@ -4,7 +4,7 @@
 #' This function will plot the output from the graphTS function
 #' @param data Output from the graphTS function.
 #' @param plotCI Whether to plot the confidence intervals (Default: TRUE)
-#' @importFrom ggplot2 ggplot
+#' @import ggplot2
 #' @export
 #'
 #'
