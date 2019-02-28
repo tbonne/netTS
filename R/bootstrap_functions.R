@@ -207,7 +207,7 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
     graph.values<-graphTS(data, windowsize = windowsize_seq, windowshift= windowshift, measureFun=measureFun ,effortFun=NULL, permutationFun=perm.events,directed=directed, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=SRI)
 
     #record
-    df.var<-rbind(df.var, data.frame(windowsize=as.numeric(as.duration(windowsize_seq),"days"), var=var(graph.values[,1])) )
+    df.var<-rbind(df.var, data.frame(windowsize=as.numeric(as.duration(windowsize_seq),"days"), var=var(graph.values[,1], na.rm = T)) )
 
     #update window size tested
     windowsize_seq = windowsize_seq + by
