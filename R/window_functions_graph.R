@@ -507,3 +507,61 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
 }
 
 
+
+#' Extract effort from an events dataframe
+#'
+#' This function will estimate the amount of sampling time within a window using the min and max sampling times for each day.
+#' @param data A dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
+#' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
+#' @export
+#' @importFrom lubridate ymd
+#'
+#'
+extract_effort_time<-function(data=df.nn, windowsize=days(30), windowshift=days(1), effortFun=effort.time){
+
+  #intialize times
+  windowstart <- min(data[,3])
+  windowend=windowstart+windowsize
+  if(windowend>max(data[,3]))print("warnning: the window size is set larger than the observed data.")
+
+  #store measures
+  effort.measure <- data.frame(totalTime=-1,nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+
+  #for every window calculate effort
+  while (windowstart + windowsize<=max(data[,3])) {
+
+    #subset the data
+    df.window<-create.window(data, windowstart, windowend)
+    Observation.Events <- nrow(df.window)
+
+    #calculate effort
+    if(nrow(df.window)>0){
+      if(is.data.frame(effortFun)){
+        effort = sum(effortFun[(effortFun[,1]>=windowstart & effortFun[,1]<windowend), ][,2])
+      }else if(is.null(effortFun)==FALSE){
+        effort = effortFun(df.window)
+      } else {
+        effort = 1
+      }
+    } else {
+      effort=0
+    }
+
+    #store effort
+    effort.measure <- rbind(effort.measure, data.frame(totalTime=effort, nEvents=Observation.Events,windowstart=windowstart, windowend=windowend ))
+
+    #move the window
+    windowend = windowend + windowshift
+    windowstart = windowstart + windowshift
+
+  }
+
+  effort.measure<-effort.measure[-1,]
+  return(effort.measure)
+
+}
+
+
+
+
