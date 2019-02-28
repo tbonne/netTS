@@ -3,7 +3,7 @@
 #' Bootstrap convergence check
 #'
 #' This function will estimate the convergence of the chosen network measure using bootstrapped samples of the data.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
@@ -95,7 +95,7 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 #' Bootstrap convergence check for network level measures
 #'
 #' This function will estimate the convergence of the chosen network measure using bootstrapped samples of the data.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
@@ -181,7 +181,7 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 #' Variance by window size check
 #'
 #' This function will estimate the variance in the time series based on the window size.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize_min The min size of windowsize to test.
 #' @param windowsize_max The max size of windowsize to test.
 #' @param by The resolution at which to test window sizes between the min and the max window sizes
@@ -222,7 +222,7 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
 #' Convergence check
 #'
 #' This function will estimate the convergence of the chosen network measure using random subsets of the data.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
