@@ -19,6 +19,7 @@
 #'
 #'
 effort.time <- function(df.window){
+  names(df.window)[3] <- c("date")
   df.window$day <- time_length(lubridate::interval(lubridate::date(min(df.window$date)),lubridate::date(df.window$date)  ),"days")
   df.window$time <- time(df.window$date)
   hours.min <- df.window %>% dplyr::group_by(day) %>% dplyr::summarise(min=min(lubridate::hour(date) + (lubridate::minute(date) )/60 ))
