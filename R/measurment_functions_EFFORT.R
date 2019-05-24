@@ -19,7 +19,7 @@
 #'
 #'
 effort.time <- function(df.window){
-  df.window$day <- as.numeric(as.duration(lubridate::interval(lubridate::date(min(df.window$date)),lubridate::date(df.window$date)  )),"days")
+  df.window$day <- time_length(lubridate::interval(lubridate::date(min(df.window$date)),lubridate::date(df.window$date)  ),"days")
   df.window$time <- time(df.window$date)
   hours.min <- df.window %>% dplyr::group_by(day) %>% dplyr::summarise(min=min(lubridate::hour(date) + (lubridate::minute(date) )/60 ))
   hours.max <- df.window %>% dplyr::group_by(day) %>% dplyr::summarise(max=max(lubridate::hour(date) + (lubridate::minute(date) )/60 ))
@@ -37,4 +37,30 @@ effort.scan <- function(df.window){
   if(is.null(df.window$sampleID) )print("Please rename the column containing the sample IDs: sampleID")
   total.samples <- length(unique(df.window$sampleID))
   return(total.samples)
+}
+
+
+#' Effort calculated using Min/Max time per day
+#'
+#' This function will estimate the total time spent sampling, using the min and max observed values per day
+#' @param df.window An events data frame with a column containing the date and time.
+#' @importFrom dplyr group_by summarise
+#' @importFrom lubridate minute hour date interval as.duration day
+#' @importFrom stats time
+#' @export
+#'
+#'
+effort.time.DT <- function(df.window){
+
+  df.window[,.(min(date)),by="ID" ][order(ID)]
+  df.window[,.(.N),by="ID" ][order(N)]
+
+  df.window[,lapply(.SD,min),by=c(anytime::anydate(as.character(df.window$date) )) ,.SDcols=date]
+
+
+  df.window$day <- as.numeric(as.duration(lubridate::interval(lubridate::date(min(df.window$date)),lubridate::date(df.window$date)  )),"days")
+  df.window$time <- time(df.window$date)
+  hours.min <- df.window %>% dplyr::group_by(day) %>% dplyr::summarise(min=min(lubridate::hour(date) + (lubridate::minute(date) )/60 ))
+  hours.max <- df.window %>% dplyr::group_by(day) %>% dplyr::summarise(max=max(lubridate::hour(date) + (lubridate::minute(date) )/60 ))
+  return(sum(hours.max-hours.min))
 }
