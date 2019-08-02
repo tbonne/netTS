@@ -227,14 +227,14 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param measureFun The function used to take network measurements.
-#' @param random.sample.size The maximum number of random samples to remove when recalculating the network metric.
+#' @param max.subsample.size The maximum number of samples to remove when recalculating the network metric.
 #' @param SRI Wether to use the simple ratio index or not (Default=FALSE).
 #' @importFrom stats lm complete.cases coef sigma
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
-convergence.check.value<-function(data, windowsize, windowshift, directed = FALSE, measureFun,random.sample.size=30, SRI=FALSE){
+convergence.check.value<-function(data, windowsize, windowshift, directed = FALSE, measureFun,max.subsample.size=30, SRI=FALSE){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -255,7 +255,7 @@ convergence.check.value<-function(data, windowsize, windowshift, directed = FALS
     if(Observation.Events>1){
 
       #Number of
-      for(j in seq(max(Observation.Events-random.sample.size,1),Observation.Events,by=1)){
+      for(j in seq(max(Observation.Events-max.subsample.size,1),Observation.Events,by=1)){
 
         #subset window
         df.sub<-df.window[sample(nrow(df.window),j),]
