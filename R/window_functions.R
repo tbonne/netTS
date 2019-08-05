@@ -35,8 +35,7 @@ create.a.network<-function(data, directed = FALSE, SRI=FALSE, effort=1){
 #' This function will generate an edge list from an events dataframe
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
 #' @param effort The number of scans, or measure of sampling effort (e.g., hours sampling). The default of 1 assumes equal sampling effort througout.
-#' @importFrom dplyr group_by
-#' @importFrom dplyr summarise
+#' @import data.table
 #' @export
 #'
 create.an.edgeList<-function(data,effort=1){
@@ -44,7 +43,7 @@ create.an.edgeList<-function(data,effort=1){
   #create a network and add it to the list
   names(data)[1:2]<-c("from","to")
   if(is.null(data$weight))data$weight=1
-  elist<-data %>% dplyr::group_by(.dots=c("from","to")) %>% summarise(sum(weight)/effort)
+  elist <- as.data.frame(as.data.table(data)[,.(sum(weight)/effort), by=list(from,to)])
   names(elist)<-c("from","to","weight")
 
   return(elist)
