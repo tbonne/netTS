@@ -5,10 +5,11 @@
 \title{Convergence check}
 \usage{
 convergence.check.value(data, windowsize, windowshift, directed = FALSE,
-  measureFun, random.sample.size = 30, SRI = FALSE)
+  measureFun, max.subsample.size = 30, SRI = FALSE, n.boot = 100,
+  probs = c(0.025, 0.975))
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowsize}{The size of each window in which to generate a network.}
 
@@ -18,9 +19,13 @@ convergence.check.value(data, windowsize, windowshift, directed = FALSE,
 
 \item{measureFun}{The function used to take network measurements.}
 
-\item{random.sample.size}{The maximum number of random samples to remove when recalculating the network metric.}
+\item{max.subsample.size}{The maximum number of samples to remove when recalculating the network metric.}
 
 \item{SRI}{Wether to use the simple ratio index or not (Default=FALSE).}
+
+\item{n.boot}{Number of times to repeate the subsample procedure (i.e., bootstrap estimate of slope)}
+
+\item{probs}{The probablility interval to calculate the confidence intervals.}
 }
 \description{
 This function will estimate the convergence of the chosen network measure using random subsets of the data.

@@ -229,12 +229,15 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
 #' @param measureFun The function used to take network measurements.
 #' @param max.subsample.size The maximum number of samples to remove when recalculating the network metric.
 #' @param SRI Wether to use the simple ratio index or not (Default=FALSE).
+#' @param n.boot Number of times to repeate the subsample procedure (i.e., bootstrap estimate of slope)
+#' @param probs The probablility interval to calculate the confidence intervals.
 #' @importFrom stats lm complete.cases coef sigma
 #' @importFrom igraph set_graph_attr
+#' @importFrom bootstrap bcanon
 #' @export
 #'
 #'
-convergence.check.value<-function(data, windowsize, windowshift, directed = FALSE, measureFun,max.subsample.size=30, SRI=FALSE){
+convergence.check.value<-function(data, windowsize, windowshift, directed = FALSE, measureFun,max.subsample.size=30, SRI=FALSE, n.boot=100, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -242,55 +245,77 @@ convergence.check.value<-function(data, windowsize, windowshift, directed = FALS
   if(windowend>max(data[,3]))print("warnning: the window size is set larger than the observed data.")
 
   #for every window generate a network
-  conv.values <- data.frame(slope=-1, sd=-1, windowstart=as.Date("2001-12-30"),windowend=as.Date("2001-12-30"))
+  conv.values <- data.frame(slope=-1, CI.low=-1, CI.high=-1, windowstart=as.Date("2001-12-30"),windowend=as.Date("2001-12-30"))
   while (windowstart + windowsize<=max(data[,3])) {
 
     #subset the data
     df.window<-create.window(data, windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
-    #store network measures
-    net.measures <- data.frame(value=-1,sample=-1)
+    #store the slope values
+    estimated.slopes <- vector()
 
-    if(Observation.Events>1){
+    #bootstrap samples to calculate mean and CI for slope
+    for(k in 1:n.boot){
 
-      #Number of
-      for(j in seq(max(Observation.Events-max.subsample.size,1),Observation.Events,by=1)){
+      #store network measures
+      net.measures <- data.frame(value=-1,sample=-1)
 
-        #subset window
-        df.sub<-df.window[sample(nrow(df.window),j),]
+      if(Observation.Events>1){
 
-        #create a network and add it to the list
-        g <- create.a.network(df.sub, directed = directed, SRI)
-        g <- set_graph_attr(g, "nEvents", Observation.Events)
-        g <- set_graph_attr(g, "windowstart", windowstart)
-        g <- set_graph_attr(g, "windowend", windowend)
+        #Number of
+        for(j in seq(max(Observation.Events-max.subsample.size,1),Observation.Events,by=1)){
 
-        #take measure
-        net.measures <- rbind(net.measures,data.frame(value=measureFun(g),sample=j))
+          #subset window
+          df.sub<-df.window[sample(nrow(df.window),j, replace = FALSE),]
+
+          #create a network and add it to the list
+          g <- create.a.network(df.sub, directed = directed, SRI)
+          g <- set_graph_attr(g, "nEvents", Observation.Events)
+          g <- set_graph_attr(g, "windowstart", windowstart)
+          g <- set_graph_attr(g, "windowend", windowend)
+
+          #take measure
+          net.measures <- rbind(net.measures,data.frame(value=measureFun(g),sample=j))
+        }
+
+      } else {
+        net.measures <- rbind(net.measures,data.frame(value=NA,sample=0))
       }
 
-    } else {
-      net.measures <- rbind(net.measures,data.frame(value=NA,sample=0))
+      #clean up the data
+      net.measures<-net.measures[-1,]
+      net.measures<-net.measures[complete.cases(net.measures),]
+
+      #calculate slope of the line (effect of subsampling on the network measure)
+      if(nrow(net.measures)>0){
+        estimated.slopes[length(estimated.slopes)+1] <- coef(lm(value~sample, data = net.measures))["sample"]
+      } else {
+        estimated.slopes[length(estimated.slopes)+1] <- NA
+      }
+
     }
 
-    net.measures<-net.measures[-1,]
-    net.measures<-net.measures[complete.cases(net.measures),]
-    #calculate convergence (right now just using the slope...)
+    #calculate and store estiamtes from the bootstrapped sample
+    if(abs(max(estimated.slopes, na.rm = T) - min(estimated.slopes, na.rm = T)) < .Machine$double.eps ^ 0.5){
 
-    if(nrow(net.measures)>0){
-      conv.values <- rbind(conv.values,data.frame( slope = coef(lm(value~sample, data = net.measures))["sample"], sd=sigma(lm(value~sample, data = net.measures)), windowstart=windowstart,windowend=windowend))
-    } else {
-      conv.values <- rbind(conv.values,data.frame( slope = NA, sd=NA, windowstart=windowstart,windowend=windowend))
+      print("Note: no range in estimated network measure produced by sub-sampling")
+      conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), lci = mean(estimated.slopes),uci = mean(estimated.slopes),windowstart=windowstart,windowend=windowend ))
+
+    } else{
+
+      bca = bcanon(estimated.slopes,n.boot,mean,alpha=probs)
+      conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = bca$conf[1,2],CI.high =  bca$conf[2,2],windowstart=windowstart,windowend=windowend ))
+
     }
 
     #move the window
     windowend = windowend + windowshift
     windowstart = windowstart + windowshift
 
-
   }
 
+  #remove first row used for intialization
   conv.values<-conv.values[-1,]
 
   return(conv.values)

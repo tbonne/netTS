@@ -9,7 +9,7 @@ convergence.check.boot.graph(data, windowsize = days(30),
   boot.samples = 100, SRI = FALSE, probs = c(0.025, 0.975))
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowsize}{The size of each window in which to generate a network.}
 
