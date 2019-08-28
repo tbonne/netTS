@@ -75,3 +75,26 @@ dyadTS_plot <- function(data=output.net.dir, legend=FALSE){
 
 
 }
+
+
+#' Plot function for windowsize check outputs
+#'
+#' This function will plot the output from the window.check function
+#' @param data Output from the window.check function.
+#' @param legend Whether to include the legend (Default: TRUE)
+#' @importFrom ggplot2 ggplot
+#' @importFrom reshape2 melt
+#' @export
+#'
+#'
+window.check.plot <- function(data, legend=TRUE){
+
+  if(legend==TRUE){
+    g <- ggplot(data=data, aes(x = as.Date(windowstart), y = mean,group = factor(fracData), color = factor(fracData))) + geom_line() + geom_ribbon(aes(ymin=CI.low,ymax=CI.high,fill=factor(fracData)),color=NA,  alpha=0.05)  + theme_classic() + xlab("windowstart") + ylab("Similarity to observed network")
+  } else {
+    g <- ggplot(data=data, aes(x = as.Date(windowstart), y = mean,group = factor(fracData), color = factor(fracData))) + geom_line() + geom_ribbon(aes(ymin=CI.low,ymax=CI.high,fill=factor(fracData)),color=NA,  alpha=0.05) + theme_classic() + xlab("windowstart") + ylab("Similarity to observed network") + theme(legend.position="none")
+  }
+
+  return(g)
+
+}
