@@ -188,7 +188,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL){
 
   #run the processes
-  try(finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("effortFun","window.net","create.window", "create.a.network","window.net.para"), .packages = c("igraph", "dplyr") ) %dopar%
+  try(finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("effortFun","create.window", "create.a.network","window.net.para"), .packages = c("igraph", "dplyr") ) %dopar%
 
         net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, effortFun=effortFun)
 
