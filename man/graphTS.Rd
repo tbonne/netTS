@@ -11,7 +11,7 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
   SRI = FALSE)
 }
 \arguments{
-\item{data}{A dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{A dataframe with relational data in the first two rows, and a time stamp in the third row. An optional column with the name weight can be added if there is a duration or magnitude for each interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowsize}{The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.}
 

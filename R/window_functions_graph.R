@@ -3,7 +3,7 @@
 #' graphTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
-#' @param data A dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two rows, and a time stamp in the third row. An optional column with the name weight can be added if there is a duration or magnitude for each interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.
@@ -187,14 +187,16 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 #'
 net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL){
 
+  #finalMatrix <- NA
+
   #run the processes
-  try(finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("effortFun","create.window", "create.a.network","net.window.para"), .packages = c("igraph", "dplyr") ) %dopar%
+  finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("effortFun","create.window", "create.a.network","net.window.para"), .packages = c("igraph",  "dplyr") ) %dopar%
 
         net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, effortFun=effortFun)
 
-  )
 
   return(finalMatrix)
+
 }
 
 
@@ -224,8 +226,11 @@ net.window.para<-function(data, windowstart, windowend,directed=FALSE, effortFun
   }
 
   #create a network and add it to the list
-  names(data)<-c("to","from","weight","date")
+  names(data)[1:2]<-c("from","to")
+  if(is.null(data$weight))data$weight=1
+  #elist <- as.data.frame(as.data.table(data)[,.(sum(weight)/effort), by=list(from,to)])
   elist<-data %>% dplyr::group_by(.dots=c("to","from")) %>% summarise(sum(weight)/effort)
+  names(elist)<-c("from","to","weight")
   g <- graph_from_data_frame(elist, directed = directed, vertices = NULL)
   if(is.simple(g)==FALSE)g<-simplify(g, edge.attr.comb=list(weight="sum"))
 
