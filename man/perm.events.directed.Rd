@@ -5,7 +5,7 @@
 \title{Perform permutation on the events dataframe, maintaining in/out degree of nodes}
 \usage{
 perm.events.directed(data, measureFun, directed = FALSE, nperm = 1000,
-  probs = 0.95, SRI, effort = 1)
+  probs = 0.95, SRI = FALSE, effortFun = NULL, effortData = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -20,7 +20,9 @@ perm.events.directed(data, measureFun, directed = FALSE, nperm = 1000,
 
 \item{SRI}{Wether to use the simple ratio index (Default=FALSE).}
 
-\item{effort}{This is a measure of sampling effort}
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort.}
 }
 \description{
 This function will permute a network by randomly switching individuals between events, keeping the oringinal order of the interactions (e.g., individuals in the from or to columns are permuted, but no permutations between from and to columns).

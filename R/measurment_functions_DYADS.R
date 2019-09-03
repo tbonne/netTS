@@ -35,36 +35,6 @@ dyad_weight <- function(g){
 }
 
 
-#' dyad_sum function
-#'
-#' This function will take a graph and take dyad level sum of weights.
-#' @param g graph to extract dyad measures from
-#' @export
-#' @importFrom igraph E is.directed which_mutual ends get.edgelist
-#' @importFrom plyr rbind.fill
-#'
-dyad_sum <- function(g){
-
-  sum.vector <- vector()
-
-  for(i in 1:length(E(g))){
-
-    sum.value=E(g)[i]$weight
-
-    #check to see if there is a reciprical edge
-    if(is.directed(g) & which_mutual(g,E(g)[i])){
-      sum.value = sum( E(g)[ends(g,E(g)[i])[,2] %--% ends(g,E(g)[i])[,1]]$weight)
-    }
-
-    sum.vector[length(sum.vector)+1] <- sum.value
-  }
-
-  names(sum.vector)<-paste(get.edgelist(g)[,1],get.edgelist(g)[,2],sep="_")
-
-  return (sum.vector)
-
-}
-
 #' dyad_mean function
 #'
 #' This function will take a graph and take dyad level mean weight.

@@ -5,8 +5,9 @@
 \title{nodeTS function}
 \usage{
 nodeTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = degree, effortFun = NULL, directed = FALSE,
-  lagged = FALSE, lag = 1, firstNet = FALSE, cores = 1)
+  measureFun = degree, effortFun = NULL, effortData = NULL,
+  directed = FALSE, lagged = FALSE, lag = 1, firstNet = FALSE,
+  cores = 1)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
@@ -18,6 +19,8 @@ nodeTS(data, windowsize = days(30), windowshift = days(1),
 \item{measureFun}{This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.}
 
 \item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort.}
 
 \item{directed}{Whether the events are directed or no: true or false.}
 

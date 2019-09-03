@@ -3,11 +3,12 @@
 #' graphTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
-#' @param data A dataframe with relational data in the first two rows, and a time stamp in the third row. An optional column with the name weight can be added if there is a duration or magnitude for each interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third columns An optional column with the name weight can be added if there is a duration or magnitude for each interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort.
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
@@ -24,7 +25,7 @@
 #' ts.out<-graphTS(data=groomEvents)
 #'
 #'
-graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
+graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL,effortData=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
 
   #check for missing data
   if(sum(is.na(data)) > 0){
@@ -34,9 +35,9 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, SRI=SRI, effortFun = effortFun)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed=directed, cores = 2, SRI=SRI, effortFun = effortFun, effortData=effortData)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed, SRI=SRI, effortFun = effortFun)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed=directed, SRI=SRI, effortFun = effortFun, effortData=effortData)
   }
 
   #extract measures from the network list
@@ -66,11 +67,12 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param SRI Whether to use the simple ratio index (Default=FALSE).
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort. The first column should contain timedate values.
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
-extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=FALSE, effortFun=NULL){
+extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=FALSE, effortFun=NULL, effortData=NULL){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -85,32 +87,39 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
     df.window<-create.window(data, windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
-    #calculate effort
-    if(is.data.frame(effortFun)){
-      effort = sum(effortFun[(effortFun[,1]>=windowstart & effortFun[,1]<windowend), ][,2])
-    }else if(is.null(effortFun)==FALSE){
-      effort = effortFun(df.window)
-    } else {
-      effort = 1
-    }
-
-    #create a network and add it to the list
-    if(Observation.Events>0){
-      g <- create.a.network(df.window, directed = directed, SRI, effort=effort)
+    #calculate sampling effort
+    if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
+      g = effortFun(df.window, directed = directed)
       g <- set_graph_attr(g, "nEvents", Observation.Events)
       g <- set_graph_attr(g, "windowstart", windowstart )
       g <- set_graph_attr(g, "windowend", windowend)
-      g <- set_graph_attr(g, "effort", effort)
       netlist[[length(netlist)+1]] <- g
-    } else {
-      g <- make_empty_graph(n=0, directed = directed)
+
+    }else if(is.null(effortFun)==FALSE & is.null(effortData)==FALSE ){ #there is an effort function and it requires some external data
+      effortData.sub <- effortData[effortData[,1]>=windowstart & effortData[,1]<windowend,]
+      g = effortFun(df.window, effortData.sub, directed = directed)
       g <- set_graph_attr(g, "nEvents", Observation.Events)
       g <- set_graph_attr(g, "windowstart", windowstart )
       g <- set_graph_attr(g, "windowend", windowend)
-      g <- set_graph_attr(g, "effort", effort)
       netlist[[length(netlist)+1]] <- g
-    }
 
+    } else { #there is no effort function
+
+      if(Observation.Events>0){
+        g <- create.a.network(df.window, directed = directed, SRI)
+        g <- set_graph_attr(g, "nEvents", Observation.Events)
+        g <- set_graph_attr(g, "windowstart", windowstart )
+        g <- set_graph_attr(g, "windowend", windowend)
+        netlist[[length(netlist)+1]] <- g
+
+      } else {
+        g <- make_empty_graph(n=0, directed = directed)
+        g <- set_graph_attr(g, "nEvents", Observation.Events)
+        g <- set_graph_attr(g, "windowstart", windowstart )
+        g <- set_graph_attr(g, "windowend", windowend)
+        netlist[[length(netlist)+1]] <- g
+      }
+    }
 
     #move the window
     windowend = windowend + windowshift
@@ -133,12 +142,14 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
 #' @param cores How many cores should be used.
 #' @param SRI Wether to use the simple ratio index (Default=FALSE).
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort. The first column should contain timedate values.
 #' @importFrom parallel makeCluster
+#' @importFrom doParallel registerDoParallel
 #' @importFrom igraph set_graph_attr
 #' @export
 #'
 #'
-extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2, SRI, effortFun=NULL){
+extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2, SRI, effortFun=NULL, effortData=NULL){
 
   #SRI not implimented yet
   if(SRI==TRUE)print("Warning SRI not yet available for parallel extraction of networks. Using SRI == FALSE.")
@@ -163,7 +174,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
   registerDoParallel(cl)
 
   #generate the networks
-  final.net.list<-net.para(data, window.ranges, directed, effortFun=effortFun)
+  final.net.list<-net.para(data, window.ranges, directed, effortFun=effortFun, effortData=effortData)
 
   #stop cluster
   parallel::stopCluster(cl)
@@ -185,14 +196,14 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 #' @export
 #'
 #'
-net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL){
+net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL, effortData=NULL){
 
   #finalMatrix <- NA
 
   #run the processes
-  finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("effortFun","create.window", "create.a.network","net.window.para"), .packages = c("igraph",  "dplyr") ) %dopar%
+  finalMatrix <- foreach(i=1:nrow(window.ranges), .export=c("create.window", "create.a.network","net.window.para"), .packages = c("igraph",  "dplyr") ) %dopar%
 
-        net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, effortFun=effortFun)
+        net.window.para(data,windowstart = window.ranges[i,1], windowend = window.ranges[i,2], directed, effortFun=effortFun, effortData=effortData)
 
 
   return(finalMatrix)
@@ -212,33 +223,42 @@ net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL){
 #' @export
 #'
 #'
-net.window.para<-function(data, windowstart, windowend,directed=FALSE, effortFun=NULL){
+net.window.para<-function(data, windowstart, windowend,directed=FALSE, effortFun=NULL, effortData=NULL){
 
   #subset the data
   df.window <- data[data[[3]] >= windowstart & data[[3]] < windowend,]
   Observation.Events <- nrow(df.window)
 
-  #calculate effort
-  if(is.null(effortFun)==FALSE){
-    effort = effortFun(df.window)
-  } else {
-    effort = 1
+  #calculate sampling effort
+  if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE ){ #there is an effort function and it requires no external data
+    g = effortFun(df.window, directed = directed)
+    g <- igraph::set_graph_attr(g, "nEvents", Observation.Events)
+    g <- igraph::set_graph_attr(g, "windowstart", windowstart)
+    g <- igraph::set_graph_attr(g, "windowend", windowend)
+
+  }else if(is.null(effortFun)==FALSE & is.null(effortData)==FALSE){ #there is an effort function and it requires some external data
+    effortData.sub <- effortData[effortData[,1]>=windowstart & effortData[,1]<windowend,]
+    g = effortFun(df.window, effortData.sub, directed = directed)
+    g <- igraph::set_graph_attr(g, "nEvents", Observation.Events)
+    g <- igraph::set_graph_attr(g, "windowstart", windowstart)
+    g <- igraph::set_graph_attr(g, "windowend", windowend)
+
+  } else { #there is no effort function
+
+    #create a network and add it to the list
+    names(data)[1:2]<-c("from","to")
+    if(is.null(data$weight))data$weight=1
+    #elist <- as.data.frame(as.data.table(data)[,.(sum(weight)/effort), by=list(from,to)])
+    elist<-data %>% dplyr::group_by(.dots=c("to","from")) %>% summarise(sum(weight))
+    names(elist)<-c("from","to","weight")
+    g <- graph_from_data_frame(elist, directed = directed, vertices = NULL)
+    if(is.simple(g)==FALSE)g<-simplify(g, edge.attr.comb=list(weight="sum"))
+
+    #add attributes
+    g <- igraph::set_graph_attr(g, "nEvents", Observation.Events)
+    g <- igraph::set_graph_attr(g, "windowstart", windowstart)
+    g <- igraph::set_graph_attr(g, "windowend", windowend)
   }
-
-  #create a network and add it to the list
-  names(data)[1:2]<-c("from","to")
-  if(is.null(data$weight))data$weight=1
-  #elist <- as.data.frame(as.data.table(data)[,.(sum(weight)/effort), by=list(from,to)])
-  elist<-data %>% dplyr::group_by(.dots=c("to","from")) %>% summarise(sum(weight)/effort)
-  names(elist)<-c("from","to","weight")
-  g <- graph_from_data_frame(elist, directed = directed, vertices = NULL)
-  if(is.simple(g)==FALSE)g<-simplify(g, edge.attr.comb=list(weight="sum"))
-
-  #add attributes
-  g <- igraph::set_graph_attr(g, "nEvents", Observation.Events)
-  g <- igraph::set_graph_attr(g, "windowstart", windowstart)
-  g <- igraph::set_graph_attr(g, "windowend", windowend)
-  g <- igraph::set_graph_attr(g, "effort", effort)
 
   return(g)
 
@@ -467,7 +487,7 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet=FA
 #' @export
 #'
 #'
-permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, probs=0.95, nperm=1000, SRI=FALSE,graphlist=NULL, permutationFun=perm.events){
+permutation.graph.values<-function(data, windowsize, windowshift, directed = FALSE,measureFun, effortFun=NULL, effortData=NULL, probs=0.95, nperm=1000, SRI=FALSE,graphlist=NULL, permutationFun=perm.events){
 
   print("perm")
 
@@ -490,7 +510,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     Observation.Events <- nrow(df.window)
 
     #perform permutations
-    perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, probs=probs,nperm= nperm, SRI=SRI, effort= graph_attr(graphlist[[i]],"effort") )
+    perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)
 
     #record the high and low estimates
     perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]

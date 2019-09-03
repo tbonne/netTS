@@ -5,7 +5,7 @@
 \title{Extract networks from a moving window}
 \usage{
 extract_networks(data, windowsize, windowshift, directed = FALSE,
-  SRI = FALSE, effortFun = NULL)
+  SRI = FALSE, effortFun = NULL, effortData = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -19,6 +19,8 @@ extract_networks(data, windowsize, windowshift, directed = FALSE,
 \item{SRI}{Whether to use the simple ratio index (Default=FALSE).}
 
 \item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort. The first column should contain timedate values.}
 }
 \description{
 This function will create a time series of networks from a dataframe with relational events and a time stamp.

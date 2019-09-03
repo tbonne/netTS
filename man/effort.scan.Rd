@@ -2,13 +2,15 @@
 % Please edit documentation in R/measurment_functions_EFFORT.R
 \name{effort.scan}
 \alias{effort.scan}
-\title{Unique sampeling IDs}
+\title{Unique sampling IDs}
 \usage{
-effort.scan(df.window)
+effort.scan(df.window, directed = FALSE)
 }
 \arguments{
-\item{df.window}{An events data frame with a column (sampleID) containing a unique id for every sampling event (i.e., group scan in a gambit of the group sampling procedure).}
+\item{df.window}{The events data frame with interactions.}
+
+\item{directed}{Whether a directed network should be constructed (Default=FALSE).}
 }
 \description{
-This function will estimate the total sampling, using a count of the time a sample was performed
+This function will estimate the total sampling, using a count of the time a sample was performed. It will return a network with edges corrected by the number of scans.
 }

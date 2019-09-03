@@ -5,7 +5,8 @@
 \title{Perform edge weight permutations}
 \usage{
 perm.edge.weights(data, measureFun, directed = FALSE, nperm = 1000,
-  probs = 0.95, SRI = FALSE, effort = 1)
+  probs = c(0.025, 0.975), SRI = FALSE, effortFun = NULL,
+  effortData = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -20,7 +21,9 @@ perm.edge.weights(data, measureFun, directed = FALSE, nperm = 1000,
 
 \item{SRI}{Wether to use the simple ratio index (Default=FALSE).}
 
-\item{effort}{This is a measure of sampling effort}
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort.}
 }
 \description{
 This function will permute a network by randomly switching weights between edges.

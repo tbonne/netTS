@@ -7,14 +7,20 @@
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param SRI Wether to use the simple ratio index (Default=FALSE).
-#' @param effort This is a measure of sampling effort
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort.
 #' @importFrom stats quantile
 #' @export
 #'
 #'
-perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI, effort=1){
+perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL, effortData=NULL){
 
+  #vector to store values
   Perm.measure<-vector()
+
+  #force columns to be character
+  data[,1]<- as.character(data[,1])
+  data[,2]<- as.character(data[,2])
 
   for(i in 1:nperm){
 
@@ -50,7 +56,17 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
     }
 
     #Create graph in order to get the measure
-    Perm.network <- create.a.network(data, directed, SRI = SRI, effort=effort)
+    if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
+      Perm.network = effortFun(data, directed = directed)
+
+    }else if(is.null(effortFun)==FALSE & is.null(effortData)==FALSE ){ #there is an effort function and it requires some external data
+      effortData.sub <- effortData[effortData[,1]>=windowstart & effortData[,1]<windowend,]
+      Perm.network = effortFun(data, effortData.sub, directed = directed)
+
+    } else { #there is no effort function
+      Perm.network <- create.a.network(data, directed = directed, SRI = SRI)
+    }
+
 
     # Get measure
     Perm.measure[length(Perm.measure)+1]<- measureFun(Perm.network)
@@ -58,6 +74,7 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
   }
 
   probs.left<-1-probs
+
   return(quantile(Perm.measure, probs = c( (0+probs.left/2), (1-probs.left/2) ), na.rm=T))
 }
 
@@ -73,12 +90,13 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param SRI Wether to use the simple ratio index (Default=FALSE).
-#' @param effort This is a measure of sampling effort
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort.
 #' @importFrom stats quantile runif
 #' @export
 #'
 #'
-perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI, effort=1){
+perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL, effortData=NULL){
 
   net.list <- list(create.a.network(data, directed,SRI=SRI))
   Perm.measure<-vector()
@@ -139,7 +157,16 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
     }
 
     #Create graph in order to get the measure
-    Perm.network <- create.a.network(NewData, directed, SRI = SRI, effort=effort)
+    if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
+      Perm.network = effortFun(data, directed = directed)
+
+    }else if(is.null(effortFun)==FALSE & is.null(effortData)==FALSE ){ #there is an effort function and it requires some external data
+      effortData.sub <- effortData[effortData[,1]>=windowstart & effortData[,1]<windowend,]
+      Perm.network = effortFun(data, effortData.sub, directed = directed)
+
+    } else { #there is no effort function
+      Perm.network <- create.a.network(data, directed = directed, SRI = SRI)
+    }
 
     # Get measure
     Perm.measure[length(Perm.measure)+1]<- measureFun(Perm.network)
@@ -160,15 +187,27 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param SRI Wether to use the simple ratio index (Default=FALSE).
-#' @param effort This is a measure of sampling effort
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort.
 #' @importFrom igraph E
 #' @importFrom stats quantile
 #' @export
 #'
 #'
-perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effort=1){
+perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=c(0.025,0.975), SRI=FALSE, effortFun=NULL,effortData=NULL){
 
-  net.original <- create.a.network(data, directed,SRI=SRI, effort=effort)
+  #Create graph in order to get the measure
+  if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
+    net.original = effortFun(data, directed = directed)
+
+  }else if(is.null(effortFun)==FALSE & is.null(effortData)==FALSE ){ #there is an effort function and it requires some external data
+    effortData.sub <- effortData[effortData[,1]>=windowstart & effortData[,1]<windowend,]
+    net.original = effortFun(data, effortData.sub, directed = directed)
+
+  } else { #there is no effort function
+    net.original <- create.a.network(data, directed = directed, SRI = SRI)
+  }
+
   Perm.measure<-vector()
 
   for(i in 1:nperm){
@@ -183,7 +222,7 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
   }
 
   probs.left<-1-probs
-  return(quantile(Perm.measure, probs = c( (0+probs.left/2), (1-probs.left/2) ), na.rm=T))
+  return(quantile(Perm.measure, probs = probs , na.rm=T))
 
 }
 
@@ -197,15 +236,27 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
 #' @param nperm Number of permutations to perform before extracting network measures.
 #' @param probs numeric vector of probabilities with values in [0,1].
 #' @param SRI Wether to use the simple ratio index (Default=FALSE).
-#' @param effort This is a measure of sampling effort.
+#' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort.
 #' @importFrom igraph rewire
 #' @importFrom stats quantile
 #' @export
 #'
 #'
-perm.edge.degseq <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effort=1){
+perm.edge.degseq <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL,effortData=NULL){
 
-  net.original <- create.a.network(data, directed,SRI=SRI, effort=effort)
+  #Create graph in order to get the measure
+  if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
+    net.original = effortFun(data, directed = directed)
+
+  }else if(is.null(effortFun)==FALSE & is.null(effortData)==FALSE ){ #there is an effort function and it requires some external data
+    effortData.sub <- effortData[effortData[,1]>=windowstart & effortData[,1]<windowend,]
+    net.original = effortFun(data, effortData.sub, directed = directed)
+
+  } else { #there is no effort function
+    net.original <- create.a.network(data, directed = directed, SRI = SRI)
+  }
+
   Perm.measure<-vector()
 
   for(i in 1:nperm){

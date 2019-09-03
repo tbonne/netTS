@@ -4,14 +4,13 @@
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
 #' @param directed Treat the network as directed or not (Default=FALSE).
 #' @param SRI Wether to use the simple ratio index or not (Default=FALSE).
-#' @param effort The number of scans, or measure of sampling effort (e.g., hours sampling). The default of 1 assumes equal sampling effort througout.
 #' @importFrom igraph graph_from_data_frame simplify
 #' @export
 #'
-create.a.network<-function(data, directed = FALSE, SRI=FALSE, effort=1){
+create.a.network<-function(data, directed = FALSE, SRI=FALSE){
 
   if(SRI==FALSE){
-    elist<-create.an.edgeList(data,effort)
+    elist<-create.an.edgeList(data)
     gg <- graph_from_data_frame(elist, directed = directed, vertices = NULL)
 
     if(is.simple(gg)==FALSE)gg<-simplify(gg, edge.attr.comb=list(weight="sum"))
@@ -29,21 +28,19 @@ create.a.network<-function(data, directed = FALSE, SRI=FALSE, effort=1){
 }
 
 
-
 #' Create an edge list
 #'
 #' This function will generate an edge list from an events dataframe
 #' @param data Dataframe containing all events. The first two coloums should contain the 'to' and 'from' indentities involved in the interaction, while the third column should contain the 'weight' of the interaction.
-#' @param effort The number of scans, or measure of sampling effort (e.g., hours sampling). The default of 1 assumes equal sampling effort througout.
 #' @import data.table
 #' @export
 #'
-create.an.edgeList<-function(data,effort=1){
+create.an.edgeList<-function(data){
 
   #create a network and add it to the list
   names(data)[1:2]<-c("from","to")
   if(is.null(data$weight))data$weight=1
-  elist <- as.data.frame(as.data.table(data)[,.(sum(weight)/effort), by=list(from,to)])
+  elist <- as.data.frame(as.data.table(data)[,.(sum(weight)), by=list(from,to)])
   names(elist)<-c("from","to","weight")
 
   return(elist)
