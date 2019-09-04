@@ -17,6 +17,8 @@ net.window.para(data, windowstart, windowend, directed = FALSE,
 \item{directed}{Whether to consider the network as weighted. (default=FALSE)}
 
 \item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort. The first column should contain timedate values.}
 }
 \description{
 This function will generate one network from a dataframe with time constraints.

@@ -45,7 +45,7 @@ effort.time <- function(df.window, directed=FALSE){
 #'
 #' This function will correct edge weights in a network, using a count of the number of scans used to construct the network.
 #' @param df.window The events data frame with interactions.
-#' @df.scans A dataframe with the first column as a data column, and a second column with the number of scans durring that day.
+#' @param df.scans A dataframe with the first column as a data column, and a second column with the number of scans durring that day.
 #' @param directed Whether a directed network should be constructed (Default=FALSE).
 #' @export
 #'

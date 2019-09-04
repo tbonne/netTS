@@ -6,8 +6,11 @@ library(testthat)
 df.effort <-data.frame(from=c("daff","damo","lore","elto","damo","gizm", "daff","lore"),
                        to= c("gizm", "ella", "ella", "ella","daff","daff","ella", "elto"),
                        date=c("2017-07-09 08:00:00", "2017-07-09 08:08:00","2017-07-09 08:10:00","2017-07-09 16:00:00","2017-07-09  15:10:00","2017-07-09 16:11:00","2017-07-09  18:00:00","2017-07-09  09:00:00"),
-                       sampleID = c(1,1,1,2,2,2,3,4))
+                       scanID = c(1,1,1,2,2,2,3,4))
 df.effort$date<-ymd_hms(df.effort$date)
+
+df.effort.scans <- data.frame(date=c("2017-07-09 08:00:00", "2017-07-09 08:08:00","2017-07-09 08:10:00","2017-07-09 16:00:00","2017-07-09  15:10:00","2017-07-09 16:11:00","2017-07-09  18:00:00","2017-07-09  09:00:00"),
+                              scanID= c(1,1,1,2,2,2,3,4))
 
 ##focal data
 df.focal <- data.frame(date=c("2017-07-09 08:00:00", "2017-07-09 08:08:00","2017-07-09 08:10:00","2017-07-09 16:00:00","2017-07-09  15:10:00","2017-07-09 16:11:00","2017-07-09  18:00:00","2017-07-09  09:00:00"),
@@ -17,29 +20,23 @@ df.focal <- data.frame(date=c("2017-07-09 08:00:00", "2017-07-09 08:08:00","2017
 
 ### controling for entering and leaving
 
-## Check weighted mean: test it via the extract measure netwrok function
-#here elto shows up later in network
+#calculate when individuals were first and last seen in a network
+df.inOut<-node_first_last(df.effort)
 
-firstLast<- data.frame( ID = c( "laur", "mori", "daff", "lore", "elto"),
-                        In= c("2015-01-01", "2015-01-01", "2015-01-01,","2015-01-01","2015-01-01"),
-                        Out= c("2015-01-06", "2015-01-30", "2015-01-30", "2015-01-30", "2015-01-30"))
-
-firstLast$ID<- as.character(firstLast$ID)
-firstLast$In<- lubridate::ymd(firstLast$In)
-firstLast$Out<- lubridate::ymd(firstLast$Out)
-netlist<-extract_networks(firstLast, windowsize = days(10), windowshift= days(5), directed=FALSE)
-obs.values<- degree(netlist[[1]])
-
-
-
-
+#use these to get weighted measures
+net.list <- extract_networks(df.effort, windowsize = hours(1), windowshift = hours(1))
+measures.deg <- degree(net.list[[2]])
+mean.corrected.w <- weighted_mean(measures.deg, df.inOut, net.list[[2]])
+graph_attr(net.list[[2]], "windowstart")
+graph_attr(net.list[[2]], "windowend")
 
 test_that("effort.scan is good I guess", {
-  expect_equal(as.numeric(graph_attr(effort.scan(df.window=df.effort),"effort")), 4)
+  expect_equal(as.numeric(graph_attr(effort.scan(df.window=df.effort, df.scans = df.effort.scans),"effort")), 16)
   expect_equal(as.numeric(graph_attr(effort.time(df.window=df.effort),"effort")), 10)
   expect_equal(as.numeric(E(effort.focal(df.window=df.effort,effortData=df.focal))$weight[1]), 1/40)
-  skip('skip')
-  expect_equal(weighted_mean(netlist, inOut = firstLast, netlist[[1]]), 3.5/3)
-  expect_equal(node_first_last(data)[1,2],as.Date("2015-01-01"))
+  expect_equal(df.inOut[1,3],ymd_hms("2017-07-09 18:00:00"))
+  expect_equal(mean.corrected.w, (0*1+1*1)/(2)  )
+  #expect_equal(eff_time[1,1], 10/60  )
 })
+
 

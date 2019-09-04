@@ -5,11 +5,12 @@
 \title{Use permutation to extract uncertainty}
 \usage{
 permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
-  measureFun, probs = 0.95, nperm = 1000, SRI = FALSE, graphlist = NULL,
+  measureFun, effortFun = NULL, effortData = NULL, probs = 0.95,
+  nperm = 1000, SRI = FALSE, graphlist = NULL,
   permutationFun = perm.events)
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{Dataframe with relational data in the first two columns, a time stamp in the third column, and an optional column called 'weight' containing the magnitude of the interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowsize}{The size of each window in which to generate a network.}
 
@@ -18,6 +19,10 @@ permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
 \item{directed}{Whether to consider the network as directed or not (TRUE/FALSE).}
 
 \item{measureFun}{This is a function that takes as an input a igraph network and returns a single value.}
+
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort. The first column should contain timedate values.}
 
 \item{probs}{numeric vector of probabilities with values in [0,1].}
 

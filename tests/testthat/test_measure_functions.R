@@ -25,6 +25,7 @@ net3.d <- create.a.network(df, directed = TRUE)
 # identical network
 net2<-net1
 net2.d <- net1.d
+cosine_between_graphs(net1.d,net2.d, directed=TRUE)
 
 #cosine_between_graphs(net1,net3) # when completely different
 
@@ -109,6 +110,5 @@ test_that("Degree mean is good I guess", {
   expect_equal(as.numeric(cosine_between_nodes(net2,net3)[1,1] ), 0) #when net2 completely different from  net3
   expect_equal(as.numeric(cosine_between_nodes(net1.d,net2.d,directed=TRUE)[1,1]), 1) ##with directed network
   expect_equal(as.numeric(cosine_between_nodes(net2.d,net3.d)[1,1] ), 0)
-  skip('skip')
-  expect_equal(as.numeric(cosine_between_graphs(net1.d,net2.d)), 1) ## i dont understand why it is not 1 ...
+  expect_equal(as.numeric(cosine_between_graphs(net1.d,net2.d, directed=TRUE)), 1)
 })

@@ -8,7 +8,7 @@
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param measureFun The measurment function to perform the bootstap on (should be at the node level).
-#' @param corFun The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation
+#' @param corFun The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation, 3-Euclidean distance
 #' @param boot.samples The number of bootstrapped samples to run (Default=100)
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
@@ -56,7 +56,7 @@ windowsize.check <- function(data, windowsize=days(30), windowshift=days(1), dir
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param measureFun The measurment function to perform the bootstap on (should be at the node level).
-#' @param corFun The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation
+#' @param corFun The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation, 3-Euclidean distance
 #' @param boot.samples The number of bootstrapped samples to run (Default=100)
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
@@ -114,7 +114,10 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 
     if(Observation.Events>0){
 
-      if(length(obs.measures)<2)print("Warning: the convergence check with boot only works with network measures that return multiple values: e.g., one value per node/dyad.")
+      if(length(obs.measures)<2){
+        corFun=3
+       if(corFun!=3)print("Warning: only one measure prduced by the measurement function. corFun set to euclidean distance")
+      }
 
       #store correlation measures
       cor.measures <- vector()
@@ -138,6 +141,8 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
           cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
         } else if(corFun == 1){
           cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1],comb.by.names[,2])
+        }else if(corFun == 3){
+          cor.measures[length(cor.measures)+1] <- sqrt(sum((comb.by.names[,2]-comb.by.names[,1]) ^ 2))
         }
       }
 

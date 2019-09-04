@@ -4,12 +4,14 @@
 \alias{cosine_between_graphs}
 \title{Estimate consine similarity between graphs}
 \usage{
-cosine_between_graphs(graph1, graph2)
+cosine_between_graphs(graph1, graph2, directed = FALSE)
 }
 \arguments{
 \item{graph1}{first graph (igraph)}
 
 \item{graph2}{second graph (igraph)}
+
+\item{directed}{Whether the graph is directed or not (default = FALSE)}
 }
 \description{
 This function will calculate the cosine similarity between two graphs.
