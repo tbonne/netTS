@@ -191,14 +191,17 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
         }
 
         #take correlation measure
-        comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
-        comb.by.names[is.na(comb.by.names[,2]),2]<-0
+
         if(corFun==2){
+          comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
+          comb.by.names[is.na(comb.by.names[,2]),2]<-0
           cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
         } else if(corFun == 1){
+          comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
+          comb.by.names[is.na(comb.by.names[,2]),2]<-0
           cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1],comb.by.names[,2])
         }else if(corFun == 3){
-          cor.measures[length(cor.measures)+1] <- sqrt(sum((comb.by.names[,2]-comb.by.names[,1]) ^ 2))
+          cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))
         }
       }
 
@@ -256,7 +259,7 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
     if(Observation.Events>0){
 
       #calculate the desired network measure
-      g <- create.a.network(df.window, directed = directed, SRI=SRI, effort = 1)
+      g <- create.a.network(df.window, directed = directed, SRI=SRI)
       g <- set_graph_attr(g, "nEvents", Observation.Events)
       g <- set_graph_attr(g, "windowstart", windowstart)
       g <- set_graph_attr(g, "windowend", windowend)
@@ -276,7 +279,7 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
         df.sub<-df.window[sample(nrow(df.window),replace = T),]
 
         #create a network and add it to the list
-        g.boot <- create.a.network(df.sub, directed = directed, SRI=SRI, effort = 1)
+        g.boot <- create.a.network(df.sub, directed = directed, SRI=SRI)
         g.boot <- set_graph_attr(g.boot, "nEvents", Observation.Events)
         g.boot <- set_graph_attr(g.boot, "windowstart", windowstart)
         g.boot <- set_graph_attr(g.boot, "windowend", windowend)
