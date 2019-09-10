@@ -3,7 +3,7 @@
 #' graphTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
-#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third columns An optional column with the name weight can be added if there is a duration or magnitude for each interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.
@@ -61,7 +61,7 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 #' Extract networks from a moving window
 #'
 #' This function will create a time series of networks from a dataframe with relational events and a time stamp.
-#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
@@ -135,7 +135,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
 #' Extract networks from a moving window using multiple cores
 #'
 #' This function will create a time series of networks from a dataframe with relational events and a time stamp, using parallel processing.
-#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
@@ -188,7 +188,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 #' Extract networks in parallel using a dataframe of times
 #'
 #' This function will generate networks in parallel using a dataframe with time constraints.
-#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param window.ranges The dataframe containing the start and end times of each window to create a network from.
 #' @param directed Whether to consider the networks are directed or not.
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
@@ -214,7 +214,7 @@ net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL, effortDat
 #' Extract one network within time constriants
 #'
 #' This function will generate one network from a dataframe with time constraints.
-#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowstart The start of the window.
 #' @param windowend The end of the window.
 #' @param directed Whether to consider the network as weighted. (default=FALSE)
@@ -474,7 +474,7 @@ extract_lagged_measure_network<-function(netlist, measureFun, lag=1, firstNet=FA
 #' Use permutation to extract uncertainty
 #'
 #' This function will estimate network measures given random permutations on the original data.
-#' @param data Dataframe with relational data in the first two columns, a time stamp in the third column, and an optional column called 'weight' containing the magnitude of the interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
