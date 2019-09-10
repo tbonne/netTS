@@ -20,7 +20,7 @@ windowsize.check(data, windowsize = days(30), windowshift = days(1),
 
 \item{measureFun}{The measurment function to perform the bootstap on (should be at the node level).}
 
-\item{corFun}{The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation}
+\item{corFun}{The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation, 3-Euclidean distance}
 
 \item{boot.samples}{The number of bootstrapped samples to run (Default=100)}
 

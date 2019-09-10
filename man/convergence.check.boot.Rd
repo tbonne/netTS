@@ -6,7 +6,8 @@
 \usage{
 convergence.check.boot(data, windowsize = days(30), windowshift = days(1),
   directed = FALSE, measureFun = degree, corFun = 1, boot.samples = 100,
-  SRI = FALSE, probs = c(0.025, 0.975), fullData = NULL)
+  SRI = FALSE, probs = c(0.025, 0.975), effortFun = NULL,
+  effortData = NULL, fullData = NULL)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -19,7 +20,7 @@ convergence.check.boot(data, windowsize = days(30), windowshift = days(1),
 
 \item{measureFun}{The measurment function to perform the bootstap on (should be at the node level).}
 
-\item{corFun}{The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation}
+\item{corFun}{The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation, 3-Euclidean distance}
 
 \item{boot.samples}{The number of bootstrapped samples to run (Default=100)}
 
@@ -27,7 +28,11 @@ convergence.check.boot(data, windowsize = days(30), windowshift = days(1),
 
 \item{probs}{The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).}
 
-\item{fullData}{If a subset dataset is being used to compare bootstrap samples to the full dataset.}
+\item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort.}
+
+\item{fullData}{This is the full dataset, if a subset dataset is being used to compare bootstrap samples to the full dataset.}
 }
 \description{
 This function will estimate the convergence of the chosen network measure using bootstrapped samples of the data.

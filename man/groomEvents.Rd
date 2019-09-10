@@ -4,7 +4,7 @@
 \name{groomEvents}
 \alias{groomEvents}
 \title{Data on grooming events in a vervet group}
-\format{An object of class \code{data.frame} with 7519 rows and 4 columns.}
+\format{An object of class \code{data.frame} with 3762 rows and 3 columns.}
 \usage{
 groomEvents
 }
