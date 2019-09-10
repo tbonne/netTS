@@ -198,7 +198,7 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
 #' @export
 #'
 #'
-perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=c(0.025,0.975), SRI=FALSE, effortFun=NULL,effortData=NULL, windowstart, windowend){
+perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL,effortData=NULL, windowstart, windowend){
 
   #Create graph in order to get the measure
   if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
@@ -226,7 +226,7 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
   }
 
   probs.left<-1-probs
-  return(quantile(Perm.measure, probs = probs , na.rm=T))
+  return(quantile(Perm.measure, probs = c( (0+probs.left/2), (1-probs.left/2) ) , na.rm=T))
 
 }
 
