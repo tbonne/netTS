@@ -5,13 +5,13 @@
 \title{graphTS function}
 \usage{
 graphTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = degree_mean, effortFun = NULL,
+  measureFun = degree_mean, effortFun = NULL, effortData = NULL,
   permutationFun = perm.events, directed = FALSE, lagged = FALSE,
   lag = 1, firstNet = FALSE, cores = 1, nperm = 0, probs = 0.95,
   SRI = FALSE)
 }
 \arguments{
-\item{data}{A dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowsize}{The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.}
 
@@ -20,6 +20,8 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 \item{measureFun}{This is a function that takes as an input a igraph network and returns a single value. There are functions within netTS (see details), and custom made functions can be used.}
 
 \item{effortFun}{This is a function that takes as input the data within a window of time and returns the total sampling effort.}
+
+\item{effortData}{This is a dataframe containing the data used to calculate sampling effort.}
 
 \item{permutationFun}{This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).}
 

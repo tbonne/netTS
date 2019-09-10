@@ -21,7 +21,10 @@ Imports:
     foreach,
     R.utils,
     corpcor,
-    MASS
+    MASS,
+    bootstrap,
+    data.table,
+    doParallel
 RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,

@@ -4,11 +4,11 @@
 \alias{effort.time}
 \title{Min/Max time per day}
 \usage{
-effort.time(df.window)
+effort.time(df.window, directed = FALSE)
 }
 \arguments{
 \item{df.window}{An events data frame with a column containing the date and time.}
 }
 \description{
-This function will estimate the total time spent sampling, using the min and max observed values per day
+This function will estimate the total time spent sampling, using the min and max observed values per day. It will export a network where the edges are corrected for sampling time.
 }

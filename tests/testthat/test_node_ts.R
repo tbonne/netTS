@@ -26,7 +26,7 @@ output.net.dir.out<-nodeTS(groomEvents,windowsize = days(30), windowshift = days
 test_that("subsetted network is equal", {
   expect_equal(vcount(dir.nets[[1]]), vcount(fixed.net.dir) )
   expect_equal(vcount(undir.nets[[1]]), vcount(fixed.net.undir) )
-  expect_equal(output.net.dir[1,2], as.vector(degree(fixed.net.dir)[16]) )
-  expect_equal(output.net.undir[1,2], as.vector(degree(fixed.net.undir)[16]) )
-  expect_equal(output.net.dir.out[1,1], as.vector(degree(fixed.net.dir, mode="out")[14]) )
+  expect_equal(output.net.dir[1,"Malc"], as.vector(degree(fixed.net.dir)["Malc"]) )
+  expect_equal(output.net.undir[1,"Malc"], as.vector(degree(fixed.net.undir)["Malc"]) )
+  expect_equal(output.net.dir.out[1,"Laur"], as.vector(degree(fixed.net.dir, mode="out")["Laur"]) )
 })

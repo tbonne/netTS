@@ -3,11 +3,12 @@
 #' nodeTS function
 #'
 #' This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
-#' @param data A dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.
+#' @param data A dataframe with relational data in the first two columns, and a time stamp in the third columns Note: time stamps should be in ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.
 #' @param windowsize The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.
 #' @param windowshift The amount to shift the moving window for each measure. Again times should be provided as e.g., days(1), hours(1), ... etc.
 #' @param measureFun This is a function that takes as an input a igraph network and returns values for each node in the network. There are functions within netTS (see details), and custom made functions can be used.
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
+#' @param effortData This is a dataframe containing the data used to calculate sampling effort.
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
@@ -20,7 +21,7 @@
 #'
 #' ts.out<-nodeTS(data=groomEvents)
 #'
-nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree, effortFun=NULL,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1){
+nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree, effortFun=NULL,effortData=NULL,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1){
 
   #check for missing data
   if(sum(is.na(data)) > 0){
@@ -30,9 +31,9 @@ nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun, effortData = effortData)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed, effortFun = effortFun)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed, effortFun = effortFun, effortData = effortData)
   }
 
 

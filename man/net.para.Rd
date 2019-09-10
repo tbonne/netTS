@@ -4,10 +4,11 @@
 \alias{net.para}
 \title{Extract networks in parallel using a dataframe of times}
 \usage{
-net.para(data, window.ranges, directed = FALSE, effortFun = NULL)
+net.para(data, window.ranges, directed = FALSE, effortFun = NULL,
+  effortData = NULL)
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{window.ranges}{The dataframe containing the start and end times of each window to create a network from.}
 
