@@ -10,7 +10,7 @@ permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
   permutationFun = perm.events)
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two columns, a time stamp in the third column, and an optional column called 'weight' containing the magnitude of the interaction. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowsize}{The size of each window in which to generate a network.}
 
