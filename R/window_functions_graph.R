@@ -513,7 +513,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     Observation.Events <- nrow(df.window)
 
     #perform permutations
-    perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)
+    perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, windowstart=windowstart, windowend=windowend, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)
 
     #record the high and low estimates
     perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]

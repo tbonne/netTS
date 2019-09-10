@@ -13,7 +13,7 @@
 #' @export
 #'
 #'
-perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL, effortData=NULL){
+perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL, effortData=NULL, windowstart, windowend){
 
   #vector to store values
   Perm.measure<-vector()
@@ -96,10 +96,14 @@ perm.events <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95
 #' @export
 #'
 #'
-perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL, effortData=NULL){
+perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL, effortData=NULL, windowstart, windowend){
 
-  net.list <- list(create.a.network(data, directed,SRI=SRI))
+  #vector to store values
   Perm.measure<-vector()
+
+  #force columns to be character
+  data[,1]<- as.character(data[,1])
+  data[,2]<- as.character(data[,2])
 
   for(i in 1:nperm){
 
@@ -194,7 +198,7 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
 #' @export
 #'
 #'
-perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=c(0.025,0.975), SRI=FALSE, effortFun=NULL,effortData=NULL){
+perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, probs=c(0.025,0.975), SRI=FALSE, effortFun=NULL,effortData=NULL, windowstart, windowend){
 
   #Create graph in order to get the measure
   if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
@@ -243,7 +247,7 @@ perm.edge.weights <- function(data, measureFun, directed=FALSE, nperm=1000, prob
 #' @export
 #'
 #'
-perm.edge.degseq <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL,effortData=NULL){
+perm.edge.degseq <- function(data, measureFun, directed=FALSE, nperm=1000, probs=0.95, SRI=FALSE, effortFun=NULL,effortData=NULL, windowstart, windowend){
 
   #Create graph in order to get the measure
   if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
