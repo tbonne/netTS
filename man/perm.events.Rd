@@ -5,7 +5,8 @@
 \title{Perform permutation on the events dataframe}
 \usage{
 perm.events(data, measureFun, directed = FALSE, nperm = 1000,
-  probs = 0.95, SRI = FALSE, effortFun = NULL, effortData = NULL)
+  probs = 0.95, SRI = FALSE, effortFun = NULL, effortData = NULL,
+  windowstart, windowend)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

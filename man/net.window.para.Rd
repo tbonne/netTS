@@ -8,7 +8,7 @@ net.window.para(data, windowstart, windowend, directed = FALSE,
   effortFun = NULL, effortData = NULL)
 }
 \arguments{
-\item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
+\item{data}{Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
 
 \item{windowstart}{The start of the window.}
 

@@ -9,7 +9,7 @@ dyadTS(data, windowsize = days(30), windowshift = days(1),
   directed = FALSE, lagged = FALSE, lag = 1, cores = 1)
 }
 \arguments{
-\item{data}{A dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
+\item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third columns Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
 
 \item{windowsize}{The size of the moving window in which to take network measures. These should be provided as e.g., days(30), hours(5), ... etc.}
 

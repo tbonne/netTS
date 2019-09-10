@@ -61,7 +61,7 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 #' Extract networks from a moving window
 #'
 #' This function will create a time series of networks from a dataframe with relational events and a time stamp.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
@@ -135,7 +135,7 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
 #' Extract networks from a moving window using multiple cores
 #'
 #' This function will create a time series of networks from a dataframe with relational events and a time stamp, using parallel processing.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
@@ -188,7 +188,7 @@ extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE,
 #' Extract networks in parallel using a dataframe of times
 #'
 #' This function will generate networks in parallel using a dataframe with time constraints.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param window.ranges The dataframe containing the start and end times of each window to create a network from.
 #' @param directed Whether to consider the networks are directed or not.
 #' @param effortFun This is a function that takes as input the data within a window of time and returns the total sampling effort.
@@ -214,7 +214,7 @@ net.para<-function(data, window.ranges,directed=FALSE, effortFun=NULL, effortDat
 #' Extract one network within time constriants
 #'
 #' This function will generate one network from a dataframe with time constraints.
-#' @param data Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param data Dataframe with relational data in the first two columns, with weights in the thrid columns, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowstart The start of the window.
 #' @param windowend The end of the window.
 #' @param directed Whether to consider the network as weighted. (default=FALSE)
