@@ -7,8 +7,8 @@
 #' @param windowsize The size of each window in which to generate a network.
 #' @param windowshift The amount of time to shift the window when generating networks.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
-#' @param measureFun The measurment function to perform the bootstap on (should be at the node level).
-#' @param corFun The method used to compare observed node/dyad values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation, 3-Euclidean distance
+#' @param measureFun The measurment function to be used with the bootstapped networks.
+#' @param corFun The method used to compare observed values with bootstrapped values: 1-Cosine similarity, 2-pearsons correlation, 3-Euclidean distance
 #' @param boot.samples The number of bootstrapped samples to run (Default=100)
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
@@ -19,7 +19,7 @@
 #' @export
 #'
 #'
-windowsize.check <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
+windowsize_check <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
 
   #dataframe to store the results
   df.results <- data.frame(mean=-1,CI.low=-1,CI.high=-1,windowstart=as.Date("2001-12-30"),windowend=as.Date("2001-12-30"), fracData = -1)
@@ -327,7 +327,7 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 #' @export
 #'
 #'
-convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=days(40),by=days(1), windowshift=days(1), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE){
+variance_by_windowsize_plot<-function(data, windowsize_min=days(10),windowsize_max=days(40),by=days(1), windowshift=days(1), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE){
 
   #setup dataframe to return variance values
   df.var <- data.frame(windowsize = -1, var=-1)
