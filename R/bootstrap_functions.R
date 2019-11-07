@@ -19,7 +19,7 @@
 #' @export
 #'
 #'
-windowsize_check <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
+windowsize.check <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
 
   #dataframe to store the results
   df.results <- data.frame(mean=-1,CI.low=-1,CI.high=-1,windowstart=as.Date("2001-12-30"),windowend=as.Date("2001-12-30"), fracData = -1)
@@ -327,7 +327,7 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 #' @export
 #'
 #'
-variance_by_windowsize_plot<-function(data, windowsize_min=days(10),windowsize_max=days(40),by=days(1), windowshift=days(1), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE){
+convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=days(40),by=days(1), windowshift=days(1), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE){
 
   #setup dataframe to return variance values
   df.var <- data.frame(windowsize = -1, var=-1)
