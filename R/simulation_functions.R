@@ -1,16 +1,16 @@
 #' Simulate some observation data
 #'
-#' This function will simulate events data.
+#' This function simulates interaction data based on a group scaning methodology. For a given number of sampling periods, the simulation will generate interactions based on a user defined network, and individual interaction probabilities.
 #' @param nodes Number of individuals within a simulated group.
 #' @param sampling.periods The number of times the simulated group is observed.
-#' @param sampling.periods.per.day The number of sampling perids per day.
-#' @param true.net (Optional) A true underlying network describing the probability of each individual interacting.
-#' @param A (Optional) A vector specifying the average probability of observing the individual performing the behaivour. Should be the same length as the number of nodes. Default: runif(node,0,1)
-#' @param B (Optional) A matrix (node x node) specifying the interdependence of individual mean probabilities. Default: matrix of zeros
-#' @param C (Optional) A matrix specifying the effects of each covariate value on the mean probability. Default: matrix of zeros
-#' @param D (Optional) A matrix specifying the interdependence of individual variations probabilities. Default: matrix of zeros
-#' @param E (Optional) A value for the standard deviation around observed probability of observing a behaviour. Default: 0.1
-#' @param covariates A matrix with covariate values for each sampling period. Should be of size (sampleing.periods x number of covariates)
+#' @param sampling.periods.per.day The number of sampling periods per day.
+#' @param true.net (Optional) A network describing who can interact with whom.
+#' @param A (Optional) A vector specifying the average probability interaction for each individual. Should be the same length as the number of nodes. Default: runif(node,0,1)
+#' @param B (Optional) A matrix (node x node) specifying the inter-dependence of individual interaction probabilities. Default: matrix of zeros
+#' @param C (Optional) A matrix (node X covariates) specifying the effect of covariate values on each individual's interaction probability. Default: matrix of zeros
+#' @param D (Optional) A matrix (node x node) specifying the inter-dependence of noise around individual variations probabilities. Default: matrix of zeros
+#' @param E (Optional) A value for the standard deviation (noise) around individual's mean interaction probability. Default: 0.1
+#' @param covariates A matrix (sampling period x covariates) with covariate values for each sampling period.
 #' @importFrom igraph make_full_graph
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom stats runif

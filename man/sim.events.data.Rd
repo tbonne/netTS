@@ -13,22 +13,22 @@ sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
 
 \item{sampling.periods}{The number of times the simulated group is observed.}
 
-\item{sampling.periods.per.day}{The number of sampling perids per day.}
+\item{sampling.periods.per.day}{The number of sampling periods per day.}
 
-\item{true.net}{(Optional) A true underlying network describing the probability of each individual interacting.}
+\item{true.net}{(Optional) A network describing who can interact with whom.}
 
-\item{A}{(Optional) A vector specifying the average probability of observing the individual performing the behaivour. Should be the same length as the number of nodes. Default: runif(node,0,1)}
+\item{A}{(Optional) A vector specifying the average probability interaction for each individual. Should be the same length as the number of nodes. Default: runif(node,0,1)}
 
-\item{B}{(Optional) A matrix (node x node) specifying the interdependence of individual mean probabilities. Default: matrix of zeros}
+\item{B}{(Optional) A matrix (node x node) specifying the inter-dependence of individual interaction probabilities. Default: matrix of zeros}
 
-\item{C}{(Optional) A matrix specifying the effects of each covariate value on the mean probability. Default: matrix of zeros}
+\item{C}{(Optional) A matrix (node X covariates) specifying the effect of covariate values on each individual's interaction probability. Default: matrix of zeros}
 
-\item{D}{(Optional) A matrix specifying the interdependence of individual variations probabilities. Default: matrix of zeros}
+\item{D}{(Optional) A matrix (node x node) specifying the inter-dependence of noise around individual variations probabilities. Default: matrix of zeros}
 
-\item{E}{(Optional) A value for the standard deviation around observed probability of observing a behaviour. Default: 0.1}
+\item{E}{(Optional) A value for the standard deviation (noise) around individual's mean interaction probability. Default: 0.1}
 
-\item{covariates}{A matrix with covariate values for each sampling period. Should be of size (sampleing.periods x number of covariates)}
+\item{covariates}{A matrix (sampling period x covariates) with covariate values for each sampling period.}
 }
 \description{
-This function will simulate events data.
+This function simulates interaction data based on a group scaning methodology. For a given number of sampling periods, the simulation will generate interactions based on a user defined network, and individual interaction probabilities.
 }

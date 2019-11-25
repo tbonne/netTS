@@ -8,7 +8,7 @@
 #' @export
 #'
 #'
-graphTS_plot <- function(data, plotCI=FALSE){
+graphTS.plot <- function(data, plotCI=FALSE){
 
   if(plotCI==TRUE){
     g<-ggplot(data, aes(x=windowstart, y=measure))+geom_line(color="blue")+geom_point(color="blue") + geom_ribbon(aes(ymin=CI.low,ymax=CI.high),  fill="red", alpha=0.1) + theme_classic()
@@ -59,8 +59,7 @@ nodeTS.plot <- function(data, legend=TRUE){
 #' @importFrom reshape2 melt
 #' @export
 #'
-#'
-dyadTS_plot <- function(data=output.net.dir, legend=FALSE){
+dyadTS.plot <- function(data=output.net.dir, legend=FALSE){
 
   data.long <- reshape2::melt(data, id = c("windowend","windowstart", "nEvents"))
   names(data.long)[names(data.long)=="variable"] <- "ID"
@@ -87,7 +86,7 @@ dyadTS_plot <- function(data=output.net.dir, legend=FALSE){
 #' @export
 #'
 #'
-window.check.plot <- function(data, legend=TRUE){
+check.windowsize.plot <- function(data, legend=TRUE){
 
   if(legend==TRUE){
     g <- ggplot(data=data, aes(x = as.Date(windowstart), y = mean,group = factor(fracData), color = factor(fracData))) + geom_line() + geom_ribbon(aes(ymin=CI.low,ymax=CI.high,fill=factor(fracData)),color=NA,  alpha=0.05)  + theme_classic() + xlab("windowstart") + ylab("Similarity to observed network")
