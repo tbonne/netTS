@@ -41,7 +41,7 @@ check.windowsize <- function(data, windowsize=days(30), windowshift=days(1), dir
   df.results<-df.results[-1,]
 
   #plot
-  if(plot==T)window.check.plot(df.results)
+  if(plot==T)check.windowsize.plot(df.results)
 
   #return the results
   return(df.results)
