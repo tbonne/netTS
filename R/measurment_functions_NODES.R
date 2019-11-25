@@ -68,7 +68,7 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
 
     for(i in 1:(length(names.unique))){
       temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,2]==names.unique[i] | comb[,5]==names.unique[i] | comb[,6]==names.unique[i])
-      node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
+      node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
     }
 
   } else if (directed==TRUE){
@@ -76,21 +76,21 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
     if(mode=="out"){
       for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,5]==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
+        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
       }
     }
 
     if(mode=="in"){
       for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, comb[,2]==names.unique[i] | comb[,6]==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
+        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
       }
     }
 
     if(mode=="total"){
       for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,2]==names.unique[i] | comb[,5]==names.unique[i] | comb[,6]==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x,temp.node.w$weight.y)
+        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
       }
     }
 
