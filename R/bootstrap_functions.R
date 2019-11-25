@@ -311,6 +311,98 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 }
 
 
+#' Quantify how changing window size alters the resulting time series
+#'
+#' This function will estimate how changing the time scale (i.e., window size) alters the time series, i.e., multisacle analysis.
+#' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param windowsize_min The min size of windowsize to test.
+#' @param windowsize_max The max size of windowsize to test.
+#' @param by The resolution at which to test window sizes between the min and the max window sizes
+#' @param windowshift The amount of time to shift the window when generating networks.
+#' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
+#' @param measureFun The measurment function used to create a time series.
+#' @param summaryFun The measurment function used to summarise each time series.
+#' @param SRI Wether to use the simple ratio index (Default=FALSE)
+#' @importFrom stats cor.test quantile
+#' @importFrom igraph set_graph_attr degree edge_density
+#' @export
+#'
+#'
+check.timescale <- function (data, windowsize_min = days(10), windowsize_max = days(40), by = days(1), windowshift = days(1), directed = FALSE, measureFun = igraph::edge_density, summaryFun= var, SRI = FALSE, boot=10, effortFun = NULL, cores=1) {
+
+  #create empty dataframe to store results
+  df.var <- data.frame(windowsize = -1, var = -1, boot="obs",ngraphs = -1, stringsAsFactors = F)
+
+  #observed values: calculate how changing time scales affect the resulting time series
+  windowsize_seq = windowsize_min
+  while (windowsize_seq <= windowsize_max) {
+
+    #if a window shift is not given the the window shift is taken to be the window size, i.e., no overlap.
+    if(is.null(windowshift)==TRUE){
+      windS = windowsize_seq
+    } else {
+      windS=windowshift
+    }
+
+    #calculate the time series
+    graph.values <- graphTS(data, windowsize = windowsize_seq,
+                            windowshift = windS, measureFun = measureFun,
+                            effortFun = effortFun, permutationFun = perm.events, directed = directed,
+                            lagged = FALSE, lag = 1, firstNet = FALSE,
+                            nperm = 0, probs = 0.95, SRI = SRI, cores=cores)
+
+    #calculate the summary statistic for the resulting time series and record the results
+    df.var <- rbind(df.var, data.frame(windowsize = as.numeric(as.duration(windowsize_seq),
+                                                               "days"), var = summaryFun(graph.values[, 1]), boot="obs",ngraphs = nrow(graph.values)))
+
+    #adjust window size and repeat
+    windowsize_seq = windowsize_seq + by
+  }
+
+  #bootstrapped values: calculate how changing time scales affect the resulting time series, this time on bootstrapped samples from the original data
+  if(boot>0){
+    for(b in 1:boot){
+
+      #take a bootstrap sample
+      data.boot = data[sample(1:nrow(data),replace = T),]
+
+      #restart the window size sequence from the minimum window size
+      windowsize_seq = windowsize_min
+
+      #if a window shift is not given the the window shift is taken to be the window size, i.e., no overlap.
+      while (windowsize_seq <= windowsize_max) {
+        if(is.null(windowshift)==TRUE){
+          windS = windowsize_seq
+        } else {
+          windS=windowshift
+        }
+
+        #calculate the time series
+        graph.values <- graphTS(data.boot, windowsize = windowsize_seq,
+                                windowshift = windS, measureFun = measureFun,
+                                effortFun = effortFun, permutationFun = perm.events, directed = directed,
+                                lagged = FALSE, lag = 1, firstNet = FALSE,
+                                nperm = 0, probs = 0.95, SRI = SRI, cores=cores)
+
+        #calculate the summary statistic for the resulting time series and record the results
+        df.var <- rbind(df.var, data.frame(windowsize = as.numeric(as.duration(windowsize_seq),
+                                                                   "days"), var = summaryFun(graph.values[, 1]), boot=b,ngraphs = nrow(graph.values)))
+
+        #adjust window size and repeat
+        windowsize_seq = windowsize_seq + by
+      }
+    }
+  }
+
+  #remove the first row of the dataset (used to initialize the dataframe)
+  df.var <- df.var[-1, ]
+
+
+  return(df.var)
+}
+
+
+
 #' Variance by window size check
 #'
 #' This function will estimate the variance in the time series based on the window size.
