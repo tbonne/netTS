@@ -19,7 +19,7 @@
 #' @export
 #'
 #'
-windowsize.check <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
+check.windowsize <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
 
   #dataframe to store the results
   df.results <- data.frame(mean=-1,CI.low=-1,CI.high=-1,windowstart=as.Date("2001-12-30"),windowend=as.Date("2001-12-30"), fracData = -1)
@@ -199,7 +199,7 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
         } else if(corFun == 1){
           comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
           comb.by.names[is.na(comb.by.names[,2]),2]<-0
-          cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1],comb.by.names[,2])
+          cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1]-mean(comb.by.names[,1]),comb.by.names[,2]-mean(comb.by.names[,2]))
         }else if(corFun == 3){
           cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))
         }
