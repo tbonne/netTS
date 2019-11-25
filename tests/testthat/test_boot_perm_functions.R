@@ -3,18 +3,15 @@ library(testthat)
 
 ## /permutation_functions.R
 
-# test perm.events function ... more specifically test the sample part (gist of the function)
+# test perm.events function
 set.seed(123)
-df1<-groomEvents
-df.original<-df1[,1:2]
-df.original[,1]<- as.character(df.original[,1])
-df.original[,2]<- as.character(df.original[,2])
-data<- df1[,1:2]
+df1<-groomEvents[1:1000,]
+
 
 ## test that the swapping of individuals work by creating a df of only 2 individuals, using a non directed approach
-df.perm<- data.frame(from = c("daff","daff","daff","daff","daff","daff"),
-                     to = c("elto","elto","elto","elto","elto","elto"),
-                     date = c("2019-01-01","2019-01-01","2019-01-01","2019-01-02","2019-01-02","2019-01-02") )
+df.perm<- data.frame(from = c("daff","daff","daff","daff","daff","daff","daff","daff","daff","daff","daff","daff"),
+                     to = c("elto","elto","elto","elto","elto","elto","elto","elto","elto","elto","elto","elto"),
+                     date = c("2019-01-01","2019-01-01","2019-01-01","2019-01-02","2019-01-02","2019-01-02","2019-01-03","2019-01-03","2019-01-03","2019-01-04","2019-01-04","2019-01-04") )
 df.perm$from<- as.character(df.perm$from)
 df.perm$to<-as.character(df.perm$to)
 df.perm$date<-ymd(df.perm$date)
@@ -44,16 +41,19 @@ mean_deg <- function(x){
   mean(degree(x))
 }
 
-out.b1 <-windowsize.check(data=df.perm, windowsize=days(1),windowshift = days(1), measureFun = strength ,corFun = 1,boot.samples=10)
-#out.b2 <-windowsize.check(data=df.perm, windowsize=days(1),windowshift = days(1), measureFun = strength ,corFun = 2,boot.samples=10)
-out.b3 <-windowsize.check(data=df.perm, windowsize=days(1),windowshift = days(1), measureFun = mean_str ,corFun = 3,boot.samples=10)
+out.w1 <-check.windowsize(data=df1, windowsize=days(30),windowshift = days(30), measureFun = strength ,corFun = 1,boot.samples=10)
+out.w2 <-check.windowsize(data=df1, windowsize=days(30),windowshift = days(30), measureFun = mean_str ,corFun = 2,boot.samples=10)
+out.w3 <-check.windowsize(data=df1, windowsize=days(30),windowshift = days(30), measureFun = mean_str ,corFun = 3,boot.samples=10)
 
-out.b4 <-convergence.check.boot(data=df.perm, windowsize=days(1),windowshift = days(1), measureFun = mean_str ,corFun = 3,boot.samples=10)
-out.b5 <- convergence.check.boot.graph(data=df.perm, windowsize=days(1),windowshift = days(1), measureFun = eigen_mean,boot.samples=10)
+out.b1 <-convergence.check.boot(data=df1, windowsize=days(30),windowshift = days(30), measureFun = mean_str ,corFun = 1,boot.samples=10)
+out.b2 <-convergence.check.boot(data=df1, windowsize=days(30),windowshift = days(30), measureFun = mean_str ,corFun = 2,boot.samples=10)
+out.b3 <-convergence.check.boot(data=df1, windowsize=days(30),windowshift = days(30), measureFun = mean_str ,corFun = 3,boot.samples=10)
 
-out.v1<-convergence.check.var(df.perm, windowsize_min=days(1),windowsize_max=days(1),by=days(1), windowshift=days(1), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE)
+out.bg1 <- convergence.check.boot.graph(data=df1, windowsize=days(30),windowshift = days(30), measureFun = eigen_mean,boot.samples=10)
 
-#out.v2<-convergence.check.value(df.perm, windowsize=days(1), windowshift=days(1), directed = FALSE, measureFun=mean_deg,max.subsample.size=1, SRI=FALSE, n.boot=10, probs=c(0.025,0.975))
+out.v1<-convergence.check.var(df1, windowsize_min=days(1),windowsize_max=days(10),by=days(1), windowshift=days(30), directed = FALSE, measureFun=igraph::edge_density, SRI=FALSE)
+
+out.t1<-check.timescale(df1, windowsize_min=days(1),windowsize_max=days(10),by=days(1), windowshift=days(30), directed = FALSE, measureFun=igraph::edge_density, summaryFun = var, SRI=FALSE)
 
 
 
@@ -62,12 +62,16 @@ test_that("perm.events works good", {
   expect_equal( as.numeric(perm.noDiff.directed[1]), as.numeric(perm.noDiff.directed[2]))
   expect_equal( as.numeric(perm.noDiff.edge[1]), as.numeric(perm.noDiff.edge[2]))
   expect_equal( as.numeric(perm.noDiff.degseq[1]), as.numeric(perm.noDiff.degseq[2]))
-  expect_equal( as.numeric(perm.ci[1]), as.numeric(perm.ci[2]))
-  expect_equal( as.numeric(out.b1[1,2]), 1)
-  #expect_equal( as.numeric(out.b2[1,2]), 0.5635573)
-  expect_equal( as.numeric(out.b3[1,2]), 0)
-  expect_equal( as.numeric(out.b4[1,2]), 0)
-  expect_equal( as.numeric(out.b5[1,3]), 1)
-  expect_equal( as.numeric(out.v1[1,1]), 1)
+  expect_equal( as.numeric(perm.ci[1,1]), as.numeric(perm.ci[1,2]))
+  expect_equal( round(out.w1[1,1],7), 0.8996309)
+  expect_equal( round(out.w2[1,1],7), 0.0413793)
+  expect_equal( round(out.w3[1,1],7), 0.0827586)
+  expect_equal( round(out.b1[1,1],7), 0.1655172)
+  expect_equal( round(out.b2[1,1],7), 0.1241379)
+  expect_equal( round(out.b3[1,1],7), 0.0413793)
+  expect_equal( round(out.bg1[1,1],7), 0.1520038)
+  expect_equal( round(out.v1[1,2],7), 0.1851222)
+  expect_equal( round(out.t1[6,2],7), 0.0119899)
+
 })   ## test that permutation is occuring and that the original df and sampled df differ
 

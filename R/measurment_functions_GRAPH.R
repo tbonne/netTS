@@ -59,7 +59,7 @@ eigen_mean<-function(net){
 #' graph2 <-erdos.renyi.game(n=10,p=0.1)
 #' cosine_between_graphs(graph1,graph2)
 #'
-cosine_between_graphs <- function(graph1,graph2, directed=FALSE){
+cosine_between_graphs <- function(graph1,graph2, directed=FALSE, considerZeros=TRUE, center=FALSE){
 
   #create weighted edge list from first graph
   g1.edges<-as.data.frame(get.edgelist(graph1, names=TRUE))
@@ -91,12 +91,19 @@ cosine_between_graphs <- function(graph1,graph2, directed=FALSE){
 
   #join the weighted edge lists, setting NAs equal to 0
   comb<-full_join(g1.edges,g2.edges,by="joinC")
+
+  if(considerZeros){
   comb$weight.x[is.na(comb$weight.x)]<-0
   comb$weight.y[is.na(comb$weight.y)]<-0
+  } else {
+    comb<-comb[complete.cases(comb),]
+  }
 
   #center both vectors
+  if(center){
   comb$weight.x = comb$weight.x - mean(comb$weight.x)
   comb$weight.y = comb$weight.y - mean(comb$weight.y)
+  }
 
   return(cosine(comb$weight.x,comb$weight.y))
 

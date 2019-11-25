@@ -26,12 +26,12 @@
 #' cosine_between_nodes(graph1,graph2)
 #'
 #'
-cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
+cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out", consider_zeros=FALSE, center=FALSE){
 
   node.cosine <- vector()
 
   #create weighted edge list from first graph
-  g1.edges<-as.data.frame(get.edgelist(graph1, names=TRUE))
+  g1.edges<-as.data.frame(get.edgelist(graph1, names=TRUE), stringsAsFactors = FALSE)
   if(is.null(igraph::E(graph1)$weight)){
     g1.edges$weight <- rep(1,nrow(g1.edges))
   } else {
@@ -43,7 +43,7 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
     g1.edges$joinC <- paste(g1.edges[,1], g1.edges[,2])
   #}
   #create weighted edge list from second graph
-  g2.edges<-as.data.frame(get.edgelist(graph2, names=TRUE))
+  g2.edges<-as.data.frame(get.edgelist(graph2, names=TRUE), stringsAsFactors = FALSE)
   if(is.null(igraph::E(graph2)$weight)){
     g2.edges$weight <- rep(1,nrow(g2.edges))
   } else {
@@ -68,29 +68,148 @@ cosine_between_nodes<- function(graph1, graph2, directed=FALSE, mode="out"){
 
     for(i in 1:(length(names.unique))){
       temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,2]==names.unique[i] | comb[,5]==names.unique[i] | comb[,6]==names.unique[i])
-      node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
+
+      #considering the interactions not seen
+      if(consider_zeros){
+
+        #total number of individuals
+        all.nodes<-length(unique(c(V(graph1)$name,V(graph2)$name)))
+        missing_interactions = 1*(all.nodes-1)-nrow(temp.node.w)
+
+        #add those zeros to each observed vector
+        vec.1 = c(temp.node.w$weight.x, rep(0,missing_interactions) )
+        vec.2 = c(temp.node.w$weight.y, rep(0,missing_interactions) )
+
+      } else {
+
+        vec.1 <- temp.node.w$weight.x
+        vec.2 <- temp.node.w$weight.y
+
+      }
+
+      #choose to center the vector or not
+      if(center){
+        cos.this.node = lsa::cosine(vec.1-mean(vec.1),vec.2-mean(vec.2))
+      } else {
+        cos.this.node = lsa::cosine(vec.1,vec.2)
+      }
+
+      #record the cosine measure for each node
+      node.cosine[length(node.cosine)+1]<-cos.this.node
+
+      #node.cosine[length(node.cosine)+1] <- lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
     }
 
   } else if (directed==TRUE){
 
+    #construct vectors using out interactions.
     if(mode=="out"){
       for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,5]==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
+
+        #considering the interactions not seen
+        if(consider_zeros){
+
+          #total number of individuals
+          all.nodes<-length(unique(c(V(graph1)$name,V(graph2)$name)))
+          missing_interactions = 1*(all.nodes-1)-nrow(temp.node.w)
+
+          #add those zeros to each observed vector
+          vec.1 = c(temp.node.w$weight.x, rep(0,missing_interactions) )
+          vec.2 = c(temp.node.w$weight.y, rep(0,missing_interactions) )
+
+        } else {
+
+          vec.1 <- temp.node.w$weight.x
+          vec.2 <- temp.node.w$weight.y
+
+        }
+
+        #choose to center the vector or not
+        if(center){
+          cos.this.node = lsa::cosine(vec.1-mean(vec.1),vec.2-mean(vec.2))
+        } else {
+          cos.this.node = lsa::cosine(vec.1,vec.2)
+        }
+
+        #record the cosine measure for each node
+        node.cosine[length(node.cosine)+1]<-cos.this.node
+
+        #node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
       }
     }
 
+    #construct vectors using in interactions.
     if(mode=="in"){
       for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, comb[,2]==names.unique[i] | comb[,6]==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
+
+        #considering the interactions not seen
+        if(consider_zeros){
+
+          #total number of individuals
+          all.nodes<-length(unique(c(V(graph1)$name,V(graph2)$name)))
+          missing_interactions = 1*(all.nodes-1)-nrow(temp.node.w)
+
+          #add those zeros to each observed vector
+          vec.1 = c(temp.node.w$weight.x, rep(0,missing_interactions) )
+          vec.2 = c(temp.node.w$weight.y, rep(0,missing_interactions) )
+
+        } else {
+
+          vec.1 <- temp.node.w$weight.x
+          vec.2 <- temp.node.w$weight.y
+
+        }
+
+        #choose to center the vector or not
+        if(center){
+          cos.this.node = lsa::cosine(vec.1-mean(vec.1),vec.2-mean(vec.2))
+        } else {
+          cos.this.node = lsa::cosine(vec.1,vec.2)
+        }
+
+        #record the cosine measure for each node
+        node.cosine[length(node.cosine)+1]<-cos.this.node
+
+
+
+        #node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
       }
     }
 
+    #construct vectors using in and out interactions.
     if(mode=="total"){
       for(i in 1:(length(names.unique))){
         temp.node.w <- dplyr::filter(comb, comb[,1]==names.unique[i] | comb[,2]==names.unique[i] | comb[,5]==names.unique[i] | comb[,6]==names.unique[i])
-        node.cosine[length(node.cosine)+1]<-lsa::cosine(temp.node.w$weight.x-mean(temp.node.w$weight.x),temp.node.w$weight.y-mean(temp.node.w$weight.y))
+
+        #considering the interactions not seen
+        if(consider_zeros){
+
+          #total number of individuals
+          all.nodes<-length(unique(c(V(graph1)$name,V(graph2)$name)))
+          missing_interactions = 2*(all.nodes-1)-nrow(temp.node.w)
+
+          #add those zeros to each observed vector
+          vec.1 = c(temp.node.w$weight.x, rep(0,missing_interactions) )
+          vec.2 = c(temp.node.w$weight.y, rep(0,missing_interactions) )
+
+        } else {
+
+          vec.1 <- temp.node.w$weight.x
+          vec.2 <- temp.node.w$weight.y
+
+        }
+
+        #choose to center the vector or not
+        if(center){
+          cos.this.node = lsa::cosine(vec.1-mean(vec.1),vec.2-mean(vec.2))
+        } else {
+          cos.this.node = lsa::cosine(vec.1,vec.2)
+        }
+
+        #record the cosine measure for each node
+        node.cosine[length(node.cosine)+1]<-cos.this.node
       }
     }
 

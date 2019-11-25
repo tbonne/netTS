@@ -195,10 +195,12 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
         if(corFun==2){
           comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
           comb.by.names[is.na(comb.by.names[,2]),2]<-0
+          comb.by.names[is.na(comb.by.names[,1]),1]<-0
           cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
         } else if(corFun == 1){
           comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
           comb.by.names[is.na(comb.by.names[,2]),2]<-0
+          comb.by.names[is.na(comb.by.names[,1]),1]<-0
           cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1]-mean(comb.by.names[,1]),comb.by.names[,2]-mean(comb.by.names[,2]))
         }else if(corFun == 3){
           cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))

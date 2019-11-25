@@ -11,7 +11,7 @@ df1 <-data.frame(from=c("daff","damo","lore","elto","damo","gizm", "daff","lore"
                  date=c("2017-07-09", "2017-07-09","2017-07-09","2017-07-09","2017-07-09","2017-07-09","2017-07-09","2017-07-09"))
 
 df <-data.frame(from=c("wall","mori","panc","nige","schm","bone", "raje","ring"),
-                to= c("daff", "ella", "lore", "ella","damo","daff","daff", "elto"),
+                to= c("daff", "ella", "lore", "gizm","damo","daff","daff", "elto"),
                 weight= c(2,4,6,8,10,1,1,1),
                 date=c("2017-07-09", "2017-07-09","2017-07-09","2017-07-09","2017-07-09","2017-07-09","2017-07-09","2017-07-09"))
 
@@ -25,7 +25,9 @@ net3.d <- create.a.network(df, directed = TRUE)
 # identical network
 net2<-net1
 net2.d <- net1.d
+cosine_between_graphs(net2,net3, directed=FALSE)
 cosine_between_graphs(net1.d,net2.d, directed=TRUE)
+
 
 #cosine_between_graphs(net1,net3) # when completely different
 

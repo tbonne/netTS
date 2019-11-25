@@ -35,7 +35,7 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed=directed, cores = 2, SRI=SRI, effortFun = effortFun, effortData=effortData)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed=directed, cores = cores, SRI=SRI, effortFun = effortFun, effortData=effortData)
   } else {
     graphlist <- extract_networks(data, windowsize, windowshift, directed=directed, SRI=SRI, effortFun = effortFun, effortData=effortData)
   }
