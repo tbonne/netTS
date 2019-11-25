@@ -118,15 +118,15 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
         rows.to.switch <- sample(1:nrow(data),2,F)
 
         #record old order
-        old.order <- data$to
-        new.order <- data$to
+        old.order <- data[,2]
+        new.order <- data[,2]
 
         #update order
         new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
         new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
 
         #check to make sure there are no self loops
-        if(sum(as.character(data$from)==as.character(new.order) )==0){
+        if(sum(as.character(data[,1])==as.character(new.order) )==0){ #$from
 
           data$to <- new.order
           NewData<- data
@@ -142,15 +142,15 @@ perm.events.directed <- function(data, measureFun, directed=FALSE, nperm=1000, p
         rows.to.switch <- sample(1:nrow(data),2,F)
 
         #record old order
-        old.order <- data$from
-        new.order <- data$from
+        old.order <- data[,1]
+        new.order <- data[,1]
 
         #update order
         new.order[rows.to.switch[1]] <- old.order[rows.to.switch[2]]
         new.order[rows.to.switch[2]] <- old.order[rows.to.switch[1]]
 
         #check to make sure there are no self loops
-        if(sum(as.character(new.order)==as.character(data$to) )==0){
+        if(sum(as.character(new.order)==as.character(data[,2]) )==0){ #$to
 
           data$from <- new.order
           NewData<- data
