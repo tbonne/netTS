@@ -94,6 +94,10 @@ cosine_between_graphs <- function(graph1,graph2, directed=FALSE){
   comb$weight.x[is.na(comb$weight.x)]<-0
   comb$weight.y[is.na(comb$weight.y)]<-0
 
+  #center both vectors
+  comb$weight.x = comb$weight.x - mean(comb$weight.x)
+  comb$weight.y = comb$weight.y - mean(comb$weight.y)
+
   return(cosine(comb$weight.x,comb$weight.y))
 
 }
