@@ -133,4 +133,5 @@ test_that("Degree mean is good I guess", {
   expect_equal(as.numeric(round(dist_between_graphs(net2,net3),digits = 4)), 21.2132)
   expect_equal(as.numeric(dist_between_graphs(net2.d,net1.d, directed = T)), 0)
   expect_equal(as.numeric(dist_between_graphs(net2,net1, directed = F)), 0)
+  expect_equal(as.numeric(edge.weight.skewness(net1))[2], 0)
 })

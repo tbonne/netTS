@@ -22,6 +22,11 @@ out_degree <- function(x){
 }
 output.net.dir.out<-nodeTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = out_degree, directed=TRUE)
 
+df_enter_leave <- data.frame(ID = unique(groomEvents$ID), startDate = min(groomEvents$date), endDate = min(groomEvents$date)  )
+df_enter_leave$startDate <- ymd_hms(df_enter_leave$startDate)
+df_enter_leave$endDate <- ymd_hms(df_enter_leave$endDate)
+trimed_df <- trim_nodes(output.net.dir, groomEvents, enter_leave = df_enter_leave)
+
 
 test_that("subsetted network is equal", {
   expect_equal(vcount(dir.nets[[1]]), vcount(fixed.net.dir) )
