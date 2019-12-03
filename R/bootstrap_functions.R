@@ -341,14 +341,14 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 
 #' Quantify how changing window size alters the resulting time series
 #'
-#' This function will estimate how changing the time scale (i.e., window size) alters the time series, i.e., multisacle analysis.
+#' This function will estimate how changing the time scale (i.e., window size) alters the time series, i.e., multiscale analysis.
 #' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param windowsize_min The min size of windowsize to test.
 #' @param windowsize_max The max size of windowsize to test.
 #' @param by The resolution at which to test window sizes between the min and the max window sizes
-#' @param windowshift The amount of time to shift the window when generating networks.
+#' @param windowshift The amount of time to shift the window when generating network time series.
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
-#' @param measureFun The measurment function used to create a time series.
+#' @param measureFun The measurment function used to create a time series from the networks.
 #' @param summaryFun The measurment function used to summarise each time series.
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @importFrom stats cor.test quantile
