@@ -68,7 +68,7 @@ check.windowsize <- function(data, windowsize=days(30), windowshift=days(1), dir
 #' @export
 #'
 #'
-convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=NULL, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), effortFun=NULL, effortData=NULL,fullData=NULL){
+convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), effortFun=NULL, effortData=NULL,fullData=NULL){
 
   #intialize times
   windowstart <- min(data[,3])
