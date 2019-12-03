@@ -68,7 +68,7 @@ check.windowsize <- function(data, windowsize=days(30), windowshift=days(1), dir
 #' @export
 #'
 #'
-convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), effortFun=NULL, effortData=NULL,fullData=NULL){
+convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=NULL, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), effortFun=NULL, effortData=NULL,fullData=NULL){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -111,7 +111,12 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
       }
 
       #store measure
-      obs.measures <- measureFun(g)
+      if(is.null(measureFun)){
+        obs.net <- g
+      } else{
+        obs.measures <- measureFun(g)
+      }
+
 
     } else {
 
@@ -146,16 +151,20 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
       }
 
       #store measure
-      obs.measures <- measureFun(g.full)
+      if(is.null(measureFun)){
+        obs.net <- g.full
+      } else{
+        obs.measures <- measureFun(g.full)
+      }
 
     }
 
     if(Observation.Events>0){
 
-      if(length(obs.measures)<2){
-        corFun=3
-        if(corFun!=3)print("Warning: only one measure prduced by the measurement function. corFun set to euclidean distance")
-      }
+      # if(length(obs.measures)<2){
+      #   corFun=3
+      #   if(corFun!=3)print("Warning: only one measure prduced by the measurement function. corFun set to euclidean distance")
+      # }
 
       #store correlation measures
       cor.measures <- vector()
@@ -191,19 +200,36 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
         }
 
         #take correlation measure
-
         if(corFun==2){
-          comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
-          comb.by.names[is.na(comb.by.names[,2]),2]<-0
-          comb.by.names[is.na(comb.by.names[,1]),1]<-0
-          cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
+
+          if(is.null(measureFun)){
+            cor.measures[length(cor.measures)+1] <- cor_between_graphs(g.boot, obs.net)$estimate
+          } else {
+            comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
+            comb.by.names[is.na(comb.by.names[,2]),2]<-0
+            comb.by.names[is.na(comb.by.names[,1]),1]<-0
+            cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
+          }
+
+        #take cosine measure
         } else if(corFun == 1){
-          comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
-          comb.by.names[is.na(comb.by.names[,2]),2]<-0
-          comb.by.names[is.na(comb.by.names[,1]),1]<-0
-          cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1]-mean(comb.by.names[,1]),comb.by.names[,2]-mean(comb.by.names[,2]))
+
+          if(is.null(measureFun)){
+            cor.measures[length(cor.measures)+1] <- cosine_between_graphs(g.boot, obs.net,directed=directed, center=T, considerZeros=T)
+          } else {
+            comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
+            comb.by.names[is.na(comb.by.names[,2]),2]<-0
+            comb.by.names[is.na(comb.by.names[,1]),1]<-0
+            cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1]-mean(comb.by.names[,1]),comb.by.names[,2]-mean(comb.by.names[,2]))
+          }
+
+        #take distance measure
         }else if(corFun == 3){
-          cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))
+          if(is.null(measureFun)){
+            cor.measures[length(cor.measures)+1] <- dist_between_graphs(g.boot, obs.net,directed=directed)
+          } else {
+            cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))
+          }
         }
       }
 

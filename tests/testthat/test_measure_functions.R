@@ -21,13 +21,25 @@ net1.d <-create.a.network(df1, directed = TRUE)
 net3<- create.a.network(df)
 net3.d <- create.a.network(df, directed = TRUE)
 
-# Test Cosine
-# identical network
+#create identical network
 net2<-net1
 net2.d <- net1.d
-cosine_between_graphs(net2,net3, directed=FALSE)
-cosine_between_graphs(net1.d,net2.d, directed=TRUE)
 
+# Test Cosine
+cosine_between_graphs(net2,net3, directed=FALSE,center=F,considerZeros = F)
+cosine_between_graphs(net1.d,net2.d, directed=TRUE)
+cosine_between_graphs(net1.d,net2.d, directed=FALSE)
+
+
+# Test Correlation
+cor_between_graphs(net2,net3, directed=FALSE)
+cor_between_graphs(net1.d,net2.d, directed=TRUE)
+cor_between_graphs(net1,net2, directed=FALSE)
+
+# Test distance
+dist_between_graphs(net2,net3, directed=FALSE)
+dist_between_graphs(net1.d,net2.d, directed=TRUE)
+dist_between_graphs(net1,net2, directed=FALSE)
 
 #cosine_between_graphs(net1,net3) # when completely different
 
@@ -113,4 +125,12 @@ test_that("Degree mean is good I guess", {
   expect_equal(as.numeric(cosine_between_nodes(net1.d,net2.d,directed=TRUE)[1,1]), 1) ##with directed network
   expect_equal(as.numeric(cosine_between_nodes(net2.d,net3.d)[1,1] ), 0)
   expect_equal(as.numeric(cosine_between_graphs(net1.d,net2.d, directed=TRUE)), 1)
+  expect_equal(as.numeric(cor_between_graphs(net1,net2)$estimate), 1)
+  expect_equal(as.numeric(round(cor_between_graphs(net2,net3)$estimate,digits = 6)), -0.476419)
+  expect_equal(as.numeric(cor_between_graphs(net2.d,net1.d, directed = T)$estimate), 1)
+  expect_equal(as.numeric(cor_between_graphs(net2,net1, directed = F)$estimate), 1)
+  expect_equal(as.numeric(dist_between_graphs(net1,net2)), 0)
+  expect_equal(as.numeric(round(dist_between_graphs(net2,net3),digits = 4)), 21.2132)
+  expect_equal(as.numeric(dist_between_graphs(net2.d,net1.d, directed = T)), 0)
+  expect_equal(as.numeric(dist_between_graphs(net2,net1, directed = F)), 0)
 })
