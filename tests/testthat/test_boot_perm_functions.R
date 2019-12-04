@@ -21,9 +21,6 @@ df.perm3<- data.frame(from = c("daff","damo","saff","lori","band","rock"),
                      to = c("elto","elto","elto","elto","elto","elto"),
                      weight = c(2,2,2,2,2,2))
 
-
-
-
 #calculate some permutations
 perm.noDiff<-perm.events(data2, nperm =100,measureFun = eigen_mean)
 perm.noDiff.directed <- perm.events.directed(data2, nperm =100,measureFun = eigen_mean)
@@ -55,7 +52,7 @@ out.v1<-convergence.check.var(df1, windowsize_min=days(1),windowsize_max=days(10
 
 out.t1<-check.timescale(df1, windowsize_min=days(1),windowsize_max=days(10),by=days(1), windowshift=days(30), directed = FALSE, measureFun=igraph::edge_density, summaryFun = var, SRI=FALSE)
 
-
+out.reg <- convergence.check.value(df1, windowsize=days(120),windowshift = days(120),max.subsample.size = 30, SRI = FALSE, n.boot = 10, probs = c(0.025, 0.975))
 
 test_that("perm.events works good", {
   expect_equal( as.numeric(perm.noDiff[1]), as.numeric(perm.noDiff[2]) )
@@ -72,6 +69,7 @@ test_that("perm.events works good", {
   expect_equal( round(out.bg1[1,1],7), 0.1520038)
   expect_equal( round(out.v1[1,2],7), 0.1851222)
   expect_equal( round(out.t1[6,2],7), 0.0119899)
+  expect_equal( round(out.reg[1,1],4), 0.0666)
 
 })   ## test that permutation is occuring and that the original df and sampled df differ
 

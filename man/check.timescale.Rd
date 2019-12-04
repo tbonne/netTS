@@ -18,16 +18,16 @@ check.timescale(data, windowsize_min = days(10), windowsize_max = days(40),
 
 \item{by}{The resolution at which to test window sizes between the min and the max window sizes}
 
-\item{windowshift}{The amount of time to shift the window when generating networks.}
+\item{windowshift}{The amount of time to shift the window when generating network time series.}
 
 \item{directed}{Whether to consider the network as directed or not (TRUE/FALSE).}
 
-\item{measureFun}{The measurment function used to create a time series.}
+\item{measureFun}{The measurment function used to create a time series from the networks.}
 
 \item{summaryFun}{The measurment function used to summarise each time series.}
 
 \item{SRI}{Wether to use the simple ratio index (Default=FALSE)}
 }
 \description{
-This function will estimate how changing the time scale (i.e., window size) alters the time series, i.e., multisacle analysis.
+This function will estimate how changing the time scale (i.e., window size) alters the time series, i.e., multiscale analysis.
 }

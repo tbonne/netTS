@@ -490,7 +490,7 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
 #' @export
 #'
 #'
-convergence.check.value<-function(data, windowsize, windowshift, directed = FALSE, measureFun,max.subsample.size=30, SRI=FALSE, n.boot=100, probs=c(0.025,0.975)){
+convergence.check.value<-function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=strength,max.subsample.size=30, SRI=FALSE, n.boot=100, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -557,8 +557,9 @@ convergence.check.value<-function(data, windowsize, windowshift, directed = FALS
 
     } else{
 
-      bca = bcanon(estimated.slopes,n.boot,mean,alpha=probs)
-      conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = bca$conf[1,2],CI.high =  bca$conf[2,2],windowstart=windowstart,windowend=windowend ))
+      #bca = bcanon(estimated.slopes,n.boot,mean,alpha=probs)
+      #conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = bca$conf[1,2],CI.high =  bca$conf[2,2],windowstart=windowstart,windowend=windowend ))
+      conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = quantile(estimated.slopes,probs = probs[1],na.rm = T),CI.high =   quantile(estimated.slopes,probs = probs[2],na.rm = T),windowstart=windowstart,windowend=windowend ))
 
     }
 
