@@ -11,7 +11,7 @@
 
 <meta name="author" content="Tyler R. Bonnell" />
 
-<meta name="date" content="2019-11-25" />
+<meta name="date" content="2019-12-05" />
 
 <title>NetTS tutorial 1: Introduction to netTS</title>
 
@@ -372,7 +372,7 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">NetTS tutorial 1: Introduction to netTS</h1>
 <h4 class="author"><em>Tyler R. Bonnell</em></h4>
-<h4 class="date"><em>2019-11-25</em></h4>
+<h4 class="date"><em>2019-12-05</em></h4>
 
 </div>
 
@@ -381,6 +381,14 @@ $(document).ready(function () {
 <h2>Introduction</h2>
 <p>The netTS package is meant for relational data that takes place through time. The point of this package is to facilitate the analyses of time-aggregated social networks using a moving window approach.</p>
 <p>The moving window approach allows a user to define the size of a time window (e.g., windowsize = 1 month) and the amount to move the window (e.g., windowshift = 1 day). This moving window then subsets the relational data within a window, creates a network, and extracts a network measure. It then shifts over in time and repeats the process. By altering the size and shift of this moving window it is then possible to measure how networks change in time.</p>
+<p><strong>The main functions in the package are:</strong></p>
+<ol style="list-style-type: decimal">
+<li>graphTS - Extract network level measures (e.g., mean strength)</li>
+<li>nodeTS - Extract node level measures (e.g., node in-strength)</li>
+<li>dyadTS - Extract dyad level measures (e.g., dyad weight)</li>
+<li>check.windowsize - Estiamte the uncertainty of a network measure at a chosen window size</li>
+<li>check.timescale - Estiamte how a network measure changes as window size changes</li>
+</ol>
 </div>
 <div id="look-at-some-example-data" class="section level2">
 <h2>Look at some example data</h2>
