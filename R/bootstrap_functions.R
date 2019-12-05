@@ -19,7 +19,7 @@
 #' @export
 #'
 #'
-windowsize.check <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
+check.windowsize <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), subsamples=c(1,0.8,0.6), plot=TRUE){
 
   #dataframe to store the results
   df.results <- data.frame(mean=-1,CI.low=-1,CI.high=-1,windowstart=as.Date("2001-12-30"),windowend=as.Date("2001-12-30"), fracData = -1)
@@ -41,7 +41,7 @@ windowsize.check <- function(data, windowsize=days(30), windowshift=days(1), dir
   df.results<-df.results[-1,]
 
   #plot
-  if(plot==T)window.check.plot(df.results)
+  if(plot==T)check.windowsize.plot(df.results)
 
   #return the results
   return(df.results)
@@ -111,7 +111,12 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
       }
 
       #store measure
-      obs.measures <- measureFun(g)
+      if(is.null(measureFun)){
+        obs.net <- g
+      } else{
+        obs.measures <- measureFun(g)
+      }
+
 
     } else {
 
@@ -146,16 +151,20 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
       }
 
       #store measure
-      obs.measures <- measureFun(g.full)
+      if(is.null(measureFun)){
+        obs.net <- g.full
+      } else{
+        obs.measures <- measureFun(g.full)
+      }
 
     }
 
     if(Observation.Events>0){
 
-      if(length(obs.measures)<2){
-        corFun=3
-        if(corFun!=3)print("Warning: only one measure prduced by the measurement function. corFun set to euclidean distance")
-      }
+      # if(length(obs.measures)<2){
+      #   corFun=3
+      #   if(corFun!=3)print("Warning: only one measure prduced by the measurement function. corFun set to euclidean distance")
+      # }
 
       #store correlation measures
       cor.measures <- vector()
@@ -191,17 +200,36 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
         }
 
         #take correlation measure
-
         if(corFun==2){
-          comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
-          comb.by.names[is.na(comb.by.names[,2]),2]<-0
-          cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
+
+          if(is.null(measureFun)){
+            cor.measures[length(cor.measures)+1] <- cor_between_graphs(g.boot, obs.net)$estimate
+          } else {
+            comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
+            comb.by.names[is.na(comb.by.names[,2]),2]<-0
+            comb.by.names[is.na(comb.by.names[,1]),1]<-0
+            cor.measures[length(cor.measures)+1] <- cor.test(comb.by.names[,1],comb.by.names[,2])$estimate
+          }
+
+        #take cosine measure
         } else if(corFun == 1){
-          comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
-          comb.by.names[is.na(comb.by.names[,2]),2]<-0
-          cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1],comb.by.names[,2])
+
+          if(is.null(measureFun)){
+            cor.measures[length(cor.measures)+1] <- cosine_between_graphs(g.boot, obs.net,directed=directed, center=T, considerZeros=T)
+          } else {
+            comb.by.names<-cbind(obs.measures,measureFun(g.boot)[names(obs.measures)])
+            comb.by.names[is.na(comb.by.names[,2]),2]<-0
+            comb.by.names[is.na(comb.by.names[,1]),1]<-0
+            cor.measures[length(cor.measures)+1] <- lsa::cosine(comb.by.names[,1]-mean(comb.by.names[,1]),comb.by.names[,2]-mean(comb.by.names[,2]))
+          }
+
+        #take distance measure
         }else if(corFun == 3){
-          cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))
+          if(is.null(measureFun)){
+            cor.measures[length(cor.measures)+1] <- dist_between_graphs(g.boot, obs.net,directed=directed)
+          } else {
+            cor.measures[length(cor.measures)+1] <- sqrt(sum((measureFun(g.boot)-obs.measures) ^ 2))
+          }
         }
       }
 
@@ -311,6 +339,98 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 }
 
 
+#' Quantify how changing window size alters the resulting time series
+#'
+#' This function will estimate how changing the time scale (i.e., window size) alters the time series, i.e., multiscale analysis.
+#' @param data Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param windowsize_min The min size of windowsize to test.
+#' @param windowsize_max The max size of windowsize to test.
+#' @param by The resolution at which to test window sizes between the min and the max window sizes
+#' @param windowshift The amount of time to shift the window when generating network time series.
+#' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
+#' @param measureFun The measurment function used to create a time series from the networks.
+#' @param summaryFun The measurment function used to summarise each time series.
+#' @param SRI Wether to use the simple ratio index (Default=FALSE)
+#' @importFrom stats cor.test quantile
+#' @importFrom igraph set_graph_attr degree edge_density
+#' @export
+#'
+#'
+check.timescale <- function (data, windowsize_min = days(10), windowsize_max = days(40), by = days(1), windowshift = days(1), directed = FALSE, measureFun = igraph::edge_density, summaryFun= var, SRI = FALSE, boot=10, effortFun = NULL, cores=1) {
+
+  #create empty dataframe to store results
+  df.var <- data.frame(windowsize = -1, var = -1, boot="obs",ngraphs = -1, stringsAsFactors = F)
+
+  #observed values: calculate how changing time scales affect the resulting time series
+  windowsize_seq = windowsize_min
+  while (windowsize_seq <= windowsize_max) {
+
+    #if a window shift is not given the the window shift is taken to be the window size, i.e., no overlap.
+    if(is.null(windowshift)==TRUE){
+      windS = windowsize_seq
+    } else {
+      windS=windowshift
+    }
+
+    #calculate the time series
+    graph.values <- graphTS(data, windowsize = windowsize_seq,
+                            windowshift = windS, measureFun = measureFun,
+                            effortFun = effortFun, permutationFun = perm.events, directed = directed,
+                            lagged = FALSE, lag = 1, firstNet = FALSE,
+                            nperm = 0, probs = 0.95, SRI = SRI, cores=cores)
+
+    #calculate the summary statistic for the resulting time series and record the results
+    df.var <- rbind(df.var, data.frame(windowsize = as.numeric(as.duration(windowsize_seq),
+                                                               "days"), var = summaryFun(graph.values[, 1]), boot="obs",ngraphs = nrow(graph.values)))
+
+    #adjust window size and repeat
+    windowsize_seq = windowsize_seq + by
+  }
+
+  #bootstrapped values: calculate how changing time scales affect the resulting time series, this time on bootstrapped samples from the original data
+  if(boot>0){
+    for(b in 1:boot){
+
+      #take a bootstrap sample
+      data.boot = data[sample(1:nrow(data),replace = T),]
+
+      #restart the window size sequence from the minimum window size
+      windowsize_seq = windowsize_min
+
+      #if a window shift is not given the the window shift is taken to be the window size, i.e., no overlap.
+      while (windowsize_seq <= windowsize_max) {
+        if(is.null(windowshift)==TRUE){
+          windS = windowsize_seq
+        } else {
+          windS=windowshift
+        }
+
+        #calculate the time series
+        graph.values <- graphTS(data.boot, windowsize = windowsize_seq,
+                                windowshift = windS, measureFun = measureFun,
+                                effortFun = effortFun, permutationFun = perm.events, directed = directed,
+                                lagged = FALSE, lag = 1, firstNet = FALSE,
+                                nperm = 0, probs = 0.95, SRI = SRI, cores=cores)
+
+        #calculate the summary statistic for the resulting time series and record the results
+        df.var <- rbind(df.var, data.frame(windowsize = as.numeric(as.duration(windowsize_seq),
+                                                                   "days"), var = summaryFun(graph.values[, 1]), boot=b,ngraphs = nrow(graph.values)))
+
+        #adjust window size and repeat
+        windowsize_seq = windowsize_seq + by
+      }
+    }
+  }
+
+  #remove the first row of the dataset (used to initialize the dataframe)
+  df.var <- df.var[-1, ]
+
+
+  return(df.var)
+}
+
+
+
 #' Variance by window size check
 #'
 #' This function will estimate the variance in the time series based on the window size.
@@ -370,7 +490,7 @@ convergence.check.var<-function(data, windowsize_min=days(10),windowsize_max=day
 #' @export
 #'
 #'
-convergence.check.value<-function(data, windowsize, windowshift, directed = FALSE, measureFun,max.subsample.size=30, SRI=FALSE, n.boot=100, probs=c(0.025,0.975)){
+convergence.check.value<-function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=strength,max.subsample.size=30, SRI=FALSE, n.boot=100, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -437,8 +557,9 @@ convergence.check.value<-function(data, windowsize, windowshift, directed = FALS
 
     } else{
 
-      bca = bcanon(estimated.slopes,n.boot,mean,alpha=probs)
-      conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = bca$conf[1,2],CI.high =  bca$conf[2,2],windowstart=windowstart,windowend=windowend ))
+      #bca = bcanon(estimated.slopes,n.boot,mean,alpha=probs)
+      #conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = bca$conf[1,2],CI.high =  bca$conf[2,2],windowstart=windowstart,windowend=windowend ))
+      conv.values <- rbind(conv.values, data.frame(slope=mean(estimated.slopes), CI.low = quantile(estimated.slopes,probs = probs[1],na.rm = T),CI.high =   quantile(estimated.slopes,probs = probs[2],na.rm = T),windowstart=windowstart,windowend=windowend ))
 
     }
 

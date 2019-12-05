@@ -13,7 +13,7 @@ dir.nets <- extract_networks(groomEvents,windowsize = days(30),windowshift = day
 undir.nets <- extract_networks(groomEvents,windowsize = days(30),windowshift = days(30),directed = FALSE)
 
 #test if graphTS code gets the same measures
-output.net.dir<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = degree_mean, directed=TRUE)
+output.net.dir<-graphTS(groomEvents,windowsize = days(30), windowshift = days(1), measureFun = degree_mean, directed=TRUE)
 
 output.net.undir<-graphTS(groomEvents,windowsize = days(30), windowshift = days(30), measureFun = degree_mean, directed=FALSE)
 
