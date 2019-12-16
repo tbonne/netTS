@@ -3,6 +3,17 @@ library(netTS)
 library(lubridate)
 library(igraph)
 
+#setup a known data extent
+df.ext<-groomEvents[1:100,]
+df.ext[1:50,]$date<-ymd("2019-01-01")
+df.ext[51:100,]$date<-ymd("2019-01-02")
+data=df.ext
+net.ext <- extract_networks(df.ext,windowsize = days(1),windowshift = days(1),directed = TRUE, winend=ymd("2019-01-03"))
+
+#setup missing time periods (ensure the methods can handle this...)
+df.ext[51:100,]$date<-ymd("2019-01-05")
+net.dens<-graphTS(df.ext,windowsize = days(1),windowshift = days(1),directed = TRUE, measureFun = edge_density, windowend=ymd("2019-01-06"))
+
 #setup one network
 subdata <- groomEvents[groomEvents$date<(min(groomEvents$date)+days(30)),]
 fixed.net.dir <- create.a.network(subdata, directed = TRUE)
@@ -65,4 +76,6 @@ test_that("subsetted network is equal", {
   expect_equal(length(para.netlist), 4)
   expect_equal(net.measure[1,1], 4/3)#check measure
   expect_equal(net.measure[1,2], 2) #check nb of extracted EVENTS
+  expect_equal(length(net.ext),2)
+  expect_equal(nrow(net.dens),5)
 })
