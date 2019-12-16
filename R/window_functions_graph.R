@@ -18,6 +18,8 @@
 #' @param permutationFun This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).
 #' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
 #' @param SRI Whether to convert edges to the simple ratio index: Nab / (Nab + Na + Nb). Default is set to FALSE.
+#' @param windowstart When the moving window should start. Default is the minimum observation time.
+#' @param windowend When the moving window should stop. Default is the maximum observation time.
 #' @export
 #' @importFrom lubridate days
 #' @examples

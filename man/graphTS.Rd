@@ -8,7 +8,7 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
   measureFun = degree_mean, effortFun = NULL, effortData = NULL,
   permutationFun = perm.events, directed = FALSE, lagged = FALSE,
   lag = 1, firstNet = FALSE, cores = 1, nperm = 0, probs = 0.95,
-  SRI = FALSE)
+  SRI = FALSE, windowstart = NULL, windowend = NULL)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -40,6 +40,10 @@ graphTS(data, windowsize = days(30), windowshift = days(1),
 \item{probs}{When nperm > 0 this will determine the probability of the permutation values returned from the permuations.}
 
 \item{SRI}{Whether to convert edges to the simple ratio index: Nab / (Nab + Na + Nb). Default is set to FALSE.}
+
+\item{windowstart}{When the moving window should start. Default is the minimum observation time.}
+
+\item{windowend}{When the moving window should stop. Default is the maximum observation time.}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.
