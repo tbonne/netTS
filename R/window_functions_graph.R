@@ -25,7 +25,7 @@
 #' ts.out<-graphTS(data=groomEvents)
 #'
 #'
-graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL,effortData=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE){
+graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureFun=degree_mean ,effortFun=NULL,effortData=NULL, permutationFun=perm.events,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, nperm=0, probs=0.95, SRI=FALSE, windowstart=NULL,windowend=NULL){
 
   #check for missing data
   if(sum(is.na(data)) > 0){
@@ -35,9 +35,9 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed=directed, cores = cores, SRI=SRI, effortFun = effortFun, effortData=effortData)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed=directed, cores = cores, SRI=SRI, effortFun = effortFun, effortData=effortData, winstart=windowstart,winend=windowend)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed=directed, SRI=SRI, effortFun = effortFun, effortData=effortData)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed=directed, SRI=SRI, effortFun = effortFun, effortData=effortData, winstart=windowstart,winend=windowend)
   }
 
   #extract measures from the network list
@@ -72,16 +72,27 @@ graphTS <- function (data, windowsize = days(30), windowshift= days(1), measureF
 #' @export
 #'
 #'
-extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=FALSE, effortFun=NULL, effortData=NULL){
+extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=FALSE, effortFun=NULL, effortData=NULL, winstart=NULL,winend=NULL){
 
   #intialize times
-  windowstart <- min(data[,3])
+  if(is.null(winstart) ){
+    windowstart <- min(data[,3])
+  } else {
+    windowstart <- winstart
+  }
+
+  if(is.null(winend) ){
+    windowmax <- max(data[,3])
+  } else {
+    windowmax <- winend
+  }
+
   windowend=windowstart+windowsize
-  if(windowend>max(data[,3]))print("warnning: the window size is set larger than the observed data.")
+  if(windowend>windowmax)print("warnning: the window size is set larger than the observed data.")
 
   #for every window generate a network
   netlist <- list()
-  while (windowstart + windowsize<=max(data[,3])) {
+  while (windowend<=windowmax) {
 
     #subset the data
     df.window<-create.window(data, windowstart, windowend)
@@ -149,20 +160,32 @@ extract_networks<-function(data, windowsize, windowshift, directed = FALSE, SRI=
 #' @export
 #'
 #'
-extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2, SRI, effortFun=NULL, effortData=NULL){
+extract_networks_para<-function(data, windowsize, windowshift, directed = FALSE, cores=2, SRI, effortFun=NULL, effortData=NULL, winstart=NULL,winend=NULL){
 
   #SRI not implimented yet
   if(SRI==TRUE)print("Warning SRI not yet available for parallel extraction of networks. Using SRI == FALSE.")
 
   #intialize times
-  windowStart <- min(data[,3])
+  #intialize times
+  if(is.null(winstart) ){
+    windowStart <- min(data[,3])
+  } else {
+    windowStart <- winstart
+  }
+
+  if(is.null(winend) ){
+    windowmax <- max(data[,3])
+  } else {
+    windowmax <- winend
+  }
+
+
   windowEnd=windowStart+windowsize
-  if(windowEnd>max(data[,3]))print("warnning: the window size is set larger than the observed data.")
+  if(windowEnd>windowmax)print("warnning: the window size is set larger than the observed data.")
 
   #generate a list of windows times
   window.ranges <- data.frame(start=windowStart, end=windowEnd)
-  endDay=max(data[,3])
-  while(windowEnd<=endDay){
+  while(windowEnd<=windowmax){
     window.ranges <-  rbind(window.ranges,data.frame(start=windowStart, end=windowStart+windowsize))
     windowStart = windowStart + windowshift
     windowEnd = windowStart + windowsize
