@@ -111,7 +111,12 @@ create.a.network.SRI <- function(events, directed=FALSE){
     elist<-as.data.frame(create.an.edgeList(events))
     elist.sri <- data.frame(from="-1",to="-1",weight=1 , stringsAsFactors=FALSE)
 
+    #reorder the from/to nodes to be the same
     elist<-order_events(as.data.frame(elist))
+
+    #add up similar from/to dyads
+    elist <- aggregate(elist[,3], by=elist[,1:2], sum)
+    colnames(elist)[3] <- "weight"
 
     for(i in 1:nrow(elist)){
 
