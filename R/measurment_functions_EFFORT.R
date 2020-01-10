@@ -53,7 +53,7 @@ effort.time <- function(df.window, directed=FALSE){
 effort.scan <- function(df.window, df.scans, directed=FALSE){
 
   #calculate how many scans there are in the window
-  total.samples <- sum(df.scans$scanID)
+  total.samples <- sum(df.scans[,2])
 
   #create a network with the edge corrected values
   g <- create.a.network(df.window, directed)
