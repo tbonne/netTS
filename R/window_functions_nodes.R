@@ -14,6 +14,10 @@
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
 #' @param firstNet If lagged is set to TRUE, this compares the subsequent networks to the first network.
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
+#' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.
+#' @param permutationFun This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).
+#' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
 #' @export
 #' @importFrom lubridate days
 #' @importFrom igraph degree
@@ -21,7 +25,7 @@
 #'
 #' ts.out<-nodeTS(data=groomEvents)
 #'
-nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree, effortFun=NULL,effortData=NULL,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1){
+nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=degree, effortFun=NULL,effortData=NULL,directed=FALSE, lagged=FALSE, lag=1, firstNet=FALSE, cores=1, permutationFun=perm.events.multiple.outputs, nperm=0, probs=0.95, SRI=FALSE){
 
   #check for missing data
   if(sum(is.na(data)) > 0){
@@ -44,6 +48,12 @@ nodeTS <- function (data,windowsize =days(30), windowshift= days(1), measureFun=
     values <- extract_measure_nodes(netlist=graphlist, measureFun, unique.names = all.unique.names)
   } else {
     values <- extract_lagged_measure_nodes(graphlist, measureFun, lag, unique.names = all.unique.names, firstNet=firstNet)
+  }
+
+  #run permutations and extract measures
+  if(nperm>0){
+    perm.values <- permutation.multi.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI, graphlist = graphlist,permutationFun=permutationFun, nperm=nperm, unique.names = all.unique.names )
+    values <- list(obs=values,lowCI=cbind(perm.values$low,values[c("windowstart","windowend","nEvents") ]),highCI= cbind(perm.values$high,values[c("windowstart","windowend","nEvents") ]) )
   }
 
   return (values)
