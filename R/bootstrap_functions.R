@@ -63,12 +63,13 @@ check.windowsize <- function(data, windowsize=days(30), windowshift=days(1), dir
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
 #' @param fullData This is the full dataset, if a subset dataset is being used to compare bootstrap samples to the full dataset.
+#' @param constrained Whether to run the constrained bootstrap function (Default = FALSE). The individuals don't appear more than the number of unique scans in the bootstrap sample.
 #' @importFrom stats cor.test quantile
 #' @importFrom igraph set_graph_attr degree
 #' @export
 #'
 #'
-convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), effortFun=NULL, effortData=NULL,fullData=NULL){
+convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=degree, corFun = 1,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975), effortFun=NULL, effortData=NULL,fullData=NULL,constrained=FALSE){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -314,7 +315,6 @@ constrained.boot <- function(df.window, effortData){
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param measureFun The measurment function to perform the bootstap on (should be at the node level).
 #' @param boot.samples The number of bootstrapped samples to run (Default=100)
-#' @param constrained Whether to run the constrained bootstrap function (Default = FALSE). The individuals don't appear more than the number of unique scans in the bootstrap sample.
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
 #' @importFrom stats cor.test quantile
@@ -322,7 +322,7 @@ constrained.boot <- function(df.window, effortData){
 #' @export
 #'
 #'
-convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=eigen_mean,boot.samples=100, constrained=FALSE,SRI=FALSE, probs=c(0.025,0.975)){
+convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=eigen_mean,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
