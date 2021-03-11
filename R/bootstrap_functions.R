@@ -287,14 +287,14 @@ constrained.boot <- function(df.window, effortData){
     # print(line.to.resample)
     dyad.to.resample <- df.window[line.to.resample,1:2]
 
-    new.dyad <- df.window[line.to.resample,c("from", "to")]
+    new.dyad <- df.window[line.to.resample,1:2]
 
     boot.sample[k,c(1,2)] <- new.dyad
 
     #if dyad appear (length = nb.scan then put 0)
     dyad.to.check<-dyad.to.resample[1,1]
 
-    if ( nrow(boot.sample%>%filter(from==dyad.to.check)) >= nb.scan ){
+    if ( nrow(boot.sample%>%filter(colnames(boot.sample)[1]==dyad.to.check)) >= nb.scan ){
 
       df.window[line.to.resample,"select"] <- 0
 
