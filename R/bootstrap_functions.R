@@ -172,8 +172,17 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
       #Number of
       for(j in 1:boot.samples){
 
-        #bootstrap sample from the data in this window
-        df.sub<-df.window[sample(nrow(df.window),replace = T),]
+        #bootstrap sample from the data in this window: constrained or simple bootstrap
+
+        if(constrained=TRUE){
+
+          df.sub <-constrained.boot(df.window,effortData)
+
+        }else{
+
+          df.sub<-df.window[sample(nrow(df.window),replace = T),]
+
+        }
 
         #calculate sampling effort
         if(is.null(effortFun)==FALSE & is.null(effortData)==TRUE  ){ #there is an effort function and it requires no external data
@@ -253,6 +262,49 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 
 }
 
+#' Constrained bootstrap function
+#'
+#' This function will make sure that the individuals from 'from' column can only appear no more than total number of unique scans. This assumes that data are collected in discrete sampling occurences where individuals can only be recorded once.
+#' @param df.window Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
+#' @param effortData Dataframe with the date (as the 1st column) and total number of scans(as the second column)
+
+constrained.boot <- function(df.window, effortData){
+
+  k<-1
+  df.window$select <- 1
+  boot.sample<- data.frame()
+
+  nb.scan<-sum(effortData[,2])
+
+  while(nrow(df.window) > nrow(boot.sample)){
+
+    # select observed sample df that can be sampled from
+    to.sample.df <- df.window%>%filter(select==1)
+
+    #choose dyad to resample
+    line.to.resample <- sample(1:nrow(to.sample.df),1,T)
+    # print(line.to.resample)
+    dyad.to.resample <- df.window[line.to.resample,1:2]
+
+    new.dyad <- df.window[line.to.resample,c("from", "to")]
+
+    boot.sample[k,c(1,2)] <- new.dyad
+
+    #if dyad appear (length = nb.scan then put 0)
+    dyad.to.check<-dyad.to.resample[1,1]
+
+    if ( nrow(boot.sample%>%filter(from==dyad.to.check)) >= nb.scan ){
+
+      df.window[line.to.resample,"select"] <- 0
+
+    }
+
+    k<-k+1
+
+  }
+  return(boot.sample)
+}
+
 #' Bootstrap convergence check for network level measures
 #'
 #' This function will estimate the convergence of the chosen network measure using bootstrapped samples of the data.
@@ -262,6 +314,7 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 #' @param directed Whether to consider the network as directed or not (TRUE/FALSE).
 #' @param measureFun The measurment function to perform the bootstap on (should be at the node level).
 #' @param boot.samples The number of bootstrapped samples to run (Default=100)
+#' @param constrained Whether to run the constrained bootstrap function (Default = FALSE). The individuals don't appear more than the number of unique scans in the bootstrap sample.
 #' @param SRI Wether to use the simple ratio index (Default=FALSE)
 #' @param probs The quantiles of the bootrap samples to return (Default=c(0.025,0.975)).
 #' @importFrom stats cor.test quantile
@@ -269,7 +322,7 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 #' @export
 #'
 #'
-convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=eigen_mean,boot.samples=100, SRI=FALSE, probs=c(0.025,0.975)){
+convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=days(1), directed = FALSE, measureFun=eigen_mean,boot.samples=100, constrained=FALSE,SRI=FALSE, probs=c(0.025,0.975)){
 
   #intialize times
   windowstart <- min(data[,3])
@@ -302,6 +355,7 @@ convergence.check.boot.graph <- function(data, windowsize=days(30), windowshift=
 
       #Number of
       for(j in 1:boot.samples){
+
 
         #bootstrap sample from the data in this window
         df.sub<-df.window[sample(nrow(df.window),replace = T),]
