@@ -174,7 +174,7 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 
         #bootstrap sample from the data in this window: constrained or simple bootstrap
 
-        if(constrained=TRUE){
+        if(constrained==TRUE){
 
           df.sub <-constrained.boot(df.window,effortData)
 
