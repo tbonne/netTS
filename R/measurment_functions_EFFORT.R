@@ -69,7 +69,7 @@ effort.scan <- function(df.window, df.scans, directed=FALSE){
 #'
 #' This function will estimate the sampling effort from focal data. It will calculate the total durration each dyad had the potential to be observed (i.e., Interactions between A and B could only be seen if A or B was the focal). This sampling correction should be applied post network construction.
 #' @param df.window A data frame with focal duration per individual per unique focal, with a date time column.
-#' @param effortData A data frame with the first column as a datatime stamp, a second column with the ID of the focal, and a thrid columbn with the total time of the focal.
+#' @param effortData A data frame with the first column as a datatime stamp, a second column with the ID of the focal, and a thrid column with the total time of the focal.
 #' @param directed Whether a directed network should be constructed (Default=FALSE).
 #' @export
 #'
