@@ -1,14 +1,16 @@
 Package: netTS
 Type: Package
 Title: netTS: network time series
-Version: 0.1.0
+Version: 0.3.0
 Author: Tyler Bonnell
 Maintainer: The package maintainer <tyler.bonnell@uleth.ca>
 Description: This package creates network measures for events occuring in time, allowing users to visualize changes in the network through time.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 2.10)
+Depends: 
+    R (>= 2.10),
+    igraph
 Imports:
     dplyr,
     lubridate,
