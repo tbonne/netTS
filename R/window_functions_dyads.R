@@ -112,31 +112,29 @@ extract_measure_dyads<-function(netlist, measureFun, unique.names){
 
   #extract measures
   if(exists('measureFun', mode='function')){
-
     for(i in 1:length(netlist)) {
-      if(ecount(netlist[[i]])>0){
-      df.temp.nodes <- as.data.frame(t(measureFun(netlist[[i]])))
-      df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
-                                  windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
-                                  windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
-      df.temp <- cbind(df.temp.nodes,df.temp.graph)
-      } else {
-        df.temp <- cbind(df.temp.nodes,rep(NA,length(unique.names)))
+      if( length(E(netlist[[i]]))==0 ){
+
+        df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                    windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                    windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+
+        netvalues <- bind_rows(netvalues,df.temp.graph)
+      } else{
+        df.temp.nodes <- as.data.frame(t(measureFun(netlist[[i]])))
         df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
                                     windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
                                     windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
         df.temp <- cbind(df.temp.nodes,df.temp.graph)
+        netvalues <- bind_rows(netvalues,df.temp)
       }
-      netvalues <- bind_rows(netvalues,df.temp)
     }
 
   } else {
     print("Error: the measurment function was not found.")
   }
-
   netvalues<-netvalues[-1,]
   return(netvalues)
-
 }
 
 
