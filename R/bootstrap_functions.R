@@ -268,6 +268,8 @@ convergence.check.boot <- function(data, windowsize=days(30), windowshift=days(1
 #' This function will make sure that the individuals from 'from' column can only appear no more than total number of unique scans. This assumes that data are collected in discrete sampling occurences where individuals can only be recorded once.
 #' @param df.window Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.
 #' @param effortData Dataframe with the date (as the 1st column) and total number of scans(as the second column)
+#' @export
+#' @importFrom dplyr filter
 
 constrained.boot <- function(df.window, effortData){
 
@@ -280,7 +282,7 @@ constrained.boot <- function(df.window, effortData){
   while(nrow(df.window) > nrow(boot.sample)){
 
     # select observed sample df that can be sampled from
-    to.sample.df <- df.window%>%filter(select==1)
+    to.sample.df <- filter(df.window,select==1)
 
     #choose dyad to resample
     line.to.resample <- sample(1:nrow(to.sample.df),1,T)
@@ -294,7 +296,7 @@ constrained.boot <- function(df.window, effortData){
     #if dyad appear (length = nb.scan then put 0)
     dyad.to.check<-dyad.to.resample[1,1]
 
-    if ( nrow(boot.sample%>%filter(colnames(boot.sample)[1]==dyad.to.check)) >= nb.scan ){
+    if ( nrow(filter(boot.sample,colnames(boot.sample)[1]==dyad.to.check)) >= nb.scan ){
 
       df.window[line.to.resample,"select"] <- 0
 

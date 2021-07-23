@@ -97,7 +97,7 @@ order_events <- function(data){
 #' @param measureFun A function that takes a network as input and returns a value for each dyad.
 #' @param unique.names A list of all dyads/edges in the networks.
 #' @export
-#' @importFrom igraph get.graph.attribute
+#' @importFrom igraph get.graph.attribute E
 #' @importFrom dplyr bind_rows
 #'
 #'

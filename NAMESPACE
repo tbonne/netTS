@@ -3,6 +3,7 @@
 export(check.timescale)
 export(check.windowsize)
 export(check.windowsize.plot)
+export(constrained.boot)
 export(convergence.check.boot)
 export(convergence.check.boot.graph)
 export(convergence.check.value)
