@@ -4,10 +4,21 @@
 \alias{convergence.check.boot}
 \title{Bootstrap convergence check}
 \usage{
-convergence.check.boot(data, windowsize = days(30), windowshift = days(1),
-  directed = FALSE, measureFun = degree, corFun = 1, boot.samples = 100,
-  SRI = FALSE, probs = c(0.025, 0.975), effortFun = NULL,
-  effortData = NULL, fullData = NULL)
+convergence.check.boot(
+  data,
+  windowsize = days(30),
+  windowshift = days(1),
+  directed = FALSE,
+  measureFun = degree,
+  corFun = 1,
+  boot.samples = 100,
+  SRI = FALSE,
+  probs = c(0.025, 0.975),
+  effortFun = NULL,
+  effortData = NULL,
+  fullData = NULL,
+  constrained = FALSE
+)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}
@@ -33,6 +44,8 @@ convergence.check.boot(data, windowsize = days(30), windowshift = days(1),
 \item{effortData}{This is a dataframe containing the data used to calculate sampling effort.}
 
 \item{fullData}{This is the full dataset, if a subset dataset is being used to compare bootstrap samples to the full dataset.}
+
+\item{constrained}{Whether to run the constrained bootstrap function (Default = FALSE). The individuals don't appear more than the number of unique scans in the bootstrap sample.}
 }
 \description{
 This function will estimate the convergence of the chosen network measure using bootstrapped samples of the data.

@@ -4,7 +4,7 @@
 \alias{dyadTS.plot}
 \title{Plot function for dyadTS outputs}
 \usage{
-dyadTS.plot(data = output.net.dir, legend = FALSE)
+dyadTS.plot(data = output.net.dir, legend = FALSE, plotCI = FALSE)
 }
 \arguments{
 \item{data}{Output from the dyadTS function.}

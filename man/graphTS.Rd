@@ -4,11 +4,25 @@
 \alias{graphTS}
 \title{graphTS function}
 \usage{
-graphTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = degree_mean, effortFun = NULL, effortData = NULL,
-  permutationFun = perm.events, directed = FALSE, lagged = FALSE,
-  lag = 1, firstNet = FALSE, cores = 1, nperm = 0, probs = 0.95,
-  SRI = FALSE, windowstart = NULL, windowend = NULL)
+graphTS(
+  data,
+  windowsize = days(30),
+  windowshift = days(1),
+  measureFun = degree_mean,
+  effortFun = NULL,
+  effortData = NULL,
+  permutationFun = perm.events,
+  directed = FALSE,
+  lagged = FALSE,
+  lag = 1,
+  firstNet = FALSE,
+  cores = 1,
+  nperm = 0,
+  probs = 0.95,
+  SRI = FALSE,
+  windowstart = NULL,
+  windowend = NULL
+)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

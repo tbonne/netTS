@@ -4,10 +4,20 @@
 \alias{permutation.graph.values}
 \title{Use permutation to extract uncertainty}
 \usage{
-permutation.graph.values(data, windowsize, windowshift, directed = FALSE,
-  measureFun, effortFun = NULL, effortData = NULL, probs = 0.95,
-  nperm = 1000, SRI = FALSE, graphlist = NULL,
-  permutationFun = perm.events)
+permutation.graph.values(
+  data,
+  windowsize,
+  windowshift,
+  directed = FALSE,
+  measureFun,
+  effortFun = NULL,
+  effortData = NULL,
+  probs = 0.95,
+  nperm = 1000,
+  SRI = FALSE,
+  graphlist = NULL,
+  permutationFun = perm.events
+)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

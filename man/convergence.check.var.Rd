@@ -4,9 +4,16 @@
 \alias{convergence.check.var}
 \title{Variance by window size check}
 \usage{
-convergence.check.var(data, windowsize_min = days(10),
-  windowsize_max = days(40), by = days(1), windowshift = days(1),
-  directed = FALSE, measureFun = igraph::edge_density, SRI = FALSE)
+convergence.check.var(
+  data,
+  windowsize_min = days(10),
+  windowsize_max = days(40),
+  by = days(1),
+  windowshift = days(1),
+  directed = FALSE,
+  measureFun = igraph::edge_density,
+  SRI = FALSE
+)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

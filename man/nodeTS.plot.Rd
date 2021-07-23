@@ -4,7 +4,7 @@
 \alias{nodeTS.plot}
 \title{Plot function for nodeTS outputs}
 \usage{
-nodeTS.plot(data, legend = TRUE)
+nodeTS.plot(data, legend = TRUE, plotCI = FALSE)
 }
 \arguments{
 \item{data}{Output from the nodeTS function.}

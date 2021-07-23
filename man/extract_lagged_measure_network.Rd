@@ -4,8 +4,7 @@
 \alias{extract_lagged_measure_network}
 \title{Extract measures from a list of networks when the measure requires comparisons between networks}
 \usage{
-extract_lagged_measure_network(netlist, measureFun, lag = 1,
-  firstNet = FALSE)
+extract_lagged_measure_network(netlist, measureFun, lag = 1, firstNet = FALSE)
 }
 \arguments{
 \item{netlist}{List of networks.}

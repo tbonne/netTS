@@ -4,9 +4,18 @@
 \alias{sim.events.data}
 \title{Simulate some observation data}
 \usage{
-sim.events.data(nodes, sampling.periods, sampling.periods.per.day = 1,
-  true.net = NULL, A = NULL, B = NULL, C = NULL, D = NULL, E = NULL,
-  covariates = NULL)
+sim.events.data(
+  nodes,
+  sampling.periods,
+  sampling.periods.per.day = 1,
+  true.net = NULL,
+  A = NULL,
+  B = NULL,
+  C = NULL,
+  D = NULL,
+  E = NULL,
+  covariates = NULL
+)
 }
 \arguments{
 \item{nodes}{Number of individuals within a simulated group.}

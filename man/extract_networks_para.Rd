@@ -4,9 +4,18 @@
 \alias{extract_networks_para}
 \title{Extract networks from a moving window using multiple cores}
 \usage{
-extract_networks_para(data, windowsize, windowshift, directed = FALSE,
-  cores = 2, SRI, effortFun = NULL, effortData = NULL, winstart = NULL,
-  winend = NULL)
+extract_networks_para(
+  data,
+  windowsize,
+  windowshift,
+  directed = FALSE,
+  cores = 2,
+  SRI,
+  effortFun = NULL,
+  effortData = NULL,
+  winstart = NULL,
+  winend = NULL
+)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third column. An optional column with a weight can be added if there is a duration or magnitude for each interaction (column name for this should be set to 'weight'). Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

@@ -4,10 +4,19 @@
 \alias{check.windowsize}
 \title{Bootstrap convergence check with subsampling}
 \usage{
-check.windowsize(data, windowsize = days(30), windowshift = days(1),
-  directed = FALSE, measureFun = degree, corFun = 1, boot.samples = 100,
-  SRI = FALSE, probs = c(0.025, 0.975), subsamples = c(1, 0.8, 0.6),
-  plot = TRUE)
+check.windowsize(
+  data,
+  windowsize = days(30),
+  windowshift = days(1),
+  directed = FALSE,
+  measureFun = degree,
+  corFun = 1,
+  boot.samples = 100,
+  SRI = FALSE,
+  probs = c(0.025, 0.975),
+  subsamples = c(1, 0.8, 0.6),
+  plot = TRUE
+)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

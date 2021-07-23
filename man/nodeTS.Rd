@@ -4,10 +4,23 @@
 \alias{nodeTS}
 \title{nodeTS function}
 \usage{
-nodeTS(data, windowsize = days(30), windowshift = days(1),
-  measureFun = degree, effortFun = NULL, effortData = NULL,
-  directed = FALSE, lagged = FALSE, lag = 1, firstNet = FALSE,
-  cores = 1)
+nodeTS(
+  data,
+  windowsize = days(30),
+  windowshift = days(1),
+  measureFun = degree,
+  effortFun = NULL,
+  effortData = NULL,
+  directed = FALSE,
+  lagged = FALSE,
+  lag = 1,
+  firstNet = FALSE,
+  cores = 1,
+  permutationFun = perm.events.multiple.outputs,
+  nperm = 0,
+  probs = 0.95,
+  SRI = FALSE
+)
 }
 \arguments{
 \item{data}{A dataframe with relational data in the first two columns, and a time stamp in the third columns Note: time stamps should be in ymd_hms format. The lubridate package can be very helpful in organizing times. Note: names in the first two columns are case sensitive.}
@@ -31,6 +44,14 @@ nodeTS(data, windowsize = days(30), windowshift = days(1),
 \item{firstNet}{If lagged is set to TRUE, this compares the subsequent networks to the first network.}
 
 \item{cores}{This allows for multiple cores to be used while generating networks and calculating network measures.}
+
+\item{permutationFun}{This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).}
+
+\item{nperm}{This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.}
+
+\item{probs}{When nperm > 0 this will determine the probability of the permutation values returned from the permuations.}
+
+\item{SRI}{Wether to use the simple ratio index (Default=FALSE).}
 }
 \description{
 This function will take a dataframe with events between individuals/objects, and take network measures using a moving window approach.

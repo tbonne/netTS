@@ -4,9 +4,18 @@
 \alias{perm.events.directed}
 \title{Perform permutation on the events dataframe, maintaining in/out degree of nodes}
 \usage{
-perm.events.directed(data, measureFun, directed = FALSE, nperm = 1000,
-  probs = 0.95, SRI = FALSE, effortFun = NULL, effortData = NULL,
-  windowstart, windowend)
+perm.events.directed(
+  data,
+  measureFun,
+  directed = FALSE,
+  nperm = 1000,
+  probs = 0.95,
+  SRI = FALSE,
+  effortFun = NULL,
+  effortData = NULL,
+  windowstart,
+  windowend
+)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, with weights in the thrid row, and a time stamp in the fourth row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

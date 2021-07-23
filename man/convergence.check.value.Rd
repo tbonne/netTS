@@ -4,9 +4,17 @@
 \alias{convergence.check.value}
 \title{Convergence check}
 \usage{
-convergence.check.value(data, windowsize = days(30), windowshift = days(1),
-  directed = FALSE, measureFun = strength, max.subsample.size = 30,
-  SRI = FALSE, n.boot = 100, probs = c(0.025, 0.975))
+convergence.check.value(
+  data,
+  windowsize = days(30),
+  windowshift = days(1),
+  directed = FALSE,
+  measureFun = strength,
+  max.subsample.size = 30,
+  SRI = FALSE,
+  n.boot = 100,
+  probs = c(0.025, 0.975)
+)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

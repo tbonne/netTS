@@ -4,8 +4,14 @@
 \alias{cosine_between_nodes}
 \title{Estimate consine similarity between nodes in a graph}
 \usage{
-cosine_between_nodes(graph1, graph2, directed = FALSE, mode = "out",
-  consider_zeros = FALSE, center = FALSE)
+cosine_between_nodes(
+  graph1,
+  graph2,
+  directed = FALSE,
+  mode = "out",
+  consider_zeros = FALSE,
+  center = FALSE
+)
 }
 \arguments{
 \item{graph1}{first graph (igraph)}

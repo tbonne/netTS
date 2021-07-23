@@ -4,10 +4,20 @@
 \alias{check.timescale}
 \title{Quantify how changing window size alters the resulting time series}
 \usage{
-check.timescale(data, windowsize_min = days(10), windowsize_max = days(40),
-  by = days(1), windowshift = days(1), directed = FALSE,
-  measureFun = igraph::edge_density, summaryFun = var, SRI = FALSE,
-  boot = 10, effortFun = NULL, cores = 1)
+check.timescale(
+  data,
+  windowsize_min = days(10),
+  windowsize_max = days(40),
+  by = days(1),
+  windowshift = days(1),
+  directed = FALSE,
+  measureFun = igraph::edge_density,
+  summaryFun = var,
+  SRI = FALSE,
+  boot = 10,
+  effortFun = NULL,
+  cores = 1
+)
 }
 \arguments{
 \item{data}{Dataframe with relational data in the first two rows, and a time stamp in the third row. Note: time stamps should be in ymd or ymd_hms format. The lubridate package can be very helpful in organizing times.}

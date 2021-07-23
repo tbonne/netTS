@@ -9,7 +9,7 @@ effort.focal(df.window, effortData, directed = FALSE)
 \arguments{
 \item{df.window}{A data frame with focal duration per individual per unique focal, with a date time column.}
 
-\item{effortData}{A data frame with the first column as a datatime stamp, a second column with the ID of the focal, and a thrid columbn with the total time of the focal.}
+\item{effortData}{A data frame with the first column as a datatime stamp, a second column with the ID of the focal, and a thrid column with the total time of the focal.}
 
 \item{directed}{Whether a directed network should be constructed (Default=FALSE).}
 }

@@ -4,8 +4,13 @@
 \alias{cosine_between_graphs}
 \title{Estimate consine similarity between graphs}
 \usage{
-cosine_between_graphs(graph1, graph2, directed = FALSE,
-  considerZeros = TRUE, center = FALSE)
+cosine_between_graphs(
+  graph1,
+  graph2,
+  directed = FALSE,
+  considerZeros = TRUE,
+  center = FALSE
+)
 }
 \arguments{
 \item{graph1}{first graph (igraph)}
