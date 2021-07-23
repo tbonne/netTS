@@ -33,16 +33,46 @@ graphTS.plot <- function(data, plotCI=FALSE){
 #' @export
 #'
 #'
-nodeTS.plot <- function(data, legend=TRUE){
+nodeTS.plot <- function(data, legend=TRUE, plotCI=FALSE){
 
-  data.long <- reshape2::melt(data, id = c("windowend","windowstart", "nEvents"))
-  names(data.long)[names(data.long)=="variable"] <- "ID"
+  #plot just the observed?
+  if(plotCI==FALSE){
 
-  if(legend==TRUE){
-    g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
+    if(!is.data.frame(data))data=data$obs
+
+    data.long <- reshape2::melt(data, id = c("windowend","windowstart", "nEvents"))
+    names(data.long)[names(data.long)=="variable"] <- "ID"
+
+    if(legend==TRUE){
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
+    } else {
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+    }
   } else {
-    g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+
+    #get the observed
+    data.long <- reshape2::melt(data$obs, id = c("windowend","windowstart", "nEvents"))
+    names(data.long)[names(data.long)=="variable"] <- "ID"
+
+    #get the lower CI
+    data.lowCI <- reshape2::melt(data$lowCI, id = c("windowend","windowstart", "nEvents"))
+    data.long$lowCI <- data.lowCI$value
+
+    #get the upper CI
+    data.highCI <- reshape2::melt(data$highCI, id = c("windowend","windowstart", "nEvents"))
+    data.long$highCI <- data.highCI$value
+
+    #create the ggplots
+    if(legend==TRUE){
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart")
+    } else {
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+    }
+
+
   }
+
+
 
   return(g)
 
@@ -59,15 +89,51 @@ nodeTS.plot <- function(data, legend=TRUE){
 #' @importFrom reshape2 melt
 #' @export
 #'
-dyadTS.plot <- function(data=output.net.dir, legend=FALSE){
+dyadTS.plot <- function(data=output.net.dir, legend=FALSE, plotCI=FALSE){
 
-  data.long <- reshape2::melt(data, id = c("windowend","windowstart", "nEvents"))
-  names(data.long)[names(data.long)=="variable"] <- "ID"
+  #plot just the observed?
+  if(plotCI==FALSE){
 
-  if(legend==TRUE){
-    g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + xlab("windowstart") + theme_classic()
+    if(!is.data.frame(data))data=data$obs
+
+    data.long <- reshape2::melt(data, id = c("windowend","windowstart", "nEvents"))
+    names(data.long)[names(data.long)=="variable"] <- "ID"
+
+    if(legend==TRUE){
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
+    } else {
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+    }
   } else {
-    g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + xlab("windowstart") + theme_classic() + theme(legend.position="none")
+
+    #get the observed
+    data.long <- reshape2::melt(data$obs, id = c("windowend","windowstart", "nEvents"))
+    data.long$joinID <- paste0(data.long$variable,"_",data.long$windowstart)
+
+
+    #get the lower CI
+    data.lowCI <- reshape2::melt(data$lowCI, id = c("windowend","windowstart", "nEvents"))
+    data.lowCI$joinID <- paste0(data.lowCI$variable,"_",data.lowCI$windowstart)
+    names(data.lowCI)[names(data.lowCI)=="value"] <- "lowCI"
+    data.long <- dplyr::left_join(data.long,data.lowCI[c("lowCI","joinID")], by="joinID")
+
+    #get the upper CI
+    data.highCI <- reshape2::melt(data$highCI, id = c("windowend","windowstart", "nEvents"))
+    data.highCI$joinID <- paste0(data.highCI$variable,"_",data.highCI$windowstart)
+    names(data.highCI)[names(data.highCI)=="value"] <- "highCI"
+    data.long <- dplyr::left_join(data.long,data.highCI[c("highCI","joinID")], by="joinID")
+
+    #change the name of the variable to ID
+    names(data.long)[names(data.long)=="variable"] <- "ID"
+
+    #create the ggplots
+    if(legend==TRUE){
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart")
+    } else {
+      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+    }
+
+
   }
 
   return(g)

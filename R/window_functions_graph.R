@@ -304,7 +304,7 @@ net.window.para<-function(data, windowstart, windowend,directed=FALSE, effortFun
 extract_measure_network<-function(netlist, measureFun){
 
   #store measures
-  net.measure <- data.frame(measure=-1,nEvents=-1,windowstart=ymd("2000-01-01"), windowend=ymd("2000-01-01"))
+  net.measure <- data.frame(measure=-1,nEvents=-1,windowstart=ymd_hms("2000-01-01 01:00:00"), windowend=ymd_hms("2000-01-01 01:00:00"))
 
   #extract measures
   if(exists('measureFun', mode='function')){

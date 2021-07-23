@@ -13,14 +13,18 @@
 #' @param directed Whether the events are directed or no: true or false.
 #' @param lagged Whether the network measure function used requires the comparison between two networks. e.g., comparing the current network to one lagged by 10 days. If TRUE the measureFun should take two graphs as input and return a single value. The order of inputs in the function is the lagged network followed by the current network.
 #' @param lag If lagged is set to TRUE, this is the lag at which to compare networks.
+#' @param SRI Wether to use the simple ratio index (Default=FALSE).
 #' @param cores This allows for multiple cores to be used while generating networks and calculating network measures.
+#' @param nperm This allows for the estimation the network measure assuming random permutations. Currently the 95 percent quantiles are returned.
+#' @param permutationFun This is a function that takes as input an events dataframe and a measurment function, and will return a quantile range of network values (see permutation vignette).
+#' @param probs When nperm > 0 this will determine the probability of the permutation values returned from the permuations.
 #' @export
 #' @importFrom lubridate days
 #' @examples
 #'
 #' ts.out<-dyadTS(data=groomEvents)
 #'
-dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=dyad_weight, effortFun=NULL, effortData=NULL, directed=FALSE, lagged=FALSE, lag=1, cores=1){
+dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=dyad_weight, effortFun=NULL, effortData=NULL, directed=FALSE, lagged=FALSE, lag=1, cores=1, permutationFun=perm.events.multiple.outputs, nperm=0, probs=0.95, SRI=FALSE){
 
   #check for missing data
   if(sum(is.na(data)) > 0){
@@ -46,9 +50,17 @@ dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=d
     values <- extract_lagged_measure_dyads(graphlist, measureFun, lag, unique.names = all.unique.names)
   }
 
+  #run permutations and extract measures
+  if(nperm>0){
+    perm.values <- permutation.multi.values(data, windowsize, windowshift, directed, measureFun = measureFun, probs=probs, SRI=SRI, graphlist = graphlist,permutationFun=permutationFun, nperm=nperm, unique.names = all.unique.names )
+    values <- list(obs=values,lowCI=cbind(perm.values$low,values[c("windowstart","windowend","nEvents") ]),highCI= cbind(perm.values$high,values[c("windowstart","windowend","nEvents") ]) )
+  }
+
+
   return (values)
 
 }
+
 
 
 #' Order events alphabetically
@@ -100,23 +112,29 @@ extract_measure_dyads<-function(netlist, measureFun, unique.names){
 
   #extract measures
   if(exists('measureFun', mode='function')){
-
     for(i in 1:length(netlist)) {
-      df.temp.nodes <- as.data.frame(t(measureFun(netlist[[i]])))
-      df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
-                                  windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
-                                  windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
-      df.temp <- cbind(df.temp.nodes,df.temp.graph)
-      netvalues <- bind_rows(netvalues,df.temp)
+      if( length(E(netlist[[i]]))==0 ){
+
+        df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                    windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                    windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+
+        netvalues <- bind_rows(netvalues,df.temp.graph)
+      } else{
+        df.temp.nodes <- as.data.frame(t(measureFun(netlist[[i]])))
+        df.temp.graph <- data.frame(nEvents=igraph::get.graph.attribute(netlist[[i]], "nEvents" ),
+                                    windowstart=igraph::get.graph.attribute(netlist[[i]], "windowstart" ),
+                                    windowend=igraph::get.graph.attribute(netlist[[i]], "windowend" ))
+        df.temp <- cbind(df.temp.nodes,df.temp.graph)
+        netvalues <- bind_rows(netvalues,df.temp)
+      }
     }
 
   } else {
     print("Error: the measurment function was not found.")
   }
-
   netvalues<-netvalues[-1,]
   return(netvalues)
-
 }
 
 
