@@ -537,12 +537,24 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     df.window<-create.window(data, windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
-    #perform permutations
-    perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, windowstart=windowstart, windowend=windowend, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)
+    #make sure there is data to permute
+    if(Observation.Events > 0 ){
 
-    #record the high and low estimates
-    perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]
-    perm.values.low[[length(perm.values.low)+1]] <- perm.out[1]
+      #perform permutations
+      perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, windowstart=windowstart, windowend=windowend, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)
+
+      #record the high and low estimates
+      perm.values.high[[length(perm.values.high)+1]] <- perm.out[2]
+      perm.values.low[[length(perm.values.low)+1]] <- perm.out[1]
+
+    #no data, record NA
+    } else {
+
+      #record the high and low estimates
+      perm.values.high[[length(perm.values.high)+1]] <- NA
+      perm.values.low[[length(perm.values.low)+1]] <- NA
+
+    }
 
     #update progress bar
     #setTxtProgressBar(pb,  as.numeric(windowend) )
