@@ -44,9 +44,9 @@ nodeTS.plot <- function(data, legend=TRUE, plotCI=FALSE){
     names(data.long)[names(data.long)=="variable"] <- "ID"
 
     if(legend==TRUE){
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
     } else {
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
     }
   } else {
 
@@ -64,9 +64,9 @@ nodeTS.plot <- function(data, legend=TRUE, plotCI=FALSE){
 
     #create the ggplots
     if(legend==TRUE){
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart")
     } else {
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
     }
 
 
@@ -100,9 +100,9 @@ dyadTS.plot <- function(data=output.net.dir, legend=FALSE, plotCI=FALSE){
     names(data.long)[names(data.long)=="variable"] <- "ID"
 
     if(legend==TRUE){
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart")
     } else {
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, color = ID)) + geom_line()  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
     }
   } else {
 
@@ -128,9 +128,9 @@ dyadTS.plot <- function(data=output.net.dir, legend=FALSE, plotCI=FALSE){
 
     #create the ggplots
     if(legend==TRUE){
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart")
     } else {
-      g <- ggplot(data=data.long, aes(x = as.Date(windowstart), y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
+      g <- ggplot(data=data.long, aes(x = windowstart, y = value,group = ID, ymin=lowCI,ymax=highCI)) + geom_line(aes(color = ID)) + geom_ribbon(aes(fill=ID),color=NA, alpha=0.1)  + theme_classic() + xlab("windowstart") + theme(legend.position="none")
     }
 
 
