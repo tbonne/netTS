@@ -538,7 +538,7 @@ permutation.graph.values<-function(data, windowsize, windowshift, directed = FAL
     Observation.Events <- nrow(df.window)
 
     #make sure there is data to permute
-    if(Observation.Events > 0 ){
+    if(Observation.Events >= 2 ){
 
       #perform permutations
       perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, windowstart=windowstart, windowend=windowend, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)

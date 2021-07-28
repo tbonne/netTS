@@ -409,7 +409,7 @@ permutation.multi.values<-function(data, windowsize, windowshift, directed = FAL
     df.window<-create.window(data, windowstart, windowend)
     Observation.Events <- nrow(df.window)
 
-    if(Observation.Events > 0 ){
+    if(Observation.Events >= 2 ){
 
       #perform permutations
       perm.out<-doCall(permutationFun,data=df.window, measureFun=measureFun, directed=directed, windowstart=windowstart, windowend=windowend, probs=probs,nperm= nperm, SRI=SRI, effortFun=NULL, effortData=NULL)
