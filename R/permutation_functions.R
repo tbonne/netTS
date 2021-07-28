@@ -351,8 +351,7 @@ perm.events.multiple.outputs <- function(data, measureFun, directed=FALSE, nperm
 
     # Get measure
     Perm.measure <- bind_rows(Perm.measure, measureFun(Perm.network) )
-    #i'm here right now ... need to figure out the best way to store these multiple measures...
-    #measureFun = dyad_diff
+
   }
 
 
