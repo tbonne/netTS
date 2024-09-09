@@ -37,9 +37,9 @@ dyadTS <- function (data, windowsize=days(30), windowshift=days(1), measureFun=d
 
   #extract networks from the dataframe
   if(cores > 1){
-    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun, effortData = effortData)
+    graphlist <- extract_networks_para(data, windowsize, windowshift, directed, cores = 2, effortFun = effortFun, effortData = effortData, SRI=SRI)
   } else {
-    graphlist <- extract_networks(data, windowsize, windowshift, directed, effortFun = effortFun, effortData = effortData)
+    graphlist <- extract_networks(data, windowsize, windowshift, directed, effortFun = effortFun, effortData = effortData, SRI=SRI)
   }
 
   #extract measures from the network list
